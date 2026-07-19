@@ -31,6 +31,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${secret("GOOGLE_MAPS_API_KEY")}\"")
         buildConfigField("String", "TANKERKOENIG_API_KEY", "\"${secret("TANKERKOENIG_API_KEY")}\"")
+        buildConfigField("boolean", "NDP_ENABLED", secret("NDP_ENABLED").toBoolean().toString())
+        buildConfigField("String", "NDP_INGEST_ENDPOINT", "\"${secret("NDP_INGEST_ENDPOINT")}\"")
+        buildConfigField("String", "NDP_INGEST_KEY", "\"${secret("NDP_INGEST_KEY")}\"")
+        buildConfigField("String", "NDP_ENVIRONMENT", "\"${secret("NDP_ENVIRONMENT").ifBlank { "development" }}\"")
     }
 
     buildTypes {

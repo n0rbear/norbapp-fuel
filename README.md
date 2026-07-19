@@ -41,6 +41,7 @@ app/
     domain/usecase/    Trip cost calculation use case
     presentation/      Compose screen and ViewModel
     service/           Fuel station API integration
+    diagnostics/       NDP telemetry client and privacy sanitizer
     ui/theme/          Compose theme files
   src/main/res/        Android resources
 gradle/                Gradle wrapper and version catalog
@@ -76,6 +77,27 @@ The Gradle build reads these values from `local.properties` or environment varia
 
 Important: `BuildConfig` does not encrypt secrets. API keys included in an APK can be extracted, so the Google API key must be restricted by Android package name and signing certificate. Previously exposed keys must be rotated before public publication.
 
+## NDP Integration
+
+NorbApp Fuel can send privacy-limited diagnostics to Norb Diagnostic Platform through the existing Android ingest contract:
+
+- Endpoint: `POST /api/ingest/events`
+- Header: `X-NDP-Ingest-Key`
+- Source: `ANDROID`
+
+NDP telemetry is disabled by default. Configure it locally only when an NDP project and ingest key exist:
+
+```properties
+NDP_ENABLED=false
+NDP_INGEST_ENDPOINT=http://10.0.2.2:4000/api/ingest/events
+NDP_INGEST_KEY=
+NDP_ENVIRONMENT=development
+```
+
+`NDP_INGEST_KEY` must not be committed. `BuildConfig` does not protect this key inside an APK. For production or broader distribution, use a short-lived registration credential or a backend proxy instead of a long-lived client-side ingest key.
+
+The integration records app lifecycle, main screen open, trip calculation, fuel search, sanitized external API request status, and caught errors. It does not send exact GPS coordinates, route addresses, raw provider responses, headers, access tokens, API keys, or full stack traces. See `docs/NDP_INTEGRATION.md`.
+
 ## Build Commands
 
 ```powershell
@@ -95,6 +117,7 @@ Important: `BuildConfig` does not encrypt secrets. API keys included in an APK c
 
 - Do not commit `local.properties`, `.env` files, signing keys, API credentials, APKs, AABs, or keystores.
 - Rotate any key that has ever been committed or shared outside its intended private environment.
+- Keep NDP ingest keys local. Treat them as extractable from debug APKs when enabled.
 - Enable secret scanning before publishing.
 - Review staged files before the first commit.
 

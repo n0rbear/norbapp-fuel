@@ -10,6 +10,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tikltsg.BuildConfig
 import com.example.tikltsg.data.api.GoogleApiService
+import com.example.tikltsg.diagnostics.NdpDiagnostics
+import com.example.tikltsg.diagnostics.NdpEvents
+import com.example.tikltsg.diagnostics.NdpNoOpClient
 import com.example.tikltsg.domain.model.*
 import com.example.tikltsg.domain.usecase.CalculateTripUseCase
 import com.example.tikltsg.service.FuelRepository
@@ -24,11 +27,12 @@ import java.util.*
 
 class MainViewModel(
     private val calculateTripUseCase: CalculateTripUseCase,
-    private val context: Context
+    private val context: Context,
+    private val diagnostics: NdpDiagnostics = NdpNoOpClient
 ) : ViewModel() {
 
     private val googleApi = GoogleApiService.create()
-    private val fuelRepository = FuelRepository(context)
+    private val fuelRepository = FuelRepository(context, diagnostics)
     private val googleApiKey = BuildConfig.GOOGLE_MAPS_API_KEY
     private val tankerApiKey = BuildConfig.TANKERKOENIG_API_KEY
 
@@ -78,6 +82,17 @@ class MainViewModel(
     fun calculate() {
         isPriceError.value = false
         viewModelScope.launch {
+            val traceId = diagnostics.newTraceId()
+            val startedAt = System.currentTimeMillis()
+            diagnostics.track(
+                NdpEvents.tripStarted(
+                    traceId = traceId,
+                    inputValid = startAddress.value.isNotBlank() && endAddress.value.isNotBlank(),
+                    distanceProvided = startAddress.value.isNotBlank() && endAddress.value.isNotBlank(),
+                    consumptionProvided = consumption.value.toDoubleOrNull() != null,
+                    fuelPriceProvided = manualFuelPrice.value.toDoubleOrNull() != null || selectedStations.isNotEmpty()
+                )
+            )
             try {
                 val waypointsString = if (waypoints.isNotEmpty()) "optimize:true|" + waypoints.joinToString("|") else null
                 val response = googleApi.getDirections(startAddress.value, endAddress.value, waypointsString, googleApiKey)
@@ -113,7 +128,15 @@ class MainViewModel(
                     response
                 )
                 _tripResult.value = result
+                diagnostics.track(
+                    NdpEvents.tripSucceeded(
+                        traceId = traceId,
+                        durationMs = System.currentTimeMillis() - startedAt,
+                        resultCategory = if (result.finalTotalCost > 0.0) "cost_available" else "no_cost"
+                    )
+                )
             } catch (e: Exception) {
+                diagnostics.track(NdpEvents.tripFailed(traceId, System.currentTimeMillis() - startedAt, e))
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Hiba a tervezéskor", Toast.LENGTH_SHORT).show()
                 }
@@ -159,6 +182,7 @@ class MainViewModel(
                         startAddress.value = address ?: "${location.latitude}, ${location.longitude}"
                     }
                 } catch (e: Exception) {
+                    diagnostics.track(NdpEvents.caughtError(e, "MainViewModel", "toggleCurrentLocation"))
                     useCurrentLocation.value = false
                 }
             }

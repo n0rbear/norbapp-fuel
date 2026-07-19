@@ -18,6 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.tikltsg.diagnostics.NdpDiagnostics
+import com.example.tikltsg.diagnostics.NdpNoOpClient
+import com.example.tikltsg.diagnostics.NdpScreenTracker
 import com.example.tikltsg.domain.model.FuelStation
 import com.example.tikltsg.domain.model.TripResult
 
@@ -29,7 +32,7 @@ val TurquoiseSecondary = Color(0xFF26A69A)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
+fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpClient) {
     val tripResult by viewModel.tripResult.collectAsState()
     val isRoundTrip by viewModel.isRoundTrip.collectAsState()
     val useCurrentLoc by viewModel.useCurrentLocation.collectAsState()
@@ -42,6 +45,11 @@ fun MainScreen(viewModel: MainViewModel) {
     val manualPrice by viewModel.manualFuelPrice.collectAsState()
     val isPriceError by viewModel.isPriceError.collectAsState()
     val stationsByKm by viewModel.stationsByKm.collectAsState()
+    val screenTracker = remember { NdpScreenTracker(diagnostics) }
+
+    LaunchedEffect(Unit) {
+        screenTracker.trackMainOpened()
+    }
 
     MaterialTheme(
         colorScheme = lightColorScheme(
