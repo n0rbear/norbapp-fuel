@@ -1,0 +1,31 @@
+*.iml
+.gradle
+.kotlin
+/local.properties
+local.properties
+/.idea/
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Build outputs
+**/build/
+*.apk
+*.aab
+
+# Local secrets and signing material
+.env
+.env.*
+!*.example
+*.jks
+*.keystore
+keystore.properties
+google-services.json
