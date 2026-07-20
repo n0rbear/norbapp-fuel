@@ -22,6 +22,12 @@ NDP ingest keys configured through `BuildConfig` are also extractable from APKs.
 
 NDP telemetry must not include exact GPS coordinates, route addresses, raw third-party API responses, authorization headers, API keys, tokens, emails, phone numbers, usernames, advertising IDs, or full stack traces. Query strings are stripped from API telemetry and payload fields with sensitive names are removed before serialization.
 
+NDP release logging is disabled by default. Debug logging is local-only and must pass through the central sanitizer. Logs must not include ingest keys, authorization headers, full payloads, full response bodies, URL query strings, or raw throwable stack traces. Only sanitized exception type and message are allowed.
+
+The sanitizer masks known credential and privacy patterns such as Bearer and Basic authorization values, API-key-like values, Google `AIza` keys, NDP ingest keys, email addresses, phone-like values, precise coordinates, Windows paths, URL query strings, and long token-like strings. It is intentionally conservative but not a formal data-loss-prevention system. Do not rely on it to make unsafe payloads safe.
+
+NDP delivery uses a bounded in-memory queue. It has capped retry and backoff behavior, but it is not durable storage. Process death can lose queued events and the app does not provide guaranteed telemetry delivery.
+
 ## Secret Scanning
 
 Run secret scanning before commits, releases, and publication. Review findings manually because documentation may contain safe placeholder names such as `API_KEY`.

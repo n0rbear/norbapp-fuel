@@ -39,6 +39,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         diagnostics.track(NdpEvents.appBackgrounded())
+        diagnostics.flush()
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        diagnostics.shutdown()
+        super.onDestroy()
     }
 }

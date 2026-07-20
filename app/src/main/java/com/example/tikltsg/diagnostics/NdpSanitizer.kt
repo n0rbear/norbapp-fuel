@@ -9,18 +9,39 @@ data class SanitizedEndpoint(
 )
 
 object NdpSanitizer {
-    private val sensitiveKeyPattern = Regex(
-        "(password|token|authorization|secret|apikey|api_key|accesskey|access_key|key|email|phone|username|address|route|lat|lng|latitude|longitude)",
-        RegexOption.IGNORE_CASE
+    private val sensitiveKeys = setOf(
+        "password",
+        "token",
+        "authorization",
+        "secret",
+        "apikey",
+        "api_key",
+        "apiKey",
+        "accesskey",
+        "access_key",
+        "email",
+        "phone",
+        "username",
+        "address",
+        "route",
+        "lat",
+        "lng",
+        "latitude",
+        "longitude"
     )
     private val secretTextPattern = Regex(
-        "(AIza[0-9A-Za-z_\\-]+|ndp_ingest_[0-9A-Za-z_\\-]+|(?i)(apikey|api_key|token|authorization|secret)=([^\\s&]+))"
+        "(AIza[0-9A-Za-z_\\-]+|ndp_ingest_[0-9A-Za-z_\\-]+|(?i)(apikey|api_key|token|authorization|secret)=([^\\s&]+)|(?i)Bearer\\s+[0-9A-Za-z._\\-]+|(?i)Basic\\s+[0-9A-Za-z._\\-]+=*)"
     )
     private val coordinatePattern = Regex("[-+]?\\d{1,3}\\.\\d{4,}")
+    private val emailPattern = Regex("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}", RegexOption.IGNORE_CASE)
+    private val phonePattern = Regex("(?<!\\d)(?:\\+?\\d[\\d\\s().-]{7,}\\d)(?!\\d)")
+    private val windowsPathPattern = Regex("(?i)[A-Z]:\\\\[^\\s\"']+")
+    private val urlQueryPattern = Regex("([?&])[^\\s#]+")
+    private val longTokenPattern = Regex("(?<![A-Za-z0-9_-])[A-Za-z0-9_-]{32,}(?![A-Za-z0-9_-])")
 
     fun sanitizePayload(payload: Map<String, Any?>): Map<String, Any?> =
         payload.mapNotNull { (key, value) ->
-            if (sensitiveKeyPattern.containsMatchIn(key)) {
+            if (isSensitiveKey(key)) {
                 null
             } else {
                 key to sanitizeValue(value)
@@ -39,10 +60,18 @@ object NdpSanitizer {
     fun sanitizeMessage(message: String?): String? {
         val safe = message
             ?.replace(secretTextPattern, "[REDACTED]")
+            ?.replace(emailPattern, "[EMAIL]")
+            ?.replace(phonePattern, "[PHONE]")
+            ?.replace(windowsPathPattern, "[LOCAL_PATH]")
+            ?.replace(urlQueryPattern) { match -> match.groupValues[1] + "[REDACTED_QUERY]" }
             ?.replace(coordinatePattern, "[COORDINATE]")
+            ?.replace(longTokenPattern, "[REDACTED]")
             ?.take(240)
         return safe?.ifBlank { null }
     }
+
+    private fun isSensitiveKey(key: String): Boolean =
+        sensitiveKeys.any { it.equals(key, ignoreCase = true) }
 
     private fun sanitizeValue(value: Any?): Any? =
         when (value) {

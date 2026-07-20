@@ -5,6 +5,7 @@ import android.location.Geocoder
 import com.example.tikltsg.diagnostics.NdpDiagnostics
 import com.example.tikltsg.diagnostics.NdpEvents
 import com.example.tikltsg.diagnostics.NdpNoOpClient
+import com.example.tikltsg.diagnostics.NdpOperationContext
 import com.example.tikltsg.domain.model.FuelStation
 import retrofit2.HttpException
 import retrofit2.Retrofit
@@ -56,21 +57,27 @@ class FuelRepository(
         .addConverterFactory(GsonConverterFactory.create())
         .build().create(TankerkoenigApi::class.java)
 
-    suspend fun fetchNearbyFuel(lat: Double, lng: Double, fuelType: String, apiKey: String): List<FuelStation> {
+    suspend fun fetchNearbyFuel(
+        lat: Double,
+        lng: Double,
+        fuelType: String,
+        apiKey: String,
+        parentOperation: NdpOperationContext? = null
+    ): List<FuelStation> {
         val countryCode = getCountryCode(lat, lng)
         val provider = if (countryCode == "AT") "e-control" else "tankerkoenig"
-        val traceId = diagnostics.newTraceId()
-        val startedAt = System.currentTimeMillis()
-        diagnostics.track(NdpEvents.fuelSearchStarted(traceId, provider, locationAvailable = true))
+        val operation = parentOperation ?: diagnostics.startOperation("fuel_search")
+        diagnostics.track(NdpEvents.fuelSearchRequested(operation, provider, locationAvailable = true))
+        diagnostics.track(NdpEvents.fuelSearchStarted(operation, provider, locationAvailable = true))
         return try {
             val stations = when (countryCode) {
-                "AT" -> fetchAustria(lat, lng, if(fuelType == "DIE") "DIE" else "SUP")
-                else -> fetchGermany(lat, lng, apiKey)
+                "AT" -> fetchAustria(lat, lng, if(fuelType == "DIE") "DIE" else "SUP", operation)
+                else -> fetchGermany(lat, lng, apiKey, operation)
             }
-            diagnostics.track(NdpEvents.fuelSearchSucceeded(traceId, provider, stations.size, System.currentTimeMillis() - startedAt))
+            diagnostics.track(NdpEvents.fuelSearchSucceeded(operation, provider, stations.size))
             stations
         } catch (e: Exception) {
-            diagnostics.track(NdpEvents.fuelSearchFailed(traceId, provider, System.currentTimeMillis() - startedAt, e))
+            diagnostics.track(NdpEvents.fuelSearchFailed(operation, provider, e))
             emptyList()
         }
     }
@@ -92,11 +99,9 @@ class FuelRepository(
         } catch (e: Exception) { "DE" }
     }
 
-    private suspend fun fetchAustria(lat: Double, lng: Double, fType: String): List<FuelStation> {
-        val traceId = diagnostics.newTraceId()
+    private suspend fun fetchAustria(lat: Double, lng: Double, fType: String, operation: NdpOperationContext): List<FuelStation> {
         val url = "https://api.e-control.at/sprit/1.0/search/gas-stations/by-address"
-        val startedAt = System.currentTimeMillis()
-        diagnostics.track(NdpEvents.apiStarted(traceId, "e-control", "GET", url))
+        diagnostics.track(NdpEvents.apiStarted(operation, "e-control", "GET", url))
         return try {
             val stations = eControlApi.getStations(lat, lng, fType).map {
                 val price = it.prices.firstOrNull { p -> p.fuelType == fType }?.amount
@@ -109,28 +114,26 @@ class FuelRepository(
                     lat = 0.0, lng = 0.0, brand = null
                 )
             }
-            diagnostics.track(NdpEvents.apiSucceeded(traceId, "e-control", "GET", url, System.currentTimeMillis() - startedAt))
+            diagnostics.track(NdpEvents.apiSucceeded(operation, "e-control", "GET", url))
             stations
         } catch (e: Exception) {
-            diagnostics.track(NdpEvents.apiFailed(traceId, "e-control", "GET", url, System.currentTimeMillis() - startedAt, e, (e as? HttpException)?.code()))
+            diagnostics.track(NdpEvents.apiFailed(operation, "e-control", "GET", url, e, (e as? HttpException)?.code()))
             emptyList()
         }
     }
 
-    private suspend fun fetchGermany(lat: Double, lng: Double, apiKey: String): List<FuelStation> {
-        val traceId = diagnostics.newTraceId()
+    private suspend fun fetchGermany(lat: Double, lng: Double, apiKey: String, operation: NdpOperationContext): List<FuelStation> {
         val url = "https://creativecommons.tankerkoenig.de/json/list.php"
-        val startedAt = System.currentTimeMillis()
-        diagnostics.track(NdpEvents.apiStarted(traceId, "tankerkoenig", "GET", url))
+        diagnostics.track(NdpEvents.apiStarted(operation, "tankerkoenig", "GET", url))
         return try {
             val response = tankerApi.getStations(lat, lng, apiKey = apiKey)
             val stations = response.stations?.map {
                 FuelStation(it.name, it.street, it.dist, it.e5 ?: it.e10, it.diesel, 0.0, 0.0, null)
             } ?: emptyList()
-            diagnostics.track(NdpEvents.apiSucceeded(traceId, "tankerkoenig", "GET", url, System.currentTimeMillis() - startedAt))
+            diagnostics.track(NdpEvents.apiSucceeded(operation, "tankerkoenig", "GET", url))
             stations
         } catch (e: Exception) {
-            diagnostics.track(NdpEvents.apiFailed(traceId, "tankerkoenig", "GET", url, System.currentTimeMillis() - startedAt, e, (e as? HttpException)?.code()))
+            diagnostics.track(NdpEvents.apiFailed(operation, "tankerkoenig", "GET", url, e, (e as? HttpException)?.code()))
             emptyList()
         }
     }

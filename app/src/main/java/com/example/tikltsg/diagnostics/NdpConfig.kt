@@ -4,6 +4,7 @@ import com.example.tikltsg.BuildConfig
 
 data class NdpConfig(
     val enabled: Boolean,
+    val loggingEnabled: Boolean,
     val ingestEndpoint: String,
     val ingestKey: String,
     val environment: String,
@@ -11,7 +12,9 @@ data class NdpConfig(
     val buildNumber: String,
     val timeoutMillis: Int = 3_000,
     val maxQueueSize: Int = 100,
-    val maxRetries: Int = 2
+    val maxRetries: Int = 5,
+    val initialBackoffMillis: Long = 1_000,
+    val maxBackoffMillis: Long = 30_000
 ) {
     val isComplete: Boolean
         get() = enabled && ingestEndpoint.isNotBlank() && ingestKey.isNotBlank()
@@ -20,6 +23,7 @@ data class NdpConfig(
         fun fromBuildConfig(): NdpConfig =
             NdpConfig(
                 enabled = BuildConfig.NDP_ENABLED,
+                loggingEnabled = BuildConfig.NDP_LOGGING_ENABLED,
                 ingestEndpoint = BuildConfig.NDP_INGEST_ENDPOINT,
                 ingestKey = BuildConfig.NDP_INGEST_KEY,
                 environment = BuildConfig.NDP_ENVIRONMENT.ifBlank { "development" },

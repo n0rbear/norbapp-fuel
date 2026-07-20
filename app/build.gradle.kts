@@ -35,9 +35,13 @@ android {
         buildConfigField("String", "NDP_INGEST_ENDPOINT", "\"${secret("NDP_INGEST_ENDPOINT")}\"")
         buildConfigField("String", "NDP_INGEST_KEY", "\"${secret("NDP_INGEST_KEY")}\"")
         buildConfigField("String", "NDP_ENVIRONMENT", "\"${secret("NDP_ENVIRONMENT").ifBlank { "development" }}\"")
+        buildConfigField("boolean", "NDP_LOGGING_ENABLED", "false")
     }
 
     buildTypes {
+        debug {
+            buildConfigField("boolean", "NDP_LOGGING_ENABLED", secret("NDP_LOGGING_ENABLED").ifBlank { "true" }.toBoolean().toString())
+        }
         release {
             optimization {
                 enable = false

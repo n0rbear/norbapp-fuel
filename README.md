@@ -98,6 +98,14 @@ NDP_ENVIRONMENT=development
 
 The integration records app lifecycle, main screen open, trip calculation, fuel search, sanitized external API request status, and caught errors. It does not send exact GPS coordinates, route addresses, raw provider responses, headers, access tokens, API keys, or full stack traces. See `docs/NDP_INTEGRATION.md`.
 
+Telemetry event names are centrally defined in `NdpEventNames` and use dot notation such as `trip_calculation.started`, `api.request.failed`, and `location.timed_out`. A business operation uses one operation trace ID from request through terminal success, validation failure, or failure. Session-level events are serialized with the active NDP session ID.
+
+Delivery uses a typed transport result instead of a boolean. HTTP 2xx is accepted, 400/404/409 are permanent failures, 401/403 open an authentication circuit breaker, and retryable statuses such as 408/429/5xx are retried with capped exponential backoff. The queue is memory-only; process death can lose queued telemetry and delivery is not guaranteed.
+
+Release logging is disabled by default. Debug logging can be enabled locally, but logs are passed through the shared sanitizer. The sanitizer removes common credential, authorization, query-string, path, contact, and coordinate patterns. Sanitization is a defense-in-depth layer and is not a substitute for avoiding sensitive payloads.
+
+The current diagnostics code is intentionally still inside the Fuel app. The long-term direction is extraction into a shared NorbApp Diagnostics SDK after the app-specific boundaries are stable; see `docs/NDP_SDK_EXTRACTION_PLAN.md`.
+
 ## Build Commands
 
 ```powershell
@@ -134,6 +142,8 @@ The Google API key should be restricted in Google Cloud Console using:
 
 - The project is a reference application and not a production release.
 - API keys are still present in built APKs if configured locally.
+- NDP telemetry uses a memory-only retry queue; queued events can be lost on process death and delivery is not guaranteed.
+- NDP ingest keys provided through `BuildConfig` are not secret in built APKs.
 - Some API integrations depend on third-party availability and usage limits.
 - Release signing configuration has not been added.
 - No public issue or security contact process has been finalized yet.

@@ -62,6 +62,9 @@ object NdpJson {
                 '\n' -> listOf('\\', 'n')
                 '\r' -> listOf('\\', 'r')
                 '\t' -> listOf('\\', 't')
+                '\b' -> listOf('\\', 'b')
+                '\u000C' -> listOf('\\', 'f')
+                in '\u0000'..'\u001F' -> "\\u%04x".format(it.code).toList()
                 else -> listOf(it)
             }
         }.joinToString("")

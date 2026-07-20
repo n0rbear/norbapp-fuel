@@ -5,7 +5,7 @@ class NdpScreenTracker(private val diagnostics: NdpDiagnostics) {
 
     fun trackMainOpened() {
         if (openedScreens.add("main")) {
-            diagnostics.track(NdpEvents.mainScreenOpened(diagnostics.newTraceId()))
+            diagnostics.track(NdpEvents.mainScreenOpened())
         }
     }
 }

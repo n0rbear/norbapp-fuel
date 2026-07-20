@@ -1,5 +1,9 @@
 package com.example.tikltsg.presentation
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,13 +17,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.tikltsg.diagnostics.NdpDiagnostics
 import com.example.tikltsg.diagnostics.NdpNoOpClient
+import com.example.tikltsg.diagnostics.NdpOperationContext
 import com.example.tikltsg.diagnostics.NdpScreenTracker
 import com.example.tikltsg.domain.model.FuelStation
 import com.example.tikltsg.domain.model.TripResult
@@ -46,6 +53,16 @@ fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpCl
     val isPriceError by viewModel.isPriceError.collectAsState()
     val stationsByKm by viewModel.stationsByKm.collectAsState()
     val screenTracker = remember { NdpScreenTracker(diagnostics) }
+    var locationOperation by remember { mutableStateOf<NdpOperationContext?>(null) }
+    val context = LocalContext.current
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        val operation = locationOperation ?: diagnostics.startOperation("location")
+        viewModel.onLocationPermissionResult(granted, operation)
+    }
 
     LaunchedEffect(Unit) {
         screenTracker.trackMainOpened()
@@ -84,7 +101,32 @@ fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpCl
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Switch(
                             checked = useCurrentLoc,
-                            onCheckedChange = { viewModel.toggleCurrentLocation(it) },
+                            onCheckedChange = { enabled ->
+                                val operation = diagnostics.startOperation("location")
+                                locationOperation = operation
+                                viewModel.requestCurrentLocation(enabled, operation)
+                                if (enabled) {
+                                    val hasPermission = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.ACCESS_FINE_LOCATION
+                                    ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.ACCESS_COARSE_LOCATION
+                                    ) == PackageManager.PERMISSION_GRANTED
+                                    if (hasPermission) {
+                                        viewModel.toggleCurrentLocation(true, operation, permissionGranted = true)
+                                    } else {
+                                        locationPermissionLauncher.launch(
+                                            arrayOf(
+                                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                                Manifest.permission.ACCESS_COARSE_LOCATION
+                                            )
+                                        )
+                                    }
+                                } else {
+                                    viewModel.toggleCurrentLocation(false, operation, permissionGranted = false)
+                                }
+                            },
                             colors = SwitchDefaults.colors(checkedThumbColor = TurquoiseMain)
                         )
                         Text("Jelenlegi pozíció használata", modifier = Modifier.padding(start = 8.dp))
@@ -152,7 +194,7 @@ fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpCl
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Switch(
                             checked = isRoundTrip,
-                            onCheckedChange = { viewModel.isRoundTrip.value = it },
+                            onCheckedChange = { viewModel.setRoundTrip(it) },
                             colors = SwitchDefaults.colors(checkedThumbColor = TurquoiseMain)
                         )
                         Text("Oda-vissza út", modifier = Modifier.padding(start = 8.dp))
@@ -167,7 +209,7 @@ fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpCl
                         listOf("DIE" to "Diesel", "E5" to "Benzin E5", "E10" to "Benzin E10").forEach { (id, label) ->
                             FilterChip(
                                 selected = fuelType == id,
-                                onClick = { viewModel.fuelType.value = id },
+                                onClick = { viewModel.setFuelType(id) },
                                 label = { Text(label) },
                                 colors = FilterChipDefaults.filterChipColors(selectedContainerColor = TurquoiseMain, selectedLabelColor = Color.White)
                             )
@@ -177,13 +219,17 @@ fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpCl
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = cons,
-                            onValueChange = { viewModel.consumption.value = it },
+                            onValueChange = {
+                                viewModel.consumption.value = it
+                            },
                             label = { Text("Fogyasztás") },
                             modifier = Modifier.weight(1f)
                         )
                         OutlinedTextField(
                             value = tSize,
-                            onValueChange = { viewModel.tankSize.value = it },
+                            onValueChange = {
+                                viewModel.tankSize.value = it
+                            },
                             label = { Text("Tank (L)") },
                             modifier = Modifier.weight(1f)
                         )
@@ -228,7 +274,9 @@ fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpCl
 
                     OutlinedTextField(
                         value = manualPrice,
-                        onValueChange = { viewModel.manualFuelPrice.value = it },
+                        onValueChange = {
+                            viewModel.manualFuelPrice.value = it
+                        },
                         label = { Text("Üzemanyag ár (EUR/L) - manuális felülbírálás") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = isPriceError,
@@ -238,7 +286,9 @@ fun MainScreen(viewModel: MainViewModel, diagnostics: NdpDiagnostics = NdpNoOpCl
 
                 item {
                     Button(
-                        onClick = { viewModel.calculate() },
+                        onClick = {
+                            viewModel.calculate()
+                        },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = TurquoiseDark)
