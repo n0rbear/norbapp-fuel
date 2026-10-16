@@ -390,6 +390,15 @@ input[aria-invalid="true"] {
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
+.avoid-toggle {
+  grid-column: 1 / -1;
+  padding-left: 26px;
+  color: var(--muted);
+}
+.avoid-toggle input {
+  width: 16px;
+  height: 16px;
+}
 .toll-lines {
   grid-column: 1 / -1;
   padding-left: 26px;

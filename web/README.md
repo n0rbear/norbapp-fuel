@@ -13,6 +13,8 @@ Next.js web version of the NorbApp Fuel trip-cost calculator. UI language: Hunga
 - Display currency (EUR, CZK, DKK, HUF, PLN, RON, SEK; ECB rates), remembered in the browser; Euro class remembered too
 - Manual price override and an explicit fallback price where no price data exists (non-EU countries)
 - No Google dependency: OpenStreetMap data via OSRM (routing) and Photon (search)
+- Avoid toll roads per country (vignette roads included): the route is split at the border crossings of the fastest route and the parts in the chosen countries are re-routed toll-free via Valhalla; those countries drop out of the toll estimate. The choice is remembered in the browser.
+- Installable PWA (manifest, icons, service worker): the page shell opens offline; `/api/*` (prices, tolls, routes) is never cached.
 
 ## Architecture
 
@@ -34,7 +36,9 @@ src/
   lib/pricing.ts            Price resolution (manual > selected > cheapest > estimate > fallback)
   lib/validate.ts           Request validation
   lib/server/fuel-api.ts    FUEL-API client (prices, tolls, currencies)
-  lib/server/osm.ts         OSRM routing, Photon geocoding, offline country lookup
+  lib/server/osm.ts         OSRM routing, Valhalla toll-free routing, Photon geocoding, offline country lookup
+  lib/server/avoid-tolls.ts Per-country toll avoidance (splits the route at borders)
+  lib/toll-avoid.ts         Route segmentation for toll avoidance (pure, tested)
   lib/server/               Rate limiting, error mapping
 test/                       Vitest unit tests
 ```
@@ -72,6 +76,7 @@ npm run build
 | `FUEL_API_URL` | no | Default: `https://norbapp-fuel-api-fra.onrender.com` |
 | `OSRM_URL` | no | OSRM base URL incl. profile path. Default: `https://routing.openstreetmap.de/routed-car` |
 | `PHOTON_URL` | no | Photon base URL. Default: `https://photon.komoot.io` |
+| `VALHALLA_URL` | no | Valhalla base URL for toll-free routing. Default: `https://valhalla1.openstreetmap.de` |
 
 The OSM defaults are free public instances with fair-use policies (identifying User-Agent, moderate request rates). For heavier traffic, self-host OSRM/Photon and point these variables at them. Map data © OpenStreetMap contributors (ODbL); the attribution is shown in the page footer, and the Tankerkönig credit ("Daten: MTS-K / Tankerkönig") under the prices.
 

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,6 +8,8 @@ export const metadata: Metadata = {
   description:
     "Tervezd meg az út üzemanyag- és útdíjköltségét: útvonal, tankolási pontok, kútárak és útdíjak a 27 EU-országra, választható pénznemben.",
   applicationName: "NorbApp Fuel",
+  appleWebApp: { capable: true, title: "NorbApp Fuel", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
@@ -19,7 +22,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="hu">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }

@@ -30,9 +30,12 @@ type Props = {
   stale: boolean;
   euroClass: EuroClass | null;
   onEuroClassChange: (value: EuroClass) => void;
+  /** A re-plan (e.g. a toll preference change) is running. */
+  loading: boolean;
+  onAvoidTollsChange: (country: string, avoidTolls: boolean) => void;
 };
 
-export function Results({ request, data, stale, euroClass, onEuroClassChange }: Props) {
+export function Results({ request, data, stale, euroClass, onEuroClassChange, loading, onAvoidTollsChange }: Props) {
   const currency = data.currency;
   const [selected, setSelected] = useState<Record<number, string | undefined>>({});
   const [manualPrice, setManualPrice] = useState("");
@@ -192,7 +195,16 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange }: 
       {sources.length > 0 && <p className="hint">Árforrás: {sources.map(attribution).join(" · ")}</p>}
 
       <h3>Útdíjak</h3>
-      <Tolls tolls={tolls} currency={currency} euroClass={euroClass} onEuroClassChange={onEuroClassChange} data={data} />
+      <Tolls
+        tolls={tolls}
+        currency={currency}
+        euroClass={euroClass}
+        onEuroClassChange={onEuroClassChange}
+        data={data}
+        requestedAvoid={request.avoidTollCountries}
+        loading={loading}
+        onAvoidTollsChange={onAvoidTollsChange}
+      />
     </section>
   );
 }
@@ -267,15 +279,46 @@ function Tolls({
   euroClass,
   onEuroClassChange,
   data,
+  requestedAvoid,
+  loading,
+  onAvoidTollsChange,
 }: {
   tolls: TollsState;
   currency: PlanResponse["currency"];
   euroClass: EuroClass | null;
   onEuroClassChange: (value: EuroClass) => void;
   data: PlanResponse;
+  requestedAvoid: string[];
+  loading: boolean;
+  onAvoidTollsChange: (country: string, avoidTolls: boolean) => void;
 }) {
+  const avoided =
+    data.avoidedTollCountries.length > 0 ? (
+      <ul className="tolls">
+        {data.avoidedTollCountries.map((c) => (
+          <li key={c}>
+            <strong>{countryName(c)}</strong>
+            <span className="toll-amount">fizetős utak nélkül</span>
+            {requestedAvoid.includes(c) ? (
+              <label className="check avoid-toggle small">
+                <input type="checkbox" checked disabled={loading} onChange={() => onAvoidTollsChange(c, false)} />
+                Fizetős utak kerülése
+              </label>
+            ) : (
+              <span className="avoid-toggle small">A díjmentes kerülőút érinti.</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    ) : null;
+
   if (data.tollCountries.length === 0) {
-    return <p className="muted">Az útvonal országaira nincs útdíjadat.</p>;
+    return (
+      <>
+        {avoided}
+        {!avoided && <p className="muted">Az útvonal országaira nincs útdíjadat.</p>}
+      </>
+    );
   }
 
   return (
@@ -334,6 +377,17 @@ function Tolls({
                   <strong>{countryName(c.country)}</strong>
                 </label>
                 <span className="toll-amount">{c.subtotal > 0 ? formatMoney(c.subtotal, currency) : "díjmentes"}</span>
+                {c.system !== "free" && (
+                  <label className="check avoid-toggle small">
+                    <input
+                      type="checkbox"
+                      checked={false}
+                      disabled={loading}
+                      onChange={() => onAvoidTollsChange(c.country, true)}
+                    />
+                    Fizetős utak kerülése
+                  </label>
+                )}
                 {c.lines.length > 0 && (
                   <ul className="toll-lines muted small">
                     {c.lines.map((l, i) => (
@@ -346,9 +400,11 @@ function Tolls({
               </li>
             ))}
           </ul>
+          {avoided}
           <p className="hint">
             Személyautó, {tolls.result.asOf} szerinti díjak. A km-alapú díj becslés; alagutak, hidak külön díja
-            nincs benne. Ha egy országra már van matricád, vedd ki a pipát.
+            nincs benne. Ha egy országra már van matricád, vedd ki a pipát. A „Fizetős utak kerülése” az adott
+            országon belül díjmentes utakon tervez (a határátkelő marad), és a böngésző megjegyzi.
           </p>
         </>
       )}

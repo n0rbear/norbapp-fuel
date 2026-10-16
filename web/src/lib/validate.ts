@@ -58,6 +58,11 @@ export function parsePlanRequest(body: unknown): Result<PlanRequest> {
   const currency = body.currency as Currency;
   if (!CURRENCIES.includes(currency)) return { ok: false, error: "Ismeretlen pénznem." };
 
+  const avoid = body.avoidTollCountries ?? [];
+  if (!Array.isArray(avoid) || avoid.length > 30 || !avoid.every((c) => typeof c === "string" && /^[A-Z]{2}$/.test(c))) {
+    return { ok: false, error: "Hibás országlista." };
+  }
+
   if (!isObject(body.vehicle)) return { ok: false, error: "Hiányzó járműadatok." };
   const vehicle = {
     consumption: finite(body.vehicle.consumption) ?? NaN,
@@ -80,6 +85,7 @@ export function parsePlanRequest(body: unknown): Result<PlanRequest> {
       currency,
       vehicle,
       fillAtStart: body.fillAtStart === true,
+      avoidTollCountries: [...new Set(avoid as string[])].sort(),
     },
   };
 }
