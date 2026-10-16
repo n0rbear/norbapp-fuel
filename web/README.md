@@ -65,7 +65,7 @@ The defaults are free public instances with fair-use policies (identifying User-
 
 ## Deployment (Render)
 
-`render.yaml` in the repository root is a Render Blueprint for the `norbapp-fuel-web` service (root directory `web`, health check `/api/health`, custom domain `fuel.norbapp.com`). Set `TANKERKOENIG_API_KEY` in the Render dashboard (optional), then point DNS for `fuel.norbapp.com` (CNAME) to the Render service hostname.
+The live service is `norbapp-fuel-web` on Render (free plan, Frankfurt): https://norbapp-fuel-web.onrender.com. `render.yaml` in the repository root describes the same setup as a Blueprint (root directory `web`, health check `/api/health`, custom domain `fuel.norbapp.com`). Set `TANKERKOENIG_API_KEY` in the Render dashboard (optional), then point DNS for `fuel.norbapp.com` (CNAME) to the Render service hostname.
 
 ## Limitations
 
