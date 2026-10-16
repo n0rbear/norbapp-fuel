@@ -287,8 +287,14 @@ def _load_overrides() -> dict[str, dict[Fuel, float]]:
         return {}
 
 
-def _build_base_prices() -> dict[str, dict[Fuel, float]]:
+def _build_base_prices(
+    fetched: dict[str, dict[Fuel, float]] | None = None,
+) -> dict[str, dict[Fuel, float]]:
+    """Defaults <- fetched bulletin prices <- manual env overrides (highest)."""
     prices = {code: dict(values) for code, values in DEFAULT_BASE_PRICES.items()}
+    for code, values in (fetched or {}).items():
+        if code in prices:
+            prices[code].update(values)
     for code, values in _load_overrides().items():
         if code in prices:
             prices[code].update(values)
@@ -298,6 +304,13 @@ def _build_base_prices() -> dict[str, dict[Fuel, float]]:
 
 
 BASE_PRICES = _build_base_prices()
+
+
+def apply_base_prices(fetched: dict[str, dict[Fuel, float]], as_of: str) -> None:
+    """Swap in freshly fetched national averages (manual overrides still win)."""
+    global BASE_PRICES_AS_OF
+    BASE_PRICES.update(_build_base_prices(fetched))
+    BASE_PRICES_AS_OF = as_of
 
 
 def get_country(code: str) -> Country | None:

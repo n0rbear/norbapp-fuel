@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import pricing_matrix as pm
 from api_clients import MAX_RADIUS_KM, OFFICIAL_CLIENTS, ApiNotConfiguredError, OfficialApiError
+from base_price_updater import updater
 from pricing_matrix import BrandTier, Fuel, Location
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -35,7 +36,9 @@ async def lifespan(app: FastAPI):
         follow_redirects=True,
     ) as client:
         app.state.http = client
+        updater.start(client)
         yield
+        await updater.stop()
 
 
 app = FastAPI(
@@ -121,7 +124,19 @@ async def root() -> dict[str, str]:
 
 @app.get("/health", tags=["meta"])
 async def health() -> dict[str, str]:
-    return {"status": "ok", "time": _now()}
+    return {"status": "ok", "time": _now(), "base_prices_as_of": pm.BASE_PRICES_AS_OF}
+
+
+@app.get("/api/base-prices", tags=["prices"])
+async def get_base_prices() -> dict[str, Any]:
+    """Current national averages (P_base) and the daily refresh status."""
+    updater.ensure_fresh(app.state.http)
+    return {
+        **updater.status(),
+        "currency": "EUR",
+        "unit": "EUR/l",
+        "prices": {code: {f.value: p for f, p in values.items()} for code, values in pm.BASE_PRICES.items()},
+    }
 
 
 @app.get("/api/countries", tags=["prices"])
@@ -148,6 +163,7 @@ async def get_prices(
       With neither `location` nor `brand_tier`/`brand` the full 3x3 matrix is returned.
     """
     c = _require_country(country)
+    updater.ensure_fresh(app.state.http)
     if (lat is None) != (lng is None):
         raise HTTPException(status_code=422, detail="lat and lng must be given together")
     if brand and brand_tier is None:
@@ -212,6 +228,7 @@ async def get_estimate(
 ) -> dict[str, Any]:
     """Single heuristic estimate for any EU country (also for official-API countries)."""
     c = _require_country(country)
+    updater.ensure_fresh(app.state.http)
     tier = brand_tier or pm.classify_brand(brand)
     estimate = pm.estimate_price(c.code, fuel, tier, location)
     return {"currency": "EUR", "unit": "EUR/l", "base_prices_as_of": pm.BASE_PRICES_AS_OF, **estimate.as_dict()}
@@ -224,6 +241,7 @@ async def get_matrix(
 ) -> dict[str, Any]:
     """Full 3x3 brand x location estimate matrix for a country."""
     c = _require_country(country)
+    updater.ensure_fresh(app.state.http)
     return {
         "country": c.code,
         "fuel": fuel.value,

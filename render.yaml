@@ -15,5 +15,9 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: "*"
+      - key: REFRESH_TIME
+        value: "06:00"
+      - key: REFRESH_TZ
+        value: Europe/Budapest
       - key: LOG_LEVEL
         value: INFO

@@ -128,3 +128,9 @@ def test_official_api_error_falls_back(client):
 
 def test_seven_clients_registered():
     assert set(OFFICIAL_CLIENTS) == {"DE", "AT", "ES", "FR", "IT", "PT", "SI"}
+
+
+def test_base_prices_endpoint(client):
+    data = client.get("/api/base-prices").json()
+    assert data["schedule"] == "daily 06:00 Europe/Budapest"
+    assert len(data["prices"]) == 27

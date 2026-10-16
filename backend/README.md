@@ -43,7 +43,16 @@ BASE_PRICES_JSON='{"HU": {"petrol": 1.76, "diesel": 1.95}}'
 BASE_PRICES_FILE=/etc/secrets/base_prices.json
 ```
 
-A kódban lévő értékeket érdemes hetente a Weekly Oil Bulletinből frissíteni (`DEFAULT_BASE_PRICES`, `BASE_PRICES_AS_OF`).
+A kézi felülírás mindig erősebb az automatikusan letöltött értéknél.
+
+### Automatikus napi frissítés (`base_price_updater.py`)
+
+Az alapárak **minden reggel 6:00-kor (Europe/Budapest)** frissülnek az EU Weekly Oil Bulletin legfrissebb „prices with taxes” táblázatából, valamint induláskor is.
+
+- A Bulletin hetente jelenik meg; a napi futás a megjelenés utáni reggelen veszi át az új kiadást.
+- Ha a szolgáltatás 6-kor alszik, az ébredés utáni első kérés háttérben pótolja a frissítést (hiba esetén 30 percenként próbálja újra).
+- Ha a letöltés nem sikerül, az utolsó jó értékek maradnak érvényben (induláskor a kódba épített `DEFAULT_BASE_PRICES`).
+- Állapot és aktuális értékek: `GET /api/base-prices`.
 
 ## REST végpontok
 
@@ -52,6 +61,7 @@ Interaktív dokumentáció: `/docs` (Swagger UI) és `/redoc`.
 | Végpont | Leírás |
 |---|---|
 | `GET /health` | Health check (Render) |
+| `GET /api/base-prices` | Aktuális alapárak + napi frissítés állapota |
 | `GET /api/countries` | 27 ország, mód (`official`/`estimate`), API-állapot |
 | `GET /api/prices` | **Fő végpont a frontendnek** |
 | `GET /api/estimate` | Egyetlen becslés bármely országra |
@@ -159,11 +169,13 @@ pytest
 | `TANKERKOENIG_API_KEY` | – | Német élő árakhoz ([ingyenes regisztráció](https://onboarding.tankerkoenig.de/)) |
 | `CORS_ORIGINS` | `*` | Engedélyezett web originek vesszővel elválasztva |
 | `BASE_PRICES_JSON` / `BASE_PRICES_FILE` | – | Alapár-felülírás |
+| `BASE_PRICE_AUTO_REFRESH` | `true` | Napi alapár-frissítés ki/be |
+| `REFRESH_TIME` / `REFRESH_TZ` | `06:00` / `Europe/Budapest` | A napi frissítés időpontja |
 | `LOG_LEVEL` | `INFO` | Naplózási szint |
 
 ## Megjegyzések, korlátok
 
-- A Render free példány inaktivitás után elalszik; az első kérés ~30–60 s lehet, és a memóriacache ilyenkor kiürül (ES/IT/PT első lekérése lassabb).
+- A Render free példány 15 perc inaktivitás után elalszik; az első kérés ~30–60 s lehet, és a memóriacache ilyenkor kiürül (ES/IT/PT első lekérése lassabb). Figyelem: a free példányok munkaterületenként havi 750 órát kapnak összesen – egy folyamatosan ébren tartott free szolgáltatás ezt egymaga elhasználja.
 - A forrásoldali API-k formátuma előzetes bejelentés nélkül változhat; hiba esetén a backend automatikusan becslésre vált.
 - A Tankerkönig-adatok CC BY 4.0 licencűek – a frontendnek fel kell tüntetnie a forrást („Daten: MTS-K / Tankerkönig”). A többi forrás felhasználási feltételeit is érdemes nyilvános kiadás előtt átnézni.
 - A heurisztikus becslés tájékoztató jellegű, nem valós kútár.
