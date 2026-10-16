@@ -2,11 +2,10 @@
 
 import { useMemo, useState } from "react";
 import type { ApiError, PlanRequest, PlanResponse } from "@/lib/api-types";
-import type { LatLng } from "@/lib/geo";
 import { parseDecimal } from "@/lib/pricing";
 import { DEFAULT_VEHICLE, FUEL_TYPES, validateVehicle, type FuelType, type Vehicle } from "@/lib/trip";
 import { MAX_WAYPOINTS } from "@/lib/validate";
-import { AddressInput } from "./AddressInput";
+import { AddressInput, emptyPlace, toPlaceInput, type PlaceValue } from "./AddressInput";
 import { Results } from "./Results";
 
 type VehicleForm = Record<keyof Vehicle, string>;
@@ -25,14 +24,11 @@ const VEHICLE_FIELDS: { key: keyof Vehicle; label: string; unit: string }[] = [
   { key: "reservePct", label: "Tartalék, ami alá nem mész", unit: "%" },
 ];
 
-type Located = { location: LatLng; label: string };
-
 export function Planner() {
-  const [origin, setOrigin] = useState("");
-  const [here, setHere] = useState<Located | null>(null);
+  const [origin, setOrigin] = useState<PlaceValue>(emptyPlace);
   const [locating, setLocating] = useState(false);
-  const [destination, setDestination] = useState("");
-  const [waypoints, setWaypoints] = useState<string[]>([]);
+  const [destination, setDestination] = useState<PlaceValue>(emptyPlace);
+  const [waypoints, setWaypoints] = useState<PlaceValue[]>([]);
   const [roundTrip, setRoundTrip] = useState(false);
   const [optimize, setOptimize] = useState(false);
   const [fuelType, setFuelType] = useState<FuelType>("diesel");
@@ -56,15 +52,15 @@ export function Planner() {
   const request: PlanRequest | null = useMemo(() => {
     if (!vehicle) return null;
     return {
-      origin: here ? { location: here.location } : { address: origin.trim() },
-      destination: destination.trim(),
-      waypoints: waypoints.map((w) => w.trim()).filter(Boolean),
+      origin: toPlaceInput(origin),
+      destination: toPlaceInput(destination),
+      waypoints: waypoints.filter((w) => w.text.trim()).map(toPlaceInput),
       roundTrip,
       optimizeWaypoints: optimize,
       fuelType,
       vehicle,
     };
-  }, [here, origin, destination, waypoints, roundTrip, optimize, fuelType, vehicle]);
+  }, [origin, destination, waypoints, roundTrip, optimize, fuelType, vehicle]);
 
   const stale = !!result && JSON.stringify(result.request) !== JSON.stringify(request);
 
@@ -85,7 +81,7 @@ export function Planner() {
         } catch {
           // Keep the generic label.
         }
-        setHere({ location, label });
+        setOrigin({ text: label, location });
         setLocating(false);
       },
       (err) => {
@@ -112,11 +108,11 @@ export function Planner() {
       setError(vehicleError);
       return;
     }
-    if (!here && !origin.trim()) {
+    if (!origin.text.trim()) {
       setError("Add meg az indulási helyet.");
       return;
     }
-    if (!destination.trim()) {
+    if (!destination.text.trim()) {
       setError("Add meg az úti célt.");
       return;
     }
@@ -146,29 +142,17 @@ export function Planner() {
       <form className="card" onSubmit={submit} noValidate>
         <h2>Útvonal</h2>
 
-        {here ? (
-          <div className="field">
-            <span className="label">Indulás</span>
-            <div className="input-row">
-              <div className="here">📍 {here.label}</div>
-              <button type="button" className="btn ghost" onClick={() => setHere(null)}>
-                Cím megadása
-              </button>
-            </div>
-          </div>
-        ) : (
-          <AddressInput
-            label="Indulás"
-            value={origin}
-            onChange={setOrigin}
-            placeholder="pl. Budapest"
-            trailing={
-              <button type="button" className="btn ghost" onClick={useMyLocation} disabled={locating}>
-                {locating ? "Keresés…" : "Saját pozíció"}
-              </button>
-            }
-          />
-        )}
+        <AddressInput
+          label="Indulás"
+          value={origin}
+          onChange={setOrigin}
+          placeholder="pl. Budapest"
+          trailing={
+            <button type="button" className="btn ghost" onClick={useMyLocation} disabled={locating}>
+              {locating ? "Keresés…" : "Saját pozíció"}
+            </button>
+          }
+        />
 
         {waypoints.map((w, i) => (
           <AddressInput
@@ -176,6 +160,7 @@ export function Planner() {
             label={`${i + 1}. megálló`}
             value={w}
             onChange={(v) => setWaypoints((ws) => ws.map((x, j) => (j === i ? v : x)))}
+            near={origin.location}
             trailing={
               <button
                 type="button"
@@ -189,14 +174,20 @@ export function Planner() {
           />
         ))}
 
-        <AddressInput label="Úti cél" value={destination} onChange={setDestination} placeholder="pl. München" />
+        <AddressInput
+          label="Úti cél"
+          value={destination}
+          onChange={setDestination}
+          placeholder="pl. München"
+          near={origin.location}
+        />
 
         <div className="row wrap">
           <button
             type="button"
             className="btn ghost"
             disabled={waypoints.length >= MAX_WAYPOINTS}
-            onClick={() => setWaypoints((ws) => [...ws, ""])}
+            onClick={() => setWaypoints((ws) => [...ws, emptyPlace])}
           >
             + Megálló
           </button>

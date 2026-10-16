@@ -147,15 +147,17 @@ input[aria-invalid="true"] {
   flex: 1;
   min-width: 0;
 }
-.here {
-  flex: 1;
-  min-width: 0;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--surface-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.combo input {
+  padding-right: 34px;
+}
+.pin {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-weight: 700;
+  pointer-events: none;
 }
 .suggestions {
   position: absolute;
@@ -385,4 +387,7 @@ input[aria-invalid="true"] {
 
 .footer {
   text-align: center;
+}
+.footer a {
+  text-decoration: underline;
 }

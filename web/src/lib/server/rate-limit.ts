@@ -4,7 +4,7 @@ type Bucket = { tokens: number; updatedAt: number };
 
 /**
  * In-memory token bucket per client IP. Good enough for a single instance;
- * it protects the server-side Google key from casual abuse.
+ * it protects the shared public OSM services and the station APIs from abuse.
  */
 export class RateLimiter {
   private readonly buckets = new Map<string, Bucket>();

@@ -1,4 +1,4 @@
-import { addressAt } from "@/lib/server/google";
+import { reverse } from "@/lib/server/osm";
 import { clientKey, RateLimiter } from "@/lib/server/rate-limit";
 import { handleError, jsonError } from "@/lib/server/respond";
 
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   if (!limiter.take(clientKey(request))) return jsonError("Túl sok kérés.", 429);
 
   try {
-    return Response.json({ address: await addressAt({ lat, lng }) }, { headers: { "Cache-Control": "no-store" } });
+    return Response.json({ address: await reverse({ lat, lng }) }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return handleError("reverse", e);
   }

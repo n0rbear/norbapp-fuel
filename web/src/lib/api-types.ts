@@ -1,12 +1,15 @@
 import type { LatLng } from "./geo";
 import type { FuelType, RefuelPlan, Vehicle } from "./trip";
 
+/** Free text (geocoded on the server) or a location picked from suggestions. */
 export type PlaceInput = { address: string } | { location: LatLng; label?: string };
+
+export type PlaceSuggestion = { label: string; location: LatLng };
 
 export type PlanRequest = {
   origin: PlaceInput;
-  destination: string;
-  waypoints: string[];
+  destination: PlaceInput;
+  waypoints: PlaceInput[];
   roundTrip: boolean;
   optimizeWaypoints: boolean;
   fuelType: FuelType;

@@ -6,7 +6,8 @@ import { tankerkoenigApiKey } from "./env";
 import { fetchJson } from "./http";
 
 export function providerFor(country: string | null): StationProvider | null {
-  if (country === "DE") return "tankerkoenig";
+  // Without a key German stops fall back to the user's price like any other country.
+  if (country === "DE") return tankerkoenigApiKey() ? "tankerkoenig" : null;
   if (country === "AT") return "e-control";
   return null;
 }

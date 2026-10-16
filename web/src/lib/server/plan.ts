@@ -2,11 +2,11 @@ import "server-only";
 import type { FuelPoint, PlanRequest, PlanResponse } from "../api-types";
 import { decodePolyline, RoutePath, type LatLng } from "../geo";
 import { planRefuels } from "../trip";
-import { computeRoute, countryAt } from "./google";
+import { computeRoute, countryAt } from "./osm";
 import { fetchStations, providerFor } from "./stations";
 
-const COUNTRY_SAMPLE_EVERY_KM = 25;
-const COUNTRY_MAX_SAMPLES = 60;
+const COUNTRY_SAMPLE_EVERY_KM = 2;
+const COUNTRY_MAX_SAMPLES = 5_000;
 const PATH_MAX_POINTS = 300;
 
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -33,11 +33,12 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
 
   // Round trip: come back to the origin through the destination, so the return
   // leg is a real route (not a mirrored distance).
-  const intermediates = req.roundTrip ? [...req.waypoints, req.destination] : req.waypoints;
-  const destination = req.roundTrip ? req.origin : req.destination;
+  const places = req.roundTrip
+    ? [req.origin, ...req.waypoints, req.destination, req.origin]
+    : [req.origin, ...req.waypoints, req.destination];
   const optimize = req.optimizeWaypoints && !req.roundTrip;
 
-  const route = await computeRoute(req.origin, destination, intermediates, optimize);
+  const route = await computeRoute(places, optimize);
   const distanceKm = route.distanceMeters / 1000;
   const path = new RoutePath(decodePolyline(route.encodedPolyline), distanceKm);
   const plan = planRefuels(distanceKm, req.vehicle);
@@ -45,23 +46,14 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   const fuelKms = [0, ...plan.stops.map((s) => s.km)];
   const fuelLocations = fuelKms.map((km) => path.pointAtKm(km));
 
-  // Countries along the route (for vignettes) and at each fuel point.
-  const samples = path.sample(COUNTRY_SAMPLE_EVERY_KM, COUNTRY_MAX_SAMPLES);
-  let countries: string[] = [];
-  let fuelCountries: (string | null)[] = fuelLocations.map(() => null);
-  try {
-    const [sampleCountries, pointCountries] = await Promise.all([
-      mapLimit(samples, 8, countryAt),
-      mapLimit(fuelLocations, 8, countryAt),
-    ]);
-    for (const c of sampleCountries) {
-      if (c && !countries.includes(c)) countries.push(c);
-    }
-    fuelCountries = pointCountries;
-  } catch {
-    countries = [];
-    warnings.push("Az érintett országok nem határozhatók meg, a matricák kimaradhatnak.");
+  // Countries along the route (for vignettes) and at each fuel point, from
+  // offline border data.
+  const countries: string[] = [];
+  for (const sample of path.sample(COUNTRY_SAMPLE_EVERY_KM, COUNTRY_MAX_SAMPLES)) {
+    const c = countryAt(sample);
+    if (c && !countries.includes(c)) countries.push(c);
   }
+  const fuelCountries = fuelLocations.map(countryAt);
 
   const points: FuelPoint[] = await mapLimit(fuelKms.map((km, i) => ({ km, i })), 4, async ({ km, i }) => {
     const country = fuelCountries[i];

@@ -12,7 +12,11 @@ export default function Home() {
       </header>
       <Planner />
       <footer className="footer muted small">
-        Az árak tájékoztató jellegűek. Útvonal: Google · Kútárak: Tankerkönig (CC BY 4.0), E-Control.
+        Az árak tájékoztató jellegűek. Térképadatok ©{" "}
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
+          OpenStreetMap
+        </a>{" "}
+        közreműködők · Útvonal: OSRM · Címkeresés: Photon · Kútárak: Tankerkönig (CC BY 4.0), E-Control.
       </footer>
     </main>
   );

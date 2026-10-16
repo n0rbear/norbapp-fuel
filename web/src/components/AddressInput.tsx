@@ -1,68 +1,74 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import type { PlaceInput, PlaceSuggestion } from "@/lib/api-types";
+import type { LatLng } from "@/lib/geo";
+
+/** What the user typed, plus coordinates once a suggestion was picked. */
+export type PlaceValue = { text: string; location?: LatLng };
+
+export const emptyPlace: PlaceValue = { text: "" };
+
+export function toPlaceInput(v: PlaceValue): PlaceInput {
+  return v.location ? { location: v.location, label: v.text } : { address: v.text.trim() };
+}
 
 type Props = {
   label: string;
-  value: string;
-  onChange: (value: string) => void;
+  value: PlaceValue;
+  onChange: (value: PlaceValue) => void;
   placeholder?: string;
-  disabled?: boolean;
+  /** Bias suggestions towards this point. */
+  near?: LatLng;
   trailing?: React.ReactNode;
 };
 
-function newSessionToken() {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
-}
-
 /** Text input with debounced server-side place suggestions. */
-export function AddressInput({ label, value, onChange, placeholder, disabled, trailing }: Props) {
+export function AddressInput({ label, value, onChange, placeholder, near, trailing }: Props) {
   const id = useId();
   const listId = `${id}-list`;
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
-  const session = useRef<string>("");
-  const skipNext = useRef(false);
+  const text = value.text;
+  const picked = !!value.location;
+  const nearLat = near?.lat;
+  const nearLng = near?.lng;
+  const lastQuery = useRef("");
 
   useEffect(() => {
-    if (skipNext.current) {
-      skipNext.current = false;
-      return;
-    }
-    const q = value.trim();
-    if (disabled || q.length < 3) return;
-    if (!session.current) session.current = newSessionToken();
+    const q = text.trim();
+    if (picked || q.length < 3 || q === lastQuery.current) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const params = new URLSearchParams({ q, session: session.current });
+        const params = new URLSearchParams({ q });
+        if (nearLat !== undefined && nearLng !== undefined) {
+          params.set("lat", nearLat.toFixed(3));
+          params.set("lng", nearLng.toFixed(3));
+        }
         const res = await fetch(`/api/autocomplete?${params}`, { signal: controller.signal });
         if (!res.ok) return;
-        const data = (await res.json()) as { suggestions: string[] };
+        const data = (await res.json()) as { suggestions: PlaceSuggestion[] };
+        lastQuery.current = q;
         setSuggestions(data.suggestions);
         setActive(-1);
       } catch {
         // Aborted or offline – suggestions are optional.
       }
-    }, 250);
+    }, 300);
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [value, disabled]);
+  }, [text, picked, nearLat, nearLng]);
 
-  const choose = (s: string) => {
-    skipNext.current = true;
-    session.current = "";
-    onChange(s);
-    setSuggestions([]);
+  const choose = (s: PlaceSuggestion) => {
+    onChange({ text: s.label, location: s.location });
     setOpen(false);
   };
 
-  const showList = open && suggestions.length > 0 && !disabled && value.trim().length >= 3;
+  const showList = open && !picked && suggestions.length > 0 && text.trim().length >= 3;
 
   return (
     <div className="field">
@@ -76,13 +82,13 @@ export function AddressInput({ label, value, onChange, placeholder, disabled, tr
             aria-expanded={showList}
             aria-controls={listId}
             aria-autocomplete="list"
-            aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
+            aria-activedescendant={showList && active >= 0 ? `${listId}-${active}` : undefined}
             autoComplete="off"
-            value={value}
+            value={text}
             placeholder={placeholder}
-            disabled={disabled}
             onChange={(e) => {
-              onChange(e.target.value);
+              // Editing the text discards previously picked coordinates.
+              onChange({ text: e.target.value });
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}
@@ -103,11 +109,12 @@ export function AddressInput({ label, value, onChange, placeholder, disabled, tr
               }
             }}
           />
+          {picked && <span className="pin" aria-label="Pontos hely kiválasztva" title="Pontos hely kiválasztva">✓</span>}
           {showList && (
             <ul className="suggestions" id={listId} role="listbox">
               {suggestions.map((s, i) => (
                 <li
-                  key={s}
+                  key={`${s.label}-${i}`}
                   id={`${listId}-${i}`}
                   role="option"
                   aria-selected={i === active}
@@ -116,7 +123,7 @@ export function AddressInput({ label, value, onChange, placeholder, disabled, tr
                     choose(s);
                   }}
                 >
-                  {s}
+                  {s.label}
                 </li>
               ))}
             </ul>

@@ -1,11 +1,5 @@
 import "server-only";
 
-export function googleApiKey(): string {
-  const key = process.env.GOOGLE_MAPS_API_KEY;
-  if (!key) throw new ConfigError("GOOGLE_MAPS_API_KEY nincs beállítva");
-  return key;
-}
-
 export function tankerkoenigApiKey(): string | null {
   return process.env.TANKERKOENIG_API_KEY || null;
 }

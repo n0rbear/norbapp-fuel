@@ -30,27 +30,27 @@ function place(v: unknown): PlaceInput | null {
     const lat = finite(v.location.lat);
     const lng = finite(v.location.lng);
     if (lat === null || lng === null || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
-    return { location: { lat, lng } };
+    const label = typeof v.label === "string" ? v.label.slice(0, MAX_ADDRESS_LENGTH) : undefined;
+    return { location: { lat, lng }, ...(label ? { label } : {}) };
   }
   return null;
 }
 
-/** Validates an untrusted JSON body. Blank waypoints are dropped rather than rejected. */
+/** Validates an untrusted JSON body. */
 export function parsePlanRequest(body: unknown): Result<PlanRequest> {
   if (!isObject(body)) return { ok: false, error: "Hibás kérés." };
 
   const origin = place(body.origin);
   if (!origin) return { ok: false, error: "Add meg az indulási helyet." };
 
-  const destination = address(body.destination);
+  const destination = place(body.destination);
   if (!destination) return { ok: false, error: "Add meg az úti célt." };
 
   if (body.waypoints !== undefined && !Array.isArray(body.waypoints)) return { ok: false, error: "Hibás megállólista." };
   const rawWaypoints = (body.waypoints as unknown[] | undefined) ?? [];
-  if (rawWaypoints.some((w) => typeof w !== "string")) return { ok: false, error: "Hibás megállólista." };
-  const waypoints = (rawWaypoints as string[]).map((w) => w.trim()).filter((w) => w.length > 0);
-  if (waypoints.length > MAX_WAYPOINTS) return { ok: false, error: `Legfeljebb ${MAX_WAYPOINTS} megálló adható meg.` };
-  if (waypoints.some((w) => w.length > MAX_ADDRESS_LENGTH)) return { ok: false, error: "Túl hosszú cím." };
+  if (rawWaypoints.length > MAX_WAYPOINTS) return { ok: false, error: `Legfeljebb ${MAX_WAYPOINTS} megálló adható meg.` };
+  const waypoints = rawWaypoints.map(place);
+  if (waypoints.some((w) => w === null)) return { ok: false, error: "Hibás vagy üres megálló." };
 
   const fuelType = body.fuelType as FuelType;
   if (!FUEL_TYPES.some((f) => f.id === fuelType)) return { ok: false, error: "Ismeretlen üzemanyagtípus." };
@@ -70,7 +70,7 @@ export function parsePlanRequest(body: unknown): Result<PlanRequest> {
     value: {
       origin,
       destination,
-      waypoints,
+      waypoints: waypoints as PlaceInput[],
       roundTrip: body.roundTrip === true,
       optimizeWaypoints: body.optimizeWaypoints === true,
       fuelType,
