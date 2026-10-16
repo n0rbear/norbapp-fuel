@@ -8,6 +8,7 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
 | Elem | Állapot |
 |---|---|
 | Kód | `backend/` mappa, ág: `feature/fuel-price-backend` (még nincs beolvasztva a `main`-be) |
+| Web | https://fuel.norbapp.com (Next.js, `web/`, ág: `claude/awesome-pasteur-3tdbj4`, Render `norbapp-fuel-web`, free, Frankfurt) |
 | Élő szolgáltatás | https://norbapp-fuel-api.onrender.com (Render, free csomag, Oregon régió, auto-deploy erről az ágról) |
 | API-dokumentáció | https://norbapp-fuel-api.onrender.com/docs |
 | Részletes leírás | `backend/README.md` |
@@ -29,7 +30,7 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
 
 ## Nyitott teendők (javasolt sorrend)
 
-1. **Tankerkönig API-kulcs** – Render → `norbapp-fuel-api` → Environment → `TANKERKOENIG_API_KEY` (a felhasználó intézi). Addig Németország becsléssel megy.
+1. ~~**Tankerkönig API-kulcs**~~ – **kész (2026-10-16):** a kulcs be van állítva a Renderen, élesben ellenőrizve: `/api/countries` → DE `configured: true`; `/api/prices?country=DE&lat=52.52&lng=13.40&radius_km=5` dízelre és benzinre is `mode: official`, `source: Tankerkoenig (MTS-K)`, 36 kút árral, `currency=HUF`-fal is (EKB-árfolyam 363,08).
 2. **Frontend-beépítés (web, `web/`, ág: `claude/awesome-pasteur-3tdbj4`)**:
    - pénznemválasztó a `GET /api/currencies` alapján, a választás megjegyzése, minden kéréshez `currency=` paraméter;
    - Euro-besorolás mező a járműbeállításoknál; ha a `/api/tolls/estimate` 422 `euro_class_required`-et ad, rákérdezni;
