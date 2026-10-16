@@ -54,6 +54,10 @@ Az alapárak **minden reggel 6:00-kor (Europe/Budapest)** frissülnek az EU Week
 - Ha a letöltés nem sikerül, az utolsó jó értékek maradnak érvényben (induláskor a kódba épített `DEFAULT_BASE_PRICES`).
 - Állapot és aktuális értékek: `GET /api/base-prices`.
 
+### E10
+
+`fuel=e10` esetén külön E10-ár csak ott jön, ahol a hivatalos forrás közli: **DE** (Tankerkönig), **ES** (Gasolina 95 E10), **FR** (E10). Máshol – AT, IT, PT, SI és a becslési országok – az Euro-Super 95 (E5) ára jön, mert a forrás vagy az EU Weekly Oil Bulletin nem ad külön E10-sorozatot. A válasz `price_fuel` mezője megmondja, melyik üzemanyag árát tartalmazza, eltérés esetén `fuel_note` is jön; a `GET /api/countries` `official_api.supports_e10` mezője jelzi az E10-képes forrásokat.
+
 ## Pénznem választása (`fx.py`)
 
 Minden árat visszaadó végpont fogad egy `currency` paramétert (alapért. `EUR`), pl. `currency=HUF`. Csak az EU-ban használt pénznemek választhatók: **EUR, CZK, DKK, HUF, PLN, RON, SEK** (Bulgária 2026 óta euróövezeti). Más kódra 422-es hiba jön. A számítás EUR-ban történik, a kimenet konvertált; a válasz `exchange_rate` mezője megadja az árfolyamot és a dátumát.
@@ -112,7 +116,7 @@ Interaktív dokumentáció: `/docs` (Swagger UI) és `/redoc`.
 | Paraméter | Kötelező | Érték |
 |---|---|---|
 | `country` | igen | ISO kód, pl. `HU`, `AT` (kis-nagybetű mindegy) |
-| `fuel` | nem | `petrol` (alapért.) vagy `diesel` |
+| `fuel` | nem | `petrol` (alapért., E5/95), `diesel` vagy `e10` |
 | `location` | nem | `highway`, `city`, `suburb` |
 | `brand_tier` | nem | `discount`, `mainstream`, `premium` |
 | `brand` | nem | márkanév, automatikusan kategóriára képezve |

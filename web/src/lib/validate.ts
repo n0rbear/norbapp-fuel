@@ -79,6 +79,7 @@ export function parsePlanRequest(body: unknown): Result<PlanRequest> {
       fuelType,
       currency,
       vehicle,
+      fillAtStart: body.fillAtStart === true,
     },
   };
 }

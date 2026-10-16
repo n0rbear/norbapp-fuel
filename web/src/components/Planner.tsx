@@ -47,6 +47,7 @@ export function Planner() {
   const [optimize, setOptimize] = useState(false);
   const [fuelType, setFuelType] = useState<FuelType>("diesel");
   const [vehicleForm, setVehicleForm] = useState<VehicleForm>(toForm(DEFAULT_VEHICLE));
+  const [fillAtStart, setFillAtStart] = useState(false);
   const [currency, setCurrency] = usePersistentState<Currency>("fuel.currency", "HUF", isCurrency);
   const [euroClass, setEuroClass] = usePersistentState<EuroClass | "">("fuel.euroClass", "", isEuroClassOrUnset);
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo[] | null>(null);
@@ -86,8 +87,9 @@ export function Planner() {
       fuelType,
       currency,
       vehicle,
+      fillAtStart: fillAtStart && vehicle.startLevelPct < 100,
     };
-  }, [origin, destination, waypoints, roundTrip, optimize, fuelType, currency, vehicle]);
+  }, [origin, destination, waypoints, roundTrip, optimize, fuelType, currency, vehicle, fillAtStart]);
 
   const stale = !!result && JSON.stringify(result.request) !== JSON.stringify(request);
 
@@ -262,6 +264,13 @@ export function Planner() {
             </div>
           ))}
         </div>
+
+        {vehicle && vehicle.startLevelPct < 100 && (
+          <label className="check">
+            <input type="checkbox" checked={fillAtStart} onChange={(e) => setFillAtStart(e.target.checked)} />
+            Indulás előtt teletankolok
+          </label>
+        )}
 
         <div className="grid">
           <div className="field">

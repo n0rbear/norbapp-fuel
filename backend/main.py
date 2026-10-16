@@ -149,6 +149,16 @@ def _estimate_payload(
     }
 
 
+def _fuel_basis(requested: Fuel, priced: Fuel) -> dict[str, Any]:
+    """Which fuel the prices are for, with a note when it differs from the request."""
+    data: dict[str, Any] = {"price_fuel": priced.value}
+    if priced is not requested:
+        data["fuel_note"] = (
+            f"No separate {requested.value.upper()} price here; Euro-Super 95 ({priced.value}) price shown."
+        )
+    return data
+
+
 def _summary(prices: list[float]) -> dict[str, float] | None:
     if not prices:
         return None
@@ -242,6 +252,9 @@ async def get_prices(
     }
 
     client = OFFICIAL_CLIENTS.get(c.code)
+    # E10 is only priced separately where the official source publishes it;
+    # elsewhere the Super 95 price stands in and the response says so.
+    live_fuel = fuel if fuel is not Fuel.E10 or (client and client.supports_e10) else Fuel.PETROL
     fallback_reason: str | None = None
     if client is None:
         fallback_reason = None
@@ -249,7 +262,7 @@ async def get_prices(
         fallback_reason = "lat/lng not provided; live station prices need coordinates"
     else:
         try:
-            stations = await client.stations_near(app.state.http, lat, lng, radius_km, fuel)
+            stations = await client.stations_near(app.state.http, lat, lng, radius_km, live_fuel)
         except ApiNotConfiguredError as exc:
             fallback_reason = str(exc)
         except OfficialApiError as exc:
@@ -267,6 +280,7 @@ async def get_prices(
                 "radius_km": radius_km,
                 "summary": _summary([s.price for s in stations]),
                 "stations": [s.as_dict() for s in stations],
+                **_fuel_basis(fuel, live_fuel),
             })
             return _localize(response, currency)
 
@@ -274,6 +288,7 @@ async def get_prices(
         "mode": "estimate",
         "source": "heuristic pricing matrix",
         **_estimate_payload(c, fuel, brand_tier, location),
+        **_fuel_basis(fuel, fuel.price_basis),
     })
     if fallback_reason:
         response["fallback_reason"] = fallback_reason

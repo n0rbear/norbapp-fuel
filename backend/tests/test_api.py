@@ -134,3 +134,76 @@ def test_base_prices_endpoint(client):
     data = client.get("/api/base-prices").json()
     assert data["schedule"] == "daily 06:00 Europe/Budapest"
     assert len(data["prices"]) == 27
+
+
+# --- E10 ---------------------------------------------------------------------
+
+
+def test_germany_e10_uses_e10_price(client, monkeypatch):
+    monkeypatch.setenv("TANKERKOENIG_API_KEY", "test-key")
+    payload = {"ok": True, "stations": [
+        {"id": "a", "name": "Aral", "brand": "ARAL", "street": "X", "place": "Berlin",
+         "lat": 52.5, "lng": 13.4, "dist": 1.0, "e5": 1.899, "e10": 1.839, "diesel": 1.799},
+        {"id": "b", "name": "Freie", "brand": None, "street": "Y", "place": "Berlin",
+         "lat": 52.51, "lng": 13.4, "dist": 2.0, "e5": 1.859, "e10": None, "diesel": 1.759},
+    ]}
+    use_transport(lambda r: httpx.Response(200, json=payload))
+    data = client.get("/api/prices", params={"country": "DE", "fuel": "e10", "lat": 52.5, "lng": 13.4}).json()
+    assert data["mode"] == "official"
+    assert data["price_fuel"] == "e10" and "fuel_note" not in data
+    assert [(s["id"], s["price"], s["fuel"]) for s in data["stations"]] == [("a", 1.839, "e10")]
+
+
+def test_spain_e10_column(client):
+    payload = {"Fecha": "16/10/2026", "ListaEESSPrecio": [
+        {"IDEESS": "1", "Rótulo": "REPSOL", "Dirección": "x", "Municipio": "Madrid",
+         "Latitud": "40,4168", "Longitud (WGS84)": "-3,7038",
+         "Precio Gasolina 95 E5": "1,659", "Precio Gasolina 95 E10": "1,609"},
+        {"IDEESS": "2", "Rótulo": "CEPSA", "Dirección": "y", "Municipio": "Madrid",
+         "Latitud": "40,4170", "Longitud (WGS84)": "-3,7040", "Precio Gasolina 95 E5": "1,649"},
+    ]}
+    use_transport(lambda r: httpx.Response(200, content=json.dumps(payload).encode()))
+    data = client.get("/api/prices", params={"country": "ES", "fuel": "e10", "lat": 40.42, "lng": -3.70}).json()
+    assert [(s["id"], s["price"]) for s in data["stations"]] == [("1", 1.609)]
+    assert data["price_fuel"] == "e10"
+
+
+def test_france_e10_does_not_fall_back_to_sp95(client):
+    payload = {"results": [
+        {"id": 1, "adresse": "1 rue A", "ville": "Paris", "geom": {"lat": 48.85, "lon": 2.35},
+         "sp95_prix": 1.95, "e10_prix": 1.89},
+        {"id": 2, "adresse": "2 rue B", "ville": "Paris", "geom": {"lat": 48.851, "lon": 2.351},
+         "sp95_prix": 1.92},
+    ]}
+    use_transport(lambda r: httpx.Response(200, json=payload))
+    data = client.get("/api/prices", params={"country": "FR", "fuel": "e10", "lat": 48.85, "lng": 2.35}).json()
+    assert [(s["id"], s["price"]) for s in data["stations"]] == [("1", 1.89)]
+
+
+def test_e10_falls_back_to_super95_where_not_published(client):
+    def handler(request):
+        assert request.url.params["fuelType"] == "SUP"
+        return httpx.Response(200, json=[
+            {"id": 1, "name": "BP Wien", "distance": 1.2,
+             "location": {"address": "Gasse 1", "city": "Wien", "latitude": 48.2, "longitude": 16.37},
+             "prices": [{"fuelType": "SUP", "amount": 1.799}]},
+        ])
+
+    use_transport(handler)
+    data = client.get("/api/prices", params={"country": "AT", "fuel": "e10", "lat": 48.2, "lng": 16.37}).json()
+    assert data["mode"] == "official" and data["fuel"] == "e10"
+    assert data["price_fuel"] == "petrol" and "Euro-Super 95" in data["fuel_note"]
+    assert data["stations"][0]["price"] == 1.799
+
+
+def test_e10_estimate_uses_petrol_base(client):
+    e10 = client.get("/api/prices", params={"country": "HU", "fuel": "e10", "location": "city", "brand_tier": "mainstream"}).json()
+    petrol = client.get("/api/prices", params={"country": "HU", "fuel": "petrol", "location": "city", "brand_tier": "mainstream"}).json()
+    assert e10["mode"] == "estimate" and e10["price_fuel"] == "petrol" and "fuel_note" in e10
+    assert e10["estimates"][0]["price"] == petrol["estimates"][0]["price"]
+    assert "fuel_note" not in petrol
+
+
+def test_countries_report_e10_support(client):
+    data = {c["code"]: c for c in client.get("/api/countries").json()["countries"]}
+    assert {code for code, c in data.items() if c.get("official_api", {}).get("supports_e10")} == {"DE", "ES", "FR"}

@@ -7,7 +7,9 @@ from pricing_matrix import BrandTier, Fuel, Location
 def test_all_27_eu_countries_have_base_prices():
     assert len(pm.COUNTRIES) == 27
     for code in pm.COUNTRIES:
-        assert set(pm.BASE_PRICES[code]) == set(Fuel)
+        # E10 has no Oil Bulletin series of its own; it is priced on the petrol base.
+        assert set(pm.BASE_PRICES[code]) == {f.price_basis for f in Fuel}
+        assert pm.base_price(code, Fuel.E10) == pm.base_price(code, Fuel.PETROL)
 
 
 def test_seven_official_countries():

@@ -36,6 +36,17 @@ describe("planRefuels", () => {
     expect(plan.stops[0].litres).toBeCloseTo(45);
   });
 
+  it("never plans a stop at the start with a full tank", () => {
+    expect(planRefuels(1300, car, true).stops[0].km).toBeCloseTo(400);
+  });
+
+  it("fills up before departure when asked", () => {
+    const plan = planRefuels(500, { ...car, startLevelPct: 50 }, true);
+    expect(plan.stops[0]).toEqual({ km: 0, litres: 25 });
+    // Full tank at km 0 => next stop where the reserve is reached.
+    expect(plan.stops[1].km).toBeCloseTo(400);
+  });
+
   it("rejects invalid vehicles", () => {
     expect(() => planRefuels(100, { ...car, consumption: 0 })).toThrow();
     expect(() => planRefuels(100, { ...car, reservePct: 95 })).toThrow();
