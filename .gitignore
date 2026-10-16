@@ -29,3 +29,10 @@ local.properties
 *.keystore
 keystore.properties
 google-services.json
+
+# Python backend
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
