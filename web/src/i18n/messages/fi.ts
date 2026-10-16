@@ -111,7 +111,9 @@ export const fi: Messages = {
   tollFootnote:
     "Henkilöauto, tiemaksujen tilanne {asOf}. Matkaan perustuvat tiemaksut ovat arvioita; erillisiä tunneli- ja siltamaksuja ei ole mukana. Jos sinulla on jo vinjetti johonkin maahan, poista sen valinta. ”Vältä maksullisia teitä” suunnittelee maksuttomia teitä kyseisen maan sisällä (rajanylitys säilyy), ja selain muistaa valinnan.",
   distanceToll: "Matkaan perustuva tiemaksu, n. {km} km maksullista tietä (arvio)",
+  vignetteDay: "Päivävinjetti",
   vignetteDays: "{n} päivän vinjetti",
+  vignetteMonth: "Kuukausivinjetti",
   vignetteMonths: "{n} kuukauden vinjetti",
   vignetteYear: "Vuosivinjetti",
   vignetteWeekend: "Viikonloppuvinjetti",

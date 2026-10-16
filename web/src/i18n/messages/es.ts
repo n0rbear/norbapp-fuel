@@ -111,7 +111,9 @@ export const es: Messages = {
   tollFootnote:
     "Turismo, tarifas a {asOf}. Los peajes por kilómetro son estimaciones; no incluyen peajes especiales de túneles y puentes. Si ya tienes viñeta para un país, desmárcalo. «Evitar peajes» usa carreteras gratuitas dentro de ese país (el paso fronterizo no cambia) y el navegador lo recuerda.",
   distanceToll: "Peaje por kilómetro, aprox. {km} km de tramo de pago (estimación)",
+  vignetteDay: "Viñeta de 1 día",
   vignetteDays: "Viñeta de {n} días",
+  vignetteMonth: "Viñeta mensual",
   vignetteMonths: "Viñeta de {n} meses",
   vignetteYear: "Viñeta anual",
   vignetteWeekend: "Viñeta de fin de semana",

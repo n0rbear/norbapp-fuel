@@ -111,7 +111,9 @@ export const nl: Messages = {
   tollFootnote:
     "Personenauto, tarieven per {asOf}. Afstandsafhankelijke tol is een schatting; aparte tol voor tunnels en bruggen is niet inbegrepen. Hebt u al een vignet voor een land, vink het dan uit. “Tolwegen vermijden” plant tolvrije wegen binnen dat land (de grensovergang blijft gelijk) en wordt door uw browser onthouden.",
   distanceToll: "Afstandsafhankelijke tol, ca. {km} km tolweg (schatting)",
+  vignetteDay: "Dagvignet",
   vignetteDays: "{n}-daags vignet",
+  vignetteMonth: "Maandvignet",
   vignetteMonths: "{n}-maands vignet",
   vignetteYear: "Jaarvignet",
   vignetteWeekend: "Weekendvignet",

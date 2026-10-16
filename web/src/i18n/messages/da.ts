@@ -111,7 +111,9 @@ export const da: Messages = {
   tollFootnote:
     "Personbil, vejafgifter pr. {asOf}. Afstandsbaserede vejafgifter er skøn; særskilte tunnel- og broafgifter er ikke medregnet. Hvis du allerede har en vignet til et land, så fjern fluebenet. »Undgå betalingsveje« planlægger afgiftsfri veje i det pågældende land (grænseovergangen bevares) og huskes af din browser.",
   distanceToll: "Afstandsbaseret vejafgift, ca. {km} km betalingsvej (skøn)",
+  vignetteDay: "Dagsvignet",
   vignetteDays: "{n}-dagesvignet",
+  vignetteMonth: "Månedsvignet",
   vignetteMonths: "{n}-månedersvignet",
   vignetteYear: "Årsvignet",
   vignetteWeekend: "Weekendvignet",

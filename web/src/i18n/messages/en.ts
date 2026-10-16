@@ -111,7 +111,9 @@ export const en: Messages = {
   tollFootnote:
     "Passenger car, tolls as of {asOf}. Distance-based tolls are estimates; separate tunnel and bridge tolls are not included. If you already have a vignette for a country, untick it. “Avoid toll roads” plans toll-free roads within that country (the border crossing stays) and is remembered by your browser.",
   distanceToll: "Distance-based toll, approx. {km} km of tolled road (estimate)",
+  vignetteDay: "1-day vignette",
   vignetteDays: "{n}-day vignette",
+  vignetteMonth: "1-month vignette",
   vignetteMonths: "{n}-month vignette",
   vignetteYear: "Annual vignette",
   vignetteWeekend: "Weekend vignette",

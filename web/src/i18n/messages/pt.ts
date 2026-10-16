@@ -111,7 +111,9 @@ export const pt: Messages = {
   tollFootnote:
     "Veículo ligeiro de passageiros, tarifas em {asOf}. As portagens por distância são estimativas; as portagens específicas de túneis e pontes não estão incluídas. Se já tiver vinheta para um país, desmarque-o. «Evitar portagens» planeia estradas sem portagem dentro desse país (a passagem de fronteira mantém-se) e fica guardado no seu navegador.",
   distanceToll: "Portagem por distância, cerca de {km} km de troço com portagem (estimativa)",
+  vignetteDay: "Vinheta de 1 dia",
   vignetteDays: "Vinheta de {n} dias",
+  vignetteMonth: "Vinheta mensal",
   vignetteMonths: "Vinheta de {n} meses",
   vignetteYear: "Vinheta anual",
   vignetteWeekend: "Vinheta de fim de semana",

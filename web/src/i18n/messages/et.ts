@@ -111,7 +111,9 @@ export const et: Messages = {
   tollFootnote:
     "Sõiduauto, teemaksud seisuga {asOf}. Läbisõidupõhised teemaksud on hinnangulised; eraldi tunneli- ja sillamaksud ei ole arvestatud. Kui teil on mõne riigi vinjett juba olemas, eemaldage linnuke. „Väldi tasulisi teid“ planeerib selle riigi piires tasuta teed (piiriületus jääb alles) ja brauser jätab valiku meelde.",
   distanceToll: "Läbisõidupõhine teemaks, u {km} km tasulist teed (hinnang)",
+  vignetteDay: "Ühe päeva vinjett",
   vignetteDays: "{n} päeva vinjett",
+  vignetteMonth: "Kuuvinjett",
   vignetteMonths: "{n} kuu vinjett",
   vignetteYear: "Aastavinjett",
   vignetteWeekend: "Nädalavahetuse vinjett",

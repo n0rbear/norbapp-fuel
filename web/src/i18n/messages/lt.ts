@@ -111,7 +111,9 @@ export const lt: Messages = {
   tollFootnote:
     "Lengvasis automobilis, kelių mokesčiai {asOf} duomenimis. Pagal atstumą skaičiuojami mokesčiai yra apytiksliai; atskiri tunelių ir tiltų mokesčiai neįtraukti. Jei kuriai nors šaliai jau turite vinjetę, nuimkite jos žymėjimą. „Vengti mokamų kelių“ planuoja nemokamus kelius tos šalies viduje (sienos kirtimas lieka), o naršyklė šį pasirinkimą įsimena.",
   distanceToll: "Pagal atstumą skaičiuojamas mokestis, apie {km} km mokamo kelio (įvertis)",
+  vignetteDay: "Vienos dienos vinjetė",
   vignetteDays: "Vinjetė ({n} d.)",
+  vignetteMonth: "Mėnesio vinjetė",
   vignetteMonths: "Vinjetė ({n} mėn.)",
   vignetteYear: "Metinė vinjetė",
   vignetteWeekend: "Savaitgalio vinjetė",

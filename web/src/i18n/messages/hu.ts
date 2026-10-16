@@ -119,7 +119,9 @@ export const hu = {
   tollFootnote:
     "Személyautó, {asOf} szerinti díjak. A km-alapú díj becslés; alagutak, hidak külön díja nincs benne. Ha egy országra már van matricád, vedd ki a pipát. A „Fizetős utak kerülése” az adott országon belül díjmentes utakon tervez (a határátkelő marad), és a böngésző megjegyzi.",
   distanceToll: "Km-alapú díj, kb. {km} km díjköteles szakasz (becslés)",
+  vignetteDay: "Napi matrica",
   vignetteDays: "{n} napos matrica",
+  vignetteMonth: "Havi matrica",
   vignetteMonths: "{n} hónapos matrica",
   vignetteYear: "Éves matrica",
   vignetteWeekend: "Hétvégi matrica",

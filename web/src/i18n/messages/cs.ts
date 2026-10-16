@@ -111,7 +111,9 @@ export const cs: Messages = {
   tollFootnote:
     "Osobní automobil, sazby k {asOf}. Mýtné podle ujeté vzdálenosti je odhad; samostatné poplatky za tunely a mosty nejsou zahrnuty. Pokud už pro některou zemi dálniční známku máte, zrušte její zaškrtnutí. „Vyhnout se zpoplatněným silnicím“ naplánuje v dané zemi silnice bez mýtného (hraniční přechod zůstává) a prohlížeč si volbu zapamatuje.",
   distanceToll: "Mýtné podle vzdálenosti, cca {km} km zpoplatněných silnic (odhad)",
+  vignetteDay: "Jednodenní dálniční známka",
   vignetteDays: "Dálniční známka na {n} dní",
+  vignetteMonth: "Měsíční dálniční známka",
   vignetteMonths: "Dálniční známka na {n} měs.",
   vignetteYear: "Roční dálniční známka",
   vignetteWeekend: "Víkendová dálniční známka",

@@ -225,9 +225,9 @@ function tollLineLabel(line: TollLine, t: ReturnType<typeof useI18n>["t"], fmt: 
   if (line.kind === "distance") return t("distanceToll", { km: fmt.decimal(line.km ?? 0, 0) });
   const id = line.id ?? "";
   const days = /^(\d+)d$/.exec(id);
-  if (days) return t("vignetteDays", { n: Number(days[1]) });
+  if (days) return days[1] === "1" ? t("vignetteDay") : t("vignetteDays", { n: Number(days[1]) });
   const months = /^(\d+)m$/.exec(id);
-  if (months) return t("vignetteMonths", { n: Number(months[1]) });
+  if (months) return months[1] === "1" ? t("vignetteMonth") : t("vignetteMonths", { n: Number(months[1]) });
   if (id === "1y") return t("vignetteYear");
   if (id === "weekend") return t("vignetteWeekend");
   return line.label;

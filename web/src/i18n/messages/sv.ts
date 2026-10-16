@@ -111,7 +111,9 @@ export const sv: Messages = {
   tollFootnote:
     "Personbil, avgifter per {asOf}. Avståndsbaserade vägavgifter är uppskattningar; separata avgifter för tunnlar och broar ingår inte. Om du redan har en vinjett för ett land, avmarkera det. ”Undvik avgiftsbelagda vägar” planerar avgiftsfria vägar inom det landet (gränsövergången blir densamma) och sparas i din webbläsare.",
   distanceToll: "Avståndsbaserad vägavgift, ca {km} km avgiftsbelagd väg (uppskattning)",
+  vignetteDay: "Dagsvinjett",
   vignetteDays: "{n}-dagarsvinjett",
+  vignetteMonth: "Månadsvinjett",
   vignetteMonths: "{n}-månadersvinjett",
   vignetteYear: "Årsvinjett",
   vignetteWeekend: "Helgvinjett",

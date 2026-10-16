@@ -111,7 +111,9 @@ export const ro: Messages = {
   tollFootnote:
     "Autoturism, taxe valabile la {asOf}. Taxele pe distanță sunt estimări; taxele separate pentru tuneluri și poduri nu sunt incluse. Dacă aveți deja vinietă pentru o țară, debifați-o. „Evită drumurile cu taxă” planifică drumuri fără taxă în țara respectivă (trecerea frontierei rămâne) și este memorat de browser.",
   distanceToll: "Taxă pe distanță, cca {km} km de drum cu taxă (estimare)",
+  vignetteDay: "Vinietă de o zi",
   vignetteDays: "Vinietă – număr de zile: {n}",
+  vignetteMonth: "Vinietă lunară",
   vignetteMonths: "Vinietă – număr de luni: {n}",
   vignetteYear: "Vinietă anuală",
   vignetteWeekend: "Vinietă de weekend",

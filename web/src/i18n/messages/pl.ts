@@ -111,7 +111,9 @@ export const pl: Messages = {
   tollFootnote:
     "Samochód osobowy, opłaty według stanu na {asOf}. Opłaty za przejechany odcinek są szacunkowe; osobne opłaty za tunele i mosty nie są uwzględnione. Jeśli masz już winietę na dany kraj, odznacz ją. „Unikaj dróg płatnych” planuje w danym kraju drogi bezpłatne (przejście graniczne pozostaje) i jest zapamiętywane przez przeglądarkę.",
   distanceToll: "Opłata za przejechany odcinek, ok. {km} km płatnych dróg (szacunek)",
+  vignetteDay: "Winieta jednodniowa",
   vignetteDays: "Winieta na {n} dni",
+  vignetteMonth: "Winieta miesięczna",
   vignetteMonths: "Winieta na {n} mies.",
   vignetteYear: "Winieta roczna",
   vignetteWeekend: "Winieta weekendowa",

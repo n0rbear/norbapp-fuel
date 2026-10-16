@@ -111,7 +111,9 @@ export const de: Messages = {
   tollFootnote:
     "Pkw, Gebühren Stand {asOf}. Streckenmaut ist geschätzt; Sondermaut für Tunnel und Brücken ist nicht enthalten. Wenn Sie für ein Land bereits eine Vignette haben, entfernen Sie das Häkchen. „Mautstraßen meiden“ plant in diesem Land mautfreie Straßen (der Grenzübergang bleibt) und wird im Browser gespeichert.",
   distanceToll: "Streckenmaut, ca. {km} km mautpflichtige Strecke (Schätzung)",
+  vignetteDay: "Tagesvignette",
   vignetteDays: "{n}-Tages-Vignette",
+  vignetteMonth: "Monatsvignette",
   vignetteMonths: "{n}-Monats-Vignette",
   vignetteYear: "Jahresvignette",
   vignetteWeekend: "Wochenendvignette",

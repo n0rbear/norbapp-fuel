@@ -111,7 +111,9 @@ export const hr: Messages = {
   tollFootnote:
     "Osobni automobil, cestarine na dan {asOf}. Cestarine po prijeđenoj udaljenosti su procjene; zasebne naknade za tunele i mostove nisu uključene. Ako već imate vinjetu za neku zemlju, uklonite kvačicu. „Izbjegavaj ceste s naplatom” planira ceste bez naplate unutar te zemlje (granični prijelaz ostaje), a vaš ga preglednik pamti.",
   distanceToll: "Cestarina po udaljenosti, oko {km} km ceste s naplatom (procjena)",
+  vignetteDay: "Dnevna vinjeta",
   vignetteDays: "{n}-dnevna vinjeta",
+  vignetteMonth: "Mjesečna vinjeta",
   vignetteMonths: "{n}-mjesečna vinjeta",
   vignetteYear: "Godišnja vinjeta",
   vignetteWeekend: "Vikend-vinjeta",

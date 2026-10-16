@@ -111,7 +111,9 @@ export const sl: Messages = {
   tollFootnote:
     "Osebni avtomobil, cestnine na dan {asOf}. Cestnine glede na prevoženo razdaljo so ocene; ločene cestnine za predore in mostove niso vključene. Če za neko državo že imate vinjeto, odstranite kljukico. „Izogibaj se cestninskim cestam“ načrtuje ceste brez cestnine znotraj te države (mejni prehod ostane), vaš brskalnik pa si nastavitev zapomni.",
   distanceToll: "Cestnina glede na razdaljo, pribl. {km} km cestninske ceste (ocena)",
+  vignetteDay: "Dnevna vinjeta",
   vignetteDays: "{n}-dnevna vinjeta",
+  vignetteMonth: "Mesečna vinjeta",
   vignetteMonths: "{n}-mesečna vinjeta",
   vignetteYear: "Letna vinjeta",
   vignetteWeekend: "Vikend vinjeta",

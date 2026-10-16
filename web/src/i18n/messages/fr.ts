@@ -111,7 +111,9 @@ export const fr: Messages = {
   tollFootnote:
     "Voiture particulière, tarifs au {asOf}. Les péages kilométriques sont estimés ; les péages spécifiques des tunnels et ponts ne sont pas inclus. Si vous avez déjà une vignette pour un pays, décochez-le. « Éviter les péages » utilise des routes gratuites dans ce pays (le passage de frontière reste le même) et est mémorisé par votre navigateur.",
   distanceToll: "Péage kilométrique, env. {km} km de section payante (estimation)",
+  vignetteDay: "Vignette 1 jour",
   vignetteDays: "Vignette {n} jours",
+  vignetteMonth: "Vignette mensuelle",
   vignetteMonths: "Vignette {n} mois",
   vignetteYear: "Vignette annuelle",
   vignetteWeekend: "Vignette week-end",

@@ -111,7 +111,9 @@ export const it: Messages = {
   tollFootnote:
     "Autovettura, tariffe aggiornate a {asOf}. I pedaggi a chilometro sono stime; i pedaggi specifici di gallerie e ponti non sono inclusi. Se hai già la vignetta per un paese, togli la spunta. «Evita i pedaggi» usa strade gratuite in quel paese (il valico di confine resta lo stesso) e viene memorizzato dal browser.",
   distanceToll: "Pedaggio a chilometro, circa {km} km a pagamento (stima)",
+  vignetteDay: "Vignetta giornaliera",
   vignetteDays: "Vignetta {n} giorni",
+  vignetteMonth: "Vignetta mensile",
   vignetteMonths: "Vignetta {n} mesi",
   vignetteYear: "Vignetta annuale",
   vignetteWeekend: "Vignetta weekend",
