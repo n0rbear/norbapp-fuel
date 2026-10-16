@@ -9,8 +9,8 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
 |---|---|
 | Kód | `backend/` mappa, a `main` ágon (a webbel együtt) |
 | Web | https://fuel.norbapp.com (Next.js, `web/`, `main` ág, Render `norbapp-fuel-web`, free, Frankfurt) |
-| Élő szolgáltatás | https://norbapp-fuel-api.onrender.com (Render, free csomag, Oregon régió, auto-deploy a `main`-ről) |
-| API-dokumentáció | https://norbapp-fuel-api.onrender.com/docs |
+| Élő szolgáltatás | https://norbapp-fuel-api-fra.onrender.com (Render `norbapp-fuel-api-fra`, free csomag, Frankfurt, auto-deploy a `main`-ről) |
+| API-dokumentáció | https://norbapp-fuel-api-fra.onrender.com/docs |
 | Részletes leírás | `backend/README.md` |
 | Tesztek | `cd backend && pip install -r requirements-dev.txt && pytest` – 51 teszt, mind zöld |
 
@@ -40,7 +40,7 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
    - Még nincs: alagutak/hidak külön díja (`special`) – ehhez útvonal-felismerés kellene.
 3. **Android-app** (`app/`) – jelenleg közvetlenül hívja a Tankerkönig/E-Control API-t, és a matricadíjak be vannak égetve (`CalculateTripUseCase.kt`: HU 16,50 €, AT 11,50 €). Átállítás a FUEL-API-ra: üzemanyagár, útdíj, pénznem- és Euro-besorolás-beállítás.
 4. ~~**Beolvasztás a `main`-be**~~ – **kész (2026-10-16):** a web és a backend egy ágon, a két szolgáltatás egy közös gyökér `render.yaml`-ban. A Render-szolgáltatásokat (`norbapp-fuel-api`, `norbapp-fuel-web`) a dashboardon kell `main`-re állítani (Settings → Branch).
-5. **Opcionális:** a szolgáltatás Frankfurtba költöztetése (a régió utólag nem állítható, újra kell létrehozni; a többi szolgáltatás ott van).
+5. ~~**Frankfurtba költöztetés**~~ – **kész (2026-10-16):** új szolgáltatás `norbapp-fuel-api-fra` (Frankfurt), a web erre mutat. A régi oregoni `norbapp-fuel-api` törölhető, ha az új bevált.
 
 ## Karbantartás
 

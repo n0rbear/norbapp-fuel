@@ -69,7 +69,7 @@ npm run build
 
 | Variable | Required | Notes |
 | --- | --- | --- |
-| `FUEL_API_URL` | no | Default: `https://norbapp-fuel-api.onrender.com` |
+| `FUEL_API_URL` | no | Default: `https://norbapp-fuel-api-fra.onrender.com` |
 | `OSRM_URL` | no | OSRM base URL incl. profile path. Default: `https://routing.openstreetmap.de/routed-car` |
 | `PHOTON_URL` | no | Photon base URL. Default: `https://photon.komoot.io` |
 
