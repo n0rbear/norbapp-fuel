@@ -2,11 +2,11 @@
 services:
   # FUEL-API: fuel prices, tolls and currencies (backend/, FastAPI)
   - type: web
-    name: norbapp-fuel-api
+    name: norbapp-fuel-api-fra
     runtime: python
     rootDir: backend
     plan: free
-    region: oregon
+    region: frankfurt
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
@@ -44,4 +44,4 @@ services:
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
       - key: FUEL_API_URL
-        value: https://norbapp-fuel-api.onrender.com
+        value: https://norbapp-fuel-api-fra.onrender.com

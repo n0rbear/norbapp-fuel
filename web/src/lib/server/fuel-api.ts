@@ -7,7 +7,7 @@ import { fetchJson, UpstreamError } from "./http";
 
 // NorbApp FUEL-API (backend/ on feature/fuel-price-backend). It runs on a
 // free Render instance that sleeps, so the first request can take ~60 s.
-const FUEL_API_URL = (process.env.FUEL_API_URL || "https://norbapp-fuel-api.onrender.com").replace(/\/$/, "");
+const FUEL_API_URL = (process.env.FUEL_API_URL || "https://norbapp-fuel-api-fra.onrender.com").replace(/\/$/, "");
 const TIMEOUT_MS = 70_000;
 const STATION_RADIUS_KM = 10;
 const MAX_STATIONS = 8;

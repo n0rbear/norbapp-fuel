@@ -212,7 +212,7 @@ pytest
 
 1. Render Dashboard → **New → Blueprint** → válaszd ki a `norbapp-fuel` repót.
 2. Add meg a `TANKERKOENIG_API_KEY` értékét (ha üres, Németország becslésre esik vissza).
-3. **Apply** – a szolgáltatás a `https://norbapp-fuel-api.onrender.com` jellegű címen indul.
+3. **Apply** – a szolgáltatás a `https://norbapp-fuel-api-fra.onrender.com` jellegű címen indul.
 
 **Kézzel (Web Service):**
 
