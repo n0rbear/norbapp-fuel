@@ -31,10 +31,12 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
 ## Nyitott teendők (javasolt sorrend)
 
 1. ~~**Tankerkönig API-kulcs**~~ – **kész (2026-10-16):** a kulcs be van állítva a Renderen, élesben ellenőrizve: `/api/countries` → DE `configured: true`; `/api/prices?country=DE&lat=52.52&lng=13.40&radius_km=5` dízelre és benzinre is `mode: official`, `source: Tankerkoenig (MTS-K)`, 36 kút árral, `currency=HUF`-fal is (EKB-árfolyam 363,08).
-2. **Frontend-beépítés (web, `web/`, ág: `claude/awesome-pasteur-3tdbj4`)**:
-   - pénznemválasztó a `GET /api/currencies` alapján, a választás megjegyzése, minden kéréshez `currency=` paraméter;
-   - Euro-besorolás mező a járműbeállításoknál; ha a `/api/tolls/estimate` 422 `euro_class_required`-et ad, rákérdezni;
-   - matricadíjak/útdíjak a `/api/tolls/estimate`-ből a beégetett értékek helyett.
+2. ~~**Frontend-beépítés**~~ – **kész (2026-10-16)**, web ág `claude/awesome-pasteur-3tdbj4` (`fb7b782`), élesben: https://fuel.norbapp.com
+   - üzemanyagár mind a 27 EU-országra a `/api/prices`-ból (élő kutak / becslés sávval; nem EU-s országban kézi alapár);
+   - pénznemválasztó a `/api/currencies` alapján, a választás és az Euro-besorolás a böngészőben megjegyezve, minden kéréshez `currency=`;
+   - útdíj a `/api/tolls/estimate`-ből: az utazás napjaihoz a legolcsóbb matrica, km-díjhoz az útvonal autópálya-km-je (OSRM útszámokból becsülve), `422 euro_class_required` esetén az eredményben rákérdez;
+   - a web megnyitáskor felébreszti az API-t (`/api/warmup`), a szerver ~70 s-ig vár rá.
+   - Még nincs: alagutak/hidak külön díja (`special`) – ehhez útvonal-felismerés kellene.
 3. **Android-app** (`app/`) – jelenleg közvetlenül hívja a Tankerkönig/E-Control API-t, és a matricadíjak be vannak égetve (`CalculateTripUseCase.kt`: HU 16,50 €, AT 11,50 €). Átállítás a FUEL-API-ra: üzemanyagár, útdíj, pénznem- és Euro-besorolás-beállítás.
 4. **Beolvasztás a `main`-be** – mindkét ág létrehoz gyökér `render.yaml`-t (API és web) → a két szolgáltatást egy fájlba kell fésülni.
 5. **Opcionális:** a szolgáltatás Frankfurtba költöztetése (a régió utólag nem állítható, újra kell létrehozni; a többi szolgáltatás ott van).
