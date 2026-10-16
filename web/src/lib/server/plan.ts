@@ -60,6 +60,12 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
 
   // Countries along the route and at each fuel point, from offline border data.
   const countries = path.regionsAlong(countryAt);
+  // Start and destination count even when tiny (Monaco, Vaduz): the 5 km
+  // threshold is only meant to hide border-data slivers along the way.
+  const startCountry = countryAt(path.points[0]);
+  const endCountry = countryAt(path.points[path.points.length - 1]);
+  if (startCountry && !countries.includes(startCountry)) countries.unshift(startCountry);
+  if (endCountry && !countries.includes(endCountry)) countries.push(endCountry);
   const fuelCountries = fuelLocations.map(countryAt);
   const motorwayKm = motorwayKmByCountry(route.steps, countryAt);
 

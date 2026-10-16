@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://fuel.norbapp.com"),
   title: "NorbApp Fuel – útiköltség-kalkulátor",
   description:
-    "Tervezd meg az út üzemanyag- és útdíjköltségét: útvonal, tankolási pontok, kútárak és útdíjak a 27 EU-országra, választható pénznemben.",
+    "Tervezd meg az út üzemanyag- és útdíjköltségét: útvonal, tankolási pontok, kútárak és útdíjak a 27 EU-országra és Svájcra, Liechtensteinre, Monacóra, választható pénznemben.",
   applicationName: "NorbApp Fuel",
   appleWebApp: { capable: true, title: "NorbApp Fuel", statusBarStyle: "default" },
   icons: { apple: "/icons/apple-touch-icon.png" },

@@ -22,6 +22,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from fx import fx
+
 logger = logging.getLogger(__name__)
 
 BASE_PRICES_AS_OF = "2026-10-12"
@@ -60,6 +62,7 @@ class Country:
     name_hu: str
     official_api: bool
     local_currency: str = "EUR"
+    eu: bool = True
 
 
 COUNTRIES: dict[str, Country] = {
@@ -94,8 +97,38 @@ COUNTRIES: dict[str, Country] = {
         Country("RO", "Romania", "Románia", False, "RON"),
         Country("SK", "Slovakia", "Szlovákia", False),
         Country("SE", "Sweden", "Svédország", False, "SEK"),
+        # Non-EU neighbours on common routes (no Oil Bulletin data, see below).
+        Country("CH", "Switzerland", "Svájc", False, "CHF", eu=False),
+        Country("LI", "Liechtenstein", "Liechtenstein", False, "CHF", eu=False),
+        Country("MC", "Monaco", "Monaco", False, "EUR", eu=False),
     ]
 }
+
+# The EU Weekly Oil Bulletin does not cover the non-EU countries, and
+# Switzerland has no open daily fuel price feed. Their base prices:
+#   CH  anchored to a TCS Benzinpreis-Radar national average (CHF) and moved
+#       every morning with the neighbours' bulletin averages and the ECB rate
+#       (see swiss_base_price); BASE_PRICES_JSON still overrides it.
+#   LI  same market and currency as Switzerland -> Swiss average.
+#   MC  supplied from France, French fuel taxes apply -> French average.
+DERIVED_BASE_PRICES: dict[str, str] = {"LI": "CH", "MC": "FR"}
+
+# Swiss anchor: TCS Benzinpreis-Radar national average. Re-anchor when a newer
+# TCS figure is known: update prices/as_of and set `reference` to the
+# neighbours' bulletin average (EUR) and `chf_rate` to the ECB rate of that week.
+SWISS_ANCHOR = {
+    "source": "TCS Benzinpreis-Radar",
+    "as_of": "2026-10-06",
+    "prices_chf": {Fuel.PETROL: 2.028, Fuel.DIESEL: 2.313},
+    # DE/AT/FR/IT average of the 2026-10-12 bulletin (EUR/l) and ECB CHF rate.
+    "reference": {Fuel.PETROL: (2.214 + 1.865 + 2.212 + 2.021) / 4, Fuel.DIESEL: (2.270 + 2.162 + 2.328 + 2.241) / 4},
+    "chf_rate": 0.9272,
+}
+SWISS_REFERENCE_COUNTRIES = ("DE", "AT", "FR", "IT")
+# Product cost moves pass through to Swiss pumps in absolute terms; the
+# neighbours' averages include ~20.5% VAT, Swiss prices 8.1% (fixed per-litre
+# mineral oil tax). So a 1.00 move next door is ~0.90 in Switzerland.
+SWISS_PASS_THROUGH = 1.081 / 1.205
 
 # National average pump prices incl. taxes, EUR/litre, from the European
 # Commission Weekly Oil Bulletin (prices with taxes, week of 2026-10-12).
@@ -304,6 +337,8 @@ def _build_base_prices(
     for code, values in _load_overrides().items():
         if code in prices:
             prices[code].update(values)
+        elif code in COUNTRIES:
+            prices[code] = dict(values)
         else:
             logger.warning("Ignoring base price override for unknown country %s", code)
     return prices
@@ -324,7 +359,51 @@ def get_country(code: str) -> Country | None:
 
 
 def base_price(country_code: str, fuel: Fuel) -> float:
-    return BASE_PRICES[country_code.upper()][fuel.price_basis]
+    """National average in EUR/l (manual overrides > bulletin > derived/local)."""
+    code = country_code.upper()
+    basis = fuel.price_basis
+    if code in BASE_PRICES and basis in BASE_PRICES[code]:
+        return BASE_PRICES[code][basis]
+    if code in DERIVED_BASE_PRICES:
+        return base_price(DERIVED_BASE_PRICES[code], fuel)
+    if code == "CH":
+        return swiss_base_price(basis)
+    raise KeyError(code)
+
+
+def swiss_base_price(fuel: Fuel) -> float:
+    """Swiss average in EUR/l: TCS anchor + the neighbours' change since then.
+
+    CH(t) [CHF] = anchor + pass_through * (ref(t) * rate(t) - ref(anchor) * rate(anchor))
+    where ref is the DE/AT/FR/IT bulletin average (EUR/l) and rate the ECB
+    CHF rate. It moves whenever the bulletin or the exchange rate refreshes.
+    """
+    basis = fuel.price_basis
+    rate = fx.rate("CHF")
+    reference = sum(BASE_PRICES[c][basis] for c in SWISS_REFERENCE_COUNTRIES) / len(SWISS_REFERENCE_COUNTRIES)
+    anchor = SWISS_ANCHOR["prices_chf"][basis]
+    anchor_reference = SWISS_ANCHOR["reference"][basis] * SWISS_ANCHOR["chf_rate"]
+    chf = anchor + SWISS_PASS_THROUGH * (reference * rate - anchor_reference)
+    return round(chf / rate, 3)
+
+
+def base_price_source(country_code: str) -> dict[str, str]:
+    """Where a country's base price comes from, for API consumers."""
+    code = country_code.upper()
+    if code in _load_overrides():
+        return {"source": "manual override (BASE_PRICES_JSON / BASE_PRICES_FILE)"}
+    if code in DERIVED_BASE_PRICES:
+        parent = DERIVED_BASE_PRICES[code]
+        inherited = base_price_source(parent)
+        return {**inherited, "source": f"{COUNTRIES[parent].name} average: {inherited['source']}", "derived_from": parent}
+    if code == "CH":
+        return {
+            "source": f"{SWISS_ANCHOR['source']} anchor, adjusted daily by the "
+            f"{'/'.join(SWISS_REFERENCE_COUNTRIES)} bulletin average and the ECB CHF rate",
+            "anchor_as_of": str(SWISS_ANCHOR["as_of"]),
+            "as_of": BASE_PRICES_AS_OF,
+        }
+    return {"source": "EU Weekly Oil Bulletin", "as_of": BASE_PRICES_AS_OF}
 
 
 def location_multiplier(country_code: str, location: Location) -> float:

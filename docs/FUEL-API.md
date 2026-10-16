@@ -21,6 +21,7 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
 3. **Autópályadíjak** – mind a 27 EU-ország, személyautó: matricák, km-díj, alagutak/hidak; útvonal-becslés a legolcsóbb matrica-kombinációval (`GET /api/tolls`, `/api/tolls/{ország}`, `/api/tolls/estimate`).
 4. **Euro-besorolás** – ahol az útdíj függ tőle (jelenleg Románia), a `euro_class` kötelező; hiányában 422 `euro_class_required`.
 5. **E10** – `fuel=e10`: DE/ES/FR-ben valódi E10-ár, máshol E5 (95) ár `price_fuel`/`fuel_note` jelzéssel.
+7. **Svájc, Liechtenstein, Monaco** – becslés; CH: TCS-horgony + a DE/AT/FR/IT Bulletin-átlag napi változása (reggel 6-kor frissül), LI = CH, MC = FR; CH éves matrica 40 CHF.
 6. **Pénznem** – minden ár kérhető az EU-s pénznemek bármelyikében: EUR, CZK, DKK, HUF, PLN, RON, SEK (`currency=HUF`, lista: `GET /api/currencies`).
 
 ## Döntések (ne nyissuk újra)

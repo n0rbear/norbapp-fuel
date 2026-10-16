@@ -7,7 +7,7 @@ export default function Home() {
         <p className="brand">NorbApp Fuel</p>
         <h1>Útiköltség-kalkulátor</h1>
         <p className="muted">
-          Útvonal, tankolási pontok, üzemanyagárak és útdíjak mind a 27 EU-országra – a választott pénznemben.
+          Útvonal, tankolási pontok, üzemanyagárak és útdíjak a 27 EU-országra, valamint Svájcra, Liechtensteinre és Monacóra – a választott pénznemben.
         </p>
       </header>
       <Planner />

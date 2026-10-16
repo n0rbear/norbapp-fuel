@@ -21,7 +21,7 @@ import pricing_matrix as pm
 from api_clients import MAX_RADIUS_KM, OFFICIAL_CLIENTS, ApiNotConfiguredError, OfficialApiError
 import tolls as tl
 from base_price_updater import updater
-from fx import EU_CURRENCIES, UnknownCurrencyError, fx
+from fx import EU_CURRENCIES, fx
 from pricing_matrix import BrandTier, Fuel, Location
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -48,7 +48,8 @@ app = FastAPI(
     version=APP_VERSION,
     description=(
         "EU fuel prices: live station prices from official open APIs (DE, AT, ES, FR, IT, PT, SI), "
-        "heuristic brand x location estimates for the other EU countries, and motorway tolls. "
+        "heuristic brand x location estimates for the other EU countries and for Switzerland, "
+        "Liechtenstein and Monaco, and motorway tolls. "
         "Every price endpoint accepts `currency` (EU currencies, default EUR)."
     ),
     lifespan=lifespan,
@@ -75,10 +76,12 @@ _PRICE_KEYS = {"price", "price_low", "price_high", "base_price", "min", "max", "
 
 
 def _require_currency(currency: str) -> str:
-    try:
-        fx.rate(currency)
-    except UnknownCurrencyError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    """Display currency: the EU currencies only (CHF is used internally)."""
+    if currency.upper() not in EU_CURRENCIES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unsupported currency '{currency}'. Supported: {', '.join(EU_CURRENCIES)}.",
+        )
     return currency.upper()
 
 
@@ -113,7 +116,7 @@ def _require_country(code: str) -> pm.Country:
     if country is None:
         raise HTTPException(
             status_code=404,
-            detail=f"Unknown or non-EU country code '{code}'. See GET /api/countries.",
+            detail=f"Unknown or unsupported country code '{code}'. See GET /api/countries.",
         )
     return country
 
@@ -125,7 +128,10 @@ def _country_dict(country: pm.Country) -> dict[str, Any]:
         "name_hu": country.name_hu,
         "mode": "official" if country.official_api else "estimate",
         "local_currency": country.local_currency,
+        "eu": country.eu,
     }
+    if not country.official_api:
+        data["base_price_source"] = pm.base_price_source(country.code)
     client = OFFICIAL_CLIENTS.get(country.code)
     if client:
         data["official_api"] = client.describe()
@@ -144,6 +150,7 @@ def _estimate_payload(
     return {
         "base_price": pm.base_price(country.code, fuel),
         "base_prices_as_of": pm.BASE_PRICES_AS_OF,
+        "base_price_source": pm.base_price_source(country.code),
         "formula": "price = base_price * brand_multiplier * location_multiplier",
         "estimates": [e.as_dict() for e in estimates],
     }
@@ -188,8 +195,8 @@ async def get_base_prices(currency: str = CurrencyQuery) -> dict[str, Any]:
     updater.ensure_fresh(app.state.http)
     status = updater.status()
     prices = {
-        code: {f.value: fx.convert(p, currency) for f, p in values.items()}
-        for code, values in pm.BASE_PRICES.items()
+        code: {f.value: fx.convert(pm.base_price(code, f), currency) for f in (Fuel.PETROL, Fuel.DIESEL)}
+        for code in pm.COUNTRIES
     }
     return {**status, "currency": currency, "unit": f"{currency}/l",
             "exchange_rate": fx.describe(currency), "prices": prices}
@@ -213,7 +220,7 @@ async def list_currencies() -> dict[str, Any]:
 
 @app.get("/api/countries", tags=["prices"])
 async def list_countries() -> dict[str, Any]:
-    """All 27 EU countries with their pricing mode (official API or estimate)."""
+    """The 27 EU countries plus CH, LI and MC with their pricing mode (official API or estimate)."""
     return {"countries": [_country_dict(c) for c in pm.COUNTRIES.values()]}
 
 
@@ -399,7 +406,7 @@ def _require_tolls(code: str) -> tl.CountryTolls:
 
 @app.get("/api/tolls", tags=["tolls"])
 async def list_tolls(currency: str = CurrencyQuery, euro_class: str | None = EuroClassQuery) -> dict[str, Any]:
-    """Passenger-car motorway tolls of all 27 EU countries."""
+    """Passenger-car motorway tolls of the 27 EU countries plus CH, LI and MC."""
     currency = _require_currency(currency)
     group = _emission_group(euro_class)
     return {

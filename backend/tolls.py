@@ -1,4 +1,5 @@
-"""Motorway tolls of the 27 EU countries for passenger cars (<= 3.5 t, class 1).
+"""Motorway tolls for passenger cars (<= 3.5 t, class 1): the 27 EU countries
+plus Switzerland, Liechtenstein and Monaco.
 
 Three charging models:
   vignette  time-based e-vignette (AT, BG, CZ, HU, RO, SI, SK)
@@ -314,6 +315,15 @@ TOLLS: dict[str, CountryTolls] = {
                      special=(S("valletta-cva", "Valletta behajtási díj (CVA)", 2.00),)),
         CountryTolls("NL", "free", "EUR", "Az autópályák ingyenesek; a Westerschelde-alagút 2025 óta díjmentes.",
                      special=(S("kiltunnel", "Kiltunnel (Dordrecht)", 2.00),)),
+        # --- Non-EU neighbours -----------------------------------------------
+        CountryTolls(
+            "CH", "vignette", "CHF",
+            "Éves autópálya-matrica (e-matrica vagy matrica) minden autópályán; rövidebb időtartam nincs.",
+            vignettes=(V("1y", "Éves autópálya-matrica 2026", 365, 40.00, "A naptári évre érvényes (2025.12.01 – 2027.01.31)."),),
+            sources=("https://www.bazg.admin.ch/bazg/en/home/information-individuals/motorway-vignette.html",),
+        ),
+        CountryTolls("LI", "free", "CHF", "Nincs autópálya és útdíj (Svájcon át érkezve a svájci matrica kell)."),
+        CountryTolls("MC", "free", "EUR", "Nincs útdíj (az A8-as francia autópálya fizetős)."),
         CountryTolls("SE", "free", "SEK", "Nincs autópályadíj; néhány híd és Stockholm/Göteborg dugódíj fizetős.",
                      special=(S("oresund", "Øresund-híd (SE→DK)", 690, None, "Online/előfizetéssel olcsóbb."),
                               S("sundsvall", "Sundsvall-híd", 9), S("motala", "Motala-híd", 5),
