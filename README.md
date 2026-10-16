@@ -44,9 +44,14 @@ app/
     diagnostics/       NDP telemetry client and privacy sanitizer
     ui/theme/          Compose theme files
   src/main/res/        Android resources
+backend/               FastAPI fuel price backend (official EU APIs + estimation matrix)
 gradle/                Gradle wrapper and version catalog
 docs/                  Publication and project documentation
 ```
+
+## Fuel Price Backend
+
+`backend/` contains a Python FastAPI service that serves fuel prices for all 27 EU countries: live station prices from official open APIs (DE, AT, ES, FR, IT, PT, SI) and heuristic brand x location estimates for the remaining countries. It deploys to Render with the root `render.yaml` blueprint. See `backend/README.md`.
 
 ## Requirements
 
