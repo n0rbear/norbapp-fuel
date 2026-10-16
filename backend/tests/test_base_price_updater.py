@@ -16,7 +16,7 @@ BUDAPEST = ZoneInfo("Europe/Budapest")
 
 ECB_XML = "<Cube time='2026-10-19'>" + "".join(
     f"<Cube currency='{c}' rate='{r}'/>" for c, r in
-    [("HUF", 400.0)] + [("X" + chr(65 + i) + "Q", 1.5) for i in range(25)]
+    [("USD", 1.1), ("HUF", 400.0), ("CZK", 24.0), ("DKK", 7.46), ("PLN", 4.3), ("RON", 5.3), ("SEK", 11.0)]
 ) + "</Cube>"
 
 
@@ -77,8 +77,6 @@ def test_refresh_applies_prices_and_keeps_overrides(monkeypatch):
     def handler(request):
         if "ecb.europa.eu" in str(request.url):
             return httpx.Response(200, text=ECB_XML)
-        if "er-api" in str(request.url):
-            return httpx.Response(200, json={"result": "success", "rates": {"EUR": 1, "RSD": 117.4}})
         if "weekly-oil-bulletin" in str(request.url):
             return httpx.Response(200, text='<a href="/document/download/abc_en?filename=Weekly%20prices%20with%20Taxes.xlsx">')
         return httpx.Response(200, content=bulletin_xlsx(hu_petrol=1700.0))
@@ -89,8 +87,8 @@ def test_refresh_applies_prices_and_keeps_overrides(monkeypatch):
 
     try:
         assert asyncio.run(run())
-        assert fx.rate("HUF") == 400.0 and fx.rate("RSD") == 117.4
-        assert fx.describe("RSD")["source"] == "exchangerate-api.com"
+        assert fx.rate("HUF") == 400.0 and fx.as_of == "2026-10-19"
+        assert "USD" not in fx.rates  # EU currencies only
         assert pm.base_price("HU", Fuel.PETROL) == 1.7
         assert pm.base_price("MT", Fuel.PETROL) == 1.111
         assert pm.BASE_PRICES_AS_OF == "2026-10-19"

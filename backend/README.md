@@ -56,12 +56,12 @@ Az alapárak **minden reggel 6:00-kor (Europe/Budapest)** frissülnek az EU Week
 
 ## Pénznem választása (`fx.py`)
 
-Minden árat visszaadó végpont fogad egy `currency` paramétert (ISO 4217, alapért. `EUR`), pl. `currency=HUF`. A számítás EUR-ban történik, a kimenet konvertált; a válasz `exchange_rate` mezője megadja az árfolyamot, a dátumát és a forrását.
+Minden árat visszaadó végpont fogad egy `currency` paramétert (alapért. `EUR`), pl. `currency=HUF`. Csak az EU-ban használt pénznemek választhatók: **EUR, CZK, DKK, HUF, PLN, RON, SEK** (Bulgária 2026 óta euróövezeti). Más kódra 422-es hiba jön. A számítás EUR-ban történik, a kimenet konvertált; a válasz `exchange_rate` mezője megadja az árfolyamot és a dátumát.
 
-- **Forrás:** az Európai Központi Bank napi referencia-árfolyamai (~30 pénznem, hivatalos), kiegészítve az [exchangerate-api.com](https://www.exchangerate-api.com) nyílt végpontjával a többi ~130 pénznemre – összesen 160+.
+- **Forrás:** az Európai Központi Bank napi referencia-árfolyamai.
 - **Frissítés:** az alapárakkal együtt minden reggel 6:00-kor; amíg az első letöltés nem sikerül, a kódba épített EKB-pillanatkép (2026-10-16) él.
-- `GET /api/currencies`: a választható pénznemek listája árfolyammal – ebből építhető a frontend pénznemválasztója.
-- Kerekítés: 3 tizedes (pl. EUR, USD), 2 tizedes (pl. HUF, CZK), egész (pl. IDR).
+- `GET /api/currencies`: a 7 választható pénznem magyar névvel, árfolyammal és azokkal az országokkal, ahol helyi pénznem – ebből építhető a frontend pénznemválasztója.
+- Kerekítés: 3 tizedes (EUR), 2 tizedes (a többi).
 
 ## Autópályadíjak (`tolls.py`)
 
@@ -77,8 +77,15 @@ Külön díjak (alagutak, hidak, hágók) minden országnál `special_tolls` ala
 
 Az árakat az eladási pénznemben tárolja (`price_local`), a válaszban a kért pénznemre váltja. Az adatok forrása az üzemeltetők oldalai, ellenőrizve a [fuel-prices.eu](https://www.fuel-prices.eu/tolls/) 2026. szeptemberi listájával. **Évente frissíteni kell** (a matricák általában január 1-jén, Franciaország február 1-jén drágul) – `tolls.py`, `TOLLS_AS_OF`.
 
+### Euro-besorolás (`euro_class`)
+
+Ahol az útdíj a jármű kibocsátási osztályától függ – jelenleg **Románia** (MTI 888/2026, 2026.10.01-től) –, ott meg kell adni az autó Euro-besorolását: `euro_class=electric|6|5|4|3|2|1|0` (az `euro6` alak is jó).
+
+- `GET /api/tolls/estimate`: ha az útvonalon ilyen ország van és nincs `euro_class`, **422** jön `{"error": "euro_class_required", "countries": ["RO"]}` tartalommal – a frontend ebből tudja, hogy rá kell kérdeznie a felhasználóra.
+- `GET /api/tolls/{country}`: a `requires_euro_class` mező jelzi, hogy kell-e; az árak mindegyik csoportra szerepelnek (`price_by_emission_group`), a `price` csak `euro_class` megadásával töltődik ki.
+- Román rovinieta (lej): 1 nap 20/22/26/29 · 10 nap 27/30/35/39 · 30 nap 43/48/55/62 · 60 nap 68/76/87/99 · 12 hónap 228/254/292/330 (elektromos / Euro 6 / Euro 4–5 / Euro 0–3; ismeretlen besorolás = Euro 0).
+
 Megjegyzések:
-- RO: a 2026.10.01-től érvényes, kibocsátás szerinti tarifa Euro 6 / elektromos autóra; régebbi autóknál legfeljebb +30%.
 - AT: online vett 2 hónapos és éves vignetta csak a vásárlás utáni 18. naptól érvényes.
 - A km-díj átlagérték, a tényleges díj szakaszonként eltér – becslésként kezelendő.
 
@@ -163,6 +170,7 @@ Válasz hivatalos módban (rövidítve):
 | `days` | az út hossza napban (1–365) – ehhez választja ki a legolcsóbb matrica-kombinációt |
 | `highway_km` | díjköteles km a km-alapú országokban, pl. `FR:500,HR:380` |
 | `special` | beszámítandó külön díjak azonosítói, pl. `a13-brenner,mont-blanc` |
+| `euro_class` | az autó Euro-besorolása; kötelező, ha az útvonalon RO van |
 | `currency` | pénznem |
 
 ```bash

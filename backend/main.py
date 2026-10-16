@@ -21,7 +21,7 @@ import pricing_matrix as pm
 from api_clients import MAX_RADIUS_KM, OFFICIAL_CLIENTS, ApiNotConfiguredError, OfficialApiError
 import tolls as tl
 from base_price_updater import updater
-from fx import UnknownCurrencyError, fx
+from fx import EU_CURRENCIES, UnknownCurrencyError, fx
 from pricing_matrix import BrandTier, Fuel, Location
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -49,7 +49,7 @@ app = FastAPI(
     description=(
         "EU fuel prices: live station prices from official open APIs (DE, AT, ES, FR, IT, PT, SI), "
         "heuristic brand x location estimates for the other EU countries, and motorway tolls. "
-        "Every price endpoint accepts `currency` (ISO 4217, default EUR)."
+        "Every price endpoint accepts `currency` (EU currencies, default EUR)."
     ),
     lifespan=lifespan,
 )
@@ -63,7 +63,12 @@ app.add_middleware(
 )
 
 
-CurrencyQuery = Query("EUR", min_length=3, max_length=3, description="ISO 4217 display currency, e.g. HUF")
+CurrencyQuery = Query("EUR", min_length=3, max_length=3, description="Display currency: EUR, CZK, DKK, HUF, PLN, RON or SEK")
+EuroClassQuery = Query(
+    None, max_length=10,
+    description="Car emission class: electric, 6, 5, 4, 3, 2, 1, 0 (or 'euro6'). Required for routes through "
+                "countries with emission-based tolls (RO).",
+)
 
 # Response keys holding EUR amounts that are converted to the display currency.
 _PRICE_KEYS = {"price", "price_low", "price_high", "base_price", "min", "max", "avg", "median"}
@@ -182,15 +187,16 @@ async def get_base_prices(currency: str = CurrencyQuery) -> dict[str, Any]:
 
 @app.get("/api/currencies", tags=["meta"])
 async def list_currencies() -> dict[str, Any]:
-    """Every supported display currency with its rate (1 EUR = rate)."""
+    """The EU currencies that can be chosen for display, with ECB rates (1 EUR = rate)."""
     updater.ensure_fresh(app.state.http)
     return {
         "base": "EUR",
         "as_of": fx.as_of,
         "source": fx.source,
         "currencies": [
-            {"code": code, "rate": rate, "source": "ECB" if code in fx.ecb_codes else "exchangerate-api.com"}
-            for code, rate in sorted(fx.rates.items())
+            {"code": code, "name_hu": name, "rate": fx.rate(code),
+             "countries": sorted(c.code for c in pm.COUNTRIES.values() if c.local_currency == code)}
+            for code, name in EU_CURRENCIES.items()
         ],
     }
 
@@ -324,7 +330,30 @@ def _money(amount: float, from_currency: str, currency: str) -> float:
     return fx.convert(fx.to_eur(amount, from_currency), currency)
 
 
-def _tolls_dict(t: tl.CountryTolls, currency: str) -> dict[str, Any]:
+def _emission_group(euro_class: str | None) -> str | None:
+    try:
+        return tl.emission_group(euro_class)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+def _vignette_dict(v: tl.VignetteOption, t: tl.CountryTolls, currency: str, group: str | None) -> dict[str, Any]:
+    known = v.price_by_group is None or group is not None
+    data: dict[str, Any] = {
+        "id": v.id, "label": v.label, "days": v.days,
+        "price": _money(v.price_for(group), t.currency, currency) if known else None,
+        "price_local": v.price_for(group) if known else None,
+        "note": v.note, "for_trips": v.for_trips,
+    }
+    if v.price_by_group:
+        data["price_by_emission_group"] = {
+            g: {"label": tl.EMISSION_GROUP_LABELS[g], "price": _money(p, t.currency, currency), "price_local": p}
+            for g, p in v.price_by_group.items()
+        }
+    return data
+
+
+def _tolls_dict(t: tl.CountryTolls, currency: str, group: str | None = None) -> dict[str, Any]:
     country = pm.COUNTRIES[t.code]
     return {
         "country": t.code,
@@ -333,14 +362,8 @@ def _tolls_dict(t: tl.CountryTolls, currency: str) -> dict[str, Any]:
         "system": t.system,
         "summary_hu": t.summary_hu,
         "sold_in_currency": t.currency,
-        "vignettes": [
-            {
-                "id": v.id, "label": v.label, "days": v.days,
-                "price": _money(v.price, t.currency, currency),
-                "price_local": v.price, "note": v.note, "for_trips": v.for_trips,
-            }
-            for v in t.vignettes
-        ],
+        "requires_euro_class": t.emission_based,
+        "vignettes": [_vignette_dict(v, t, currency, group) for v in t.vignettes],
         "per_km": _money(t.per_km, t.currency, currency) if t.per_km is not None else None,
         "special_tolls": [
             {
@@ -360,15 +383,17 @@ def _require_tolls(code: str) -> tl.CountryTolls:
 
 
 @app.get("/api/tolls", tags=["tolls"])
-async def list_tolls(currency: str = CurrencyQuery) -> dict[str, Any]:
+async def list_tolls(currency: str = CurrencyQuery, euro_class: str | None = EuroClassQuery) -> dict[str, Any]:
     """Passenger-car motorway tolls of all 27 EU countries."""
     currency = _require_currency(currency)
+    group = _emission_group(euro_class)
     return {
         "as_of": tl.TOLLS_AS_OF,
         "vehicle": "passenger car <= 3.5 t (class 1)",
         "currency": currency,
         "exchange_rate": fx.describe(currency),
-        "countries": [_tolls_dict(t, currency) for t in sorted(tl.TOLLS.values(), key=lambda t: t.code)],
+        "euro_classes": list(tl.EURO_CLASSES),
+        "countries": [_tolls_dict(t, currency, group) for t in sorted(tl.TOLLS.values(), key=lambda t: t.code)],
     }
 
 
@@ -394,6 +419,7 @@ async def estimate_tolls(
     days: int = Query(1, ge=1, le=365, description="Trip length in days (vignette validity needed)"),
     highway_km: str | None = Query(None, description="Tolled motorway km per distance-based country, e.g. FR:500,IT:120"),
     special: str | None = Query(None, description="Comma-separated special toll ids to include, e.g. a13-brenner"),
+    euro_class: str | None = EuroClassQuery,
     currency: str = CurrencyQuery,
 ) -> dict[str, Any]:
     """Estimated toll cost of a trip: cheapest vignette combination per country,
@@ -402,18 +428,30 @@ async def estimate_tolls(
     codes = list(dict.fromkeys(c.strip().upper() for c in countries.split(",") if c.strip()))
     if not codes:
         raise HTTPException(status_code=422, detail="countries is empty")
+    group = _emission_group(euro_class)
+    route = [_require_tolls(code) for code in codes]
+    needs_class = [t.code for t in route if t.emission_based]
+    if needs_class and group is None:
+        raise HTTPException(status_code=422, detail={
+            "error": "euro_class_required",
+            "message": f"The route includes countries with emission-based tolls ({', '.join(needs_class)}); "
+                       f"pass euro_class ({', '.join(tl.EURO_CLASSES)}).",
+            "countries": needs_class,
+        })
     km = _parse_km(highway_km)
     wanted = {s.strip() for s in (special or "").split(",") if s.strip()}
 
     items, total_eur = [], 0.0
-    for code in codes:
-        t = _require_tolls(code)
+    for t in route:
+        code = t.code
         item: dict[str, Any] = {"country": code, "system": t.system, "lines": []}
         if t.system == "vignette":
-            cost, combo = tl.cheapest_vignettes(t.vignettes, days)
+            cost, combo = tl.cheapest_vignettes(t.vignettes, days, group)
             for v in combo:
                 item["lines"].append({"type": "vignette", "id": v.id, "label": v.label,
-                                      "eur": fx.to_eur(v.price, t.currency)})
+                                      "eur": fx.to_eur(v.price_for(group), t.currency)})
+            if t.emission_based:
+                item["emission_group"] = group
         elif t.system == "distance" and t.per_km is not None and code in km:
             item["lines"].append({"type": "distance", "km": km[code], "estimate": True,
                                   "eur": fx.to_eur(t.per_km * km[code], t.currency)})
@@ -433,6 +471,7 @@ async def estimate_tolls(
     return {
         "as_of": tl.TOLLS_AS_OF,
         "days": days,
+        "euro_class": euro_class,
         "currency": currency,
         "exchange_rate": fx.describe(currency),
         "countries": items,
@@ -441,9 +480,12 @@ async def estimate_tolls(
 
 
 @app.get("/api/tolls/{country}", tags=["tolls"])
-async def get_tolls(country: str, currency: str = CurrencyQuery) -> dict[str, Any]:
+async def get_tolls(
+    country: str, currency: str = CurrencyQuery, euro_class: str | None = EuroClassQuery
+) -> dict[str, Any]:
     """Toll system, vignette prices and special tolls of one country."""
     currency = _require_currency(currency)
+    group = _emission_group(euro_class)
     t = _require_tolls(country)
     return {"as_of": tl.TOLLS_AS_OF, "currency": currency,
-            "exchange_rate": fx.describe(currency), **_tolls_dict(t, currency)}
+            "exchange_rate": fx.describe(currency), **_tolls_dict(t, currency, group)}

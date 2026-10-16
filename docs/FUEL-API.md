@@ -1,0 +1,44 @@
+# FUEL-API – átadási jegyzet
+
+**Folyamat neve: `FUEL-API`** – a NorbApp Fuel üzemanyagár-, útdíj- és pénznem-backendje.
+A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beépítését”*.
+
+## Hol tart (2026-10-16)
+
+| Elem | Állapot |
+|---|---|
+| Kód | `backend/` mappa, ág: `feature/fuel-price-backend` (még nincs beolvasztva a `main`-be) |
+| Élő szolgáltatás | https://norbapp-fuel-api.onrender.com (Render, free csomag, Oregon régió, auto-deploy erről az ágról) |
+| API-dokumentáció | https://norbapp-fuel-api.onrender.com/docs |
+| Részletes leírás | `backend/README.md` |
+| Tesztek | `cd backend && pip install -r requirements-dev.txt && pytest` – 51 teszt, mind zöld |
+
+## Mit tud
+
+1. **Üzemanyagárak** – 7 országra élő kútárak hivatalos API-kból (DE, AT, ES, FR, IT, PT, SI), a többi 20 EU-országra becslés: országos átlagár × márka × lokáció (`GET /api/prices`, `/api/estimate`, `/api/matrix`).
+2. **Napi frissítés 6:00-kor (Europe/Budapest)** – EU Weekly Oil Bulletin átlagárak + EKB-árfolyamok; ha a szolgáltatás alszik, az első kérés pótolja (`GET /api/base-prices`).
+3. **Autópályadíjak** – mind a 27 EU-ország, személyautó: matricák, km-díj, alagutak/hidak; útvonal-becslés a legolcsóbb matrica-kombinációval (`GET /api/tolls`, `/api/tolls/{ország}`, `/api/tolls/estimate`).
+4. **Euro-besorolás** – ahol az útdíj függ tőle (jelenleg Románia), a `euro_class` kötelező; hiányában 422 `euro_class_required`.
+5. **Pénznem** – minden ár kérhető az EU-s pénznemek bármelyikében: EUR, CZK, DKK, HUF, PLN, RON, SEK (`currency=HUF`, lista: `GET /api/currencies`).
+
+## Döntések (ne nyissuk újra)
+
+- Render **free** csomag, **nincs** ébren tartás (a KetoMentor nem pingeli) – a havi 750 órás keretet a norbapp.com már elviszi. Ha a statikus norbapp oldal elköltözik, a fuel API felvehető a KetoMentor `KEEP_AWAKE_URLS` listájára.
+- Csak EU-s pénznemek, árfolyam kizárólag az EKB-tól.
+- Útdíjaknál csak személyautó (≤ 3,5 t, 1. kategória).
+
+## Nyitott teendők (javasolt sorrend)
+
+1. **Tankerkönig API-kulcs** – Render → `norbapp-fuel-api` → Environment → `TANKERKOENIG_API_KEY` (a felhasználó intézi). Addig Németország becsléssel megy.
+2. **Frontend-beépítés (web, `web/`, ág: `claude/awesome-pasteur-3tdbj4`)**:
+   - pénznemválasztó a `GET /api/currencies` alapján, a választás megjegyzése, minden kéréshez `currency=` paraméter;
+   - Euro-besorolás mező a járműbeállításoknál; ha a `/api/tolls/estimate` 422 `euro_class_required`-et ad, rákérdezni;
+   - matricadíjak/útdíjak a `/api/tolls/estimate`-ből a beégetett értékek helyett.
+3. **Android-app** (`app/`) – jelenleg közvetlenül hívja a Tankerkönig/E-Control API-t, és a matricadíjak be vannak égetve (`CalculateTripUseCase.kt`: HU 16,50 €, AT 11,50 €). Átállítás a FUEL-API-ra: üzemanyagár, útdíj, pénznem- és Euro-besorolás-beállítás.
+4. **Beolvasztás a `main`-be** – mindkét ág létrehoz gyökér `render.yaml`-t (API és web) → a két szolgáltatást egy fájlba kell fésülni.
+5. **Opcionális:** a szolgáltatás Frankfurtba költöztetése (a régió utólag nem állítható, újra kell létrehozni; a többi szolgáltatás ott van).
+
+## Karbantartás
+
+- Útdíjak évente (`backend/tolls.py`, `TOLLS_AS_OF`) – matricák jellemzően január 1-jén, Franciaország február 1-jén változik.
+- Az alapárak és árfolyamok maguktól frissülnek; kézi felülírás: `BASE_PRICES_JSON` környezeti változó.
