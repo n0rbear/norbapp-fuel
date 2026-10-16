@@ -35,6 +35,8 @@ export type PlanRequest = {
   fuelType: FuelType;
   currency: Currency;
   vehicle: Vehicle;
+  /** Fill the tank up before departure (only matters below 100%). */
+  fillAtStart: boolean;
 };
 
 export type Station = {
@@ -49,15 +51,17 @@ export type Station = {
 };
 
 export type PointPrices =
-  | { mode: "official"; source: string; stations: Station[]; estimate: null }
+  | { mode: "official"; source: string; stations: Station[]; estimate: null; fuelNote: string | null }
   | {
       mode: "estimate";
       source: string;
       stations: [];
       estimate: { price: number; low: number; high: number; location: "highway" | "city" };
+      /** Set when E10 was asked for but only an E5 (Super 95) price exists here. */
+      fuelNote: string | null;
     }
   /** Outside the EU, or the price service failed. */
-  | { mode: "none"; source: null; stations: []; estimate: null; reason: string };
+  | { mode: "none"; source: null; stations: []; estimate: null; fuelNote: null; reason: string };
 
 export type FuelPoint = {
   kind: "start" | "stop";

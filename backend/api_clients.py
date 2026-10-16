@@ -147,6 +147,8 @@ class OfficialApiClient(ABC):
     source_name: str
     source_url: str
     requires_api_key: bool = False
+    # Whether the source publishes E10 separately from Super 95 (E5).
+    supports_e10: bool = False
 
     @property
     def configured(self) -> bool:
@@ -183,6 +185,7 @@ class OfficialApiClient(ABC):
             "source_url": self.source_url,
             "requires_api_key": self.requires_api_key,
             "configured": self.configured,
+            "supports_e10": self.supports_e10,
         }
 
 
@@ -197,6 +200,7 @@ class GermanyTankerkoenigClient(OfficialApiClient):
     source_name = "Tankerkoenig (MTS-K)"
     source_url = "https://creativecommons.tankerkoenig.de/json/list.php"
     requires_api_key = True
+    supports_e10 = True
 
     @property
     def api_key(self) -> str | None:
@@ -223,9 +227,12 @@ class GermanyTankerkoenigClient(OfficialApiClient):
             raise OfficialApiError(f"{self.source_name}: {data.get('message', 'request rejected')}")
         stations = []
         for s in data.get("stations") or []:
-            price = parse_decimal(s.get("diesel")) if fuel is Fuel.DIESEL else (
-                parse_decimal(s.get("e5")) or parse_decimal(s.get("e10"))
-            )
+            if fuel is Fuel.DIESEL:
+                price = parse_decimal(s.get("diesel"))
+            elif fuel is Fuel.E10:
+                price = parse_decimal(s.get("e10"))
+            else:
+                price = parse_decimal(s.get("e5")) or parse_decimal(s.get("e10"))
             if price is None:
                 continue
             street = " ".join(p for p in (s.get("street"), s.get("houseNumber")) if p)
@@ -276,13 +283,18 @@ class SpainMineturClient(OfficialApiClient):
         "PreciosCarburantes/EstacionesTerrestres/"
     )
     cache_ttl = 30 * 60
+    supports_e10 = True
 
     async def _load(self, http: httpx.AsyncClient) -> dict[str, Any]:
         return await _get_json(http, self.source_url, headers={"Accept": "application/json"}, timeout=60)
 
     async def fetch_stations(self, http, lat, lng, radius_km, fuel):
         data = await cache.get_or_load("ES", self.cache_ttl, lambda: self._load(http))
-        price_key = "Precio Gasoleo A" if fuel is Fuel.DIESEL else "Precio Gasolina 95 E5"
+        price_key = {
+            Fuel.DIESEL: "Precio Gasoleo A",
+            Fuel.PETROL: "Precio Gasolina 95 E5",
+            Fuel.E10: "Precio Gasolina 95 E10",
+        }[fuel]
         updated = data.get("Fecha")
         stations = []
         for s in data["ListaEESSPrecio"]:
@@ -307,6 +319,7 @@ class FrancePrixCarburantsClient(OfficialApiClient):
         "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/"
         "prix-des-carburants-en-france-flux-instantane-v2/records"
     )
+    supports_e10 = True
 
     async def fetch_stations(self, http, lat, lng, radius_km, fuel):
         data = await _get_json(
@@ -317,10 +330,11 @@ class FrancePrixCarburantsClient(OfficialApiClient):
                 "limit": 100,
             },
         )
-        fields = [("gazole_prix", "gazole_maj")] if fuel is Fuel.DIESEL else [
-            ("sp95_prix", "sp95_maj"),
-            ("e10_prix", "e10_maj"),
-        ]
+        fields = {
+            Fuel.DIESEL: [("gazole_prix", "gazole_maj")],
+            Fuel.PETROL: [("sp95_prix", "sp95_maj"), ("e10_prix", "e10_maj")],
+            Fuel.E10: [("e10_prix", "e10_maj")],
+        }[fuel]
         stations = []
         for s in data.get("results") or []:
             geom = s.get("geom") or {}

@@ -11,6 +11,7 @@ const SOURCE_LABEL: Record<PriceSource, string> = {
   manual: "kézi ár",
   station: "kiválasztott kút",
   cheapest: "legolcsóbb közeli kút",
+  average: "környékbeli átlagár",
   estimate: "becslés",
   default: "alapár",
 };
@@ -126,7 +127,13 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange }: 
           return (
             <li key={i}>
               <div className="point-head">
-                <strong>{point.kind === "start" ? "Indulás" : `${i}. tankolás – ${formatKm(point.km)}-nél`}</strong>
+                <strong>
+                  {point.kind === "start"
+                    ? `Indulás – ${formatLitres(data.plan.startLitres)} a tankban (${request.vehicle.startLevelPct}%)`
+                    : point.km < 0.5
+                      ? `${i}. tankolás – indulás előtt`
+                      : `${i}. tankolás – ${formatKm(point.km)}-nél`}
+                </strong>
                 <span className="muted">{point.country ? countryName(point.country) : "ismeretlen ország"}</span>
               </div>
               <div className="point-meta">
@@ -137,6 +144,13 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange }: 
                 </span>
               </div>
 
+              {point.kind === "start" && (
+                <p className="muted small">
+                  Ez nem tankolás: a tankban lévő üzemanyagot a környékbeli átlagárral számoljuk, amíg az első
+                  tankolásig elfogy.
+                </p>
+              )}
+              {prices.fuelNote && <p className="muted small">{prices.fuelNote}</p>}
               {prices.mode === "estimate" && (
                 <p className="muted small">
                   Becsült ár ({prices.estimate.location === "highway" ? "autópálya" : "város"}, átlagos márka):{" "}
@@ -144,7 +158,7 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange }: 
                 </p>
               )}
               {prices.mode === "none" && <p className="muted small">{prices.reason}</p>}
-              {prices.stations.length > 0 && (
+              {point.kind === "stop" && prices.stations.length > 0 && (
                 <div className="stations" role="radiogroup" aria-label="Kút kiválasztása">
                   {prices.stations.map((s) => {
                     const isOn = selected[i] === s.id;

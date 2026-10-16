@@ -10,12 +10,30 @@ export type PriceOptions = {
   selected: Record<number, string | undefined>;
 };
 
-/** Picks the price for each fuel point: manual > selected station > cheapest station > estimate > default. */
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/**
+ * Picks the price for each fuel point.
+ * Stops: manual > selected station > cheapest station > estimate > default.
+ * Start (the fuel already in the tank, bought earlier): manual > local median
+ * station price > estimate > default – it is not a fill-up, so no station is picked.
+ */
 export function resolvePrices(points: FuelPoint[], options: PriceOptions): PricedPoint[] {
   return points.map((point, i) => {
     if (options.manualPrice !== null) return { price: options.manualPrice, source: "manual" };
 
     const { stations, estimate } = point.prices;
+    if (point.kind === "start") {
+      const prices = stations.map((s) => s.price).filter((p): p is number => p !== null);
+      if (prices.length > 0) return { price: median(prices), source: "average" };
+      if (estimate) return { price: estimate.price, source: "estimate" };
+      return { price: options.defaultPrice, source: "default" };
+    }
+
     const selected = stations.find((s) => s.id === options.selected[i]);
     if (selected?.price != null) return { price: selected.price, source: "station" };
 

@@ -11,14 +11,14 @@ const station = (id: string, price: number | null): Station => ({
   isOpen: true,
 });
 
-const point = (stations: Station[]): FuelPoint => ({
-  kind: "start",
-  km: 0,
+const point = (stations: Station[], kind: FuelPoint["kind"] = "stop"): FuelPoint => ({
+  kind,
+  km: kind === "start" ? 0 : 300,
   location: { lat: 0, lng: 0 },
   country: "DE",
   prices: stations.length
-    ? { mode: "official", source: "Tankerkoenig (MTS-K)", stations, estimate: null }
-    : { mode: "none", source: null, stations: [], estimate: null, reason: "n/a" },
+    ? { mode: "official", source: "Tankerkoenig (MTS-K)", stations, estimate: null, fuelNote: null }
+    : { mode: "none", source: null, stations: [], estimate: null, fuelNote: null, reason: "n/a" },
 });
 
 const estimated = (price: number): FuelPoint => ({
@@ -31,6 +31,7 @@ const estimated = (price: number): FuelPoint => ({
     source: "Becslés",
     stations: [],
     estimate: { price, low: price * 0.965, high: price * 1.035, location: "highway" },
+    fuelNote: null,
   },
 });
 
@@ -54,6 +55,21 @@ describe("resolvePrices", () => {
   it("uses the estimate where there are no stations", () => {
     expect(resolvePrices([estimated(740.32)], { manualPrice: null, defaultPrice: 600, selected: {} })).toEqual([
       { price: 740.32, source: "estimate" },
+    ]);
+  });
+
+  it("prices the start tank at the local median, not a picked station", () => {
+    const start = point([station("a", 1.8), station("b", 1.9), station("c", 2.3), station("d", null)], "start");
+    expect(resolvePrices([start], { manualPrice: null, defaultPrice: 1.7, selected: { 0: "a" } })).toEqual([
+      { price: 1.9, source: "average" },
+    ]);
+  });
+
+  it("prices the start tank by estimate, then default, without stations", () => {
+    const est = { ...estimated(1.75), kind: "start" as const, km: 0 };
+    expect(resolvePrices([est, point([], "start")], { manualPrice: null, defaultPrice: 1.7, selected: {} })).toEqual([
+      { price: 1.75, source: "estimate" },
+      { price: 1.7, source: "default" },
     ]);
   });
 

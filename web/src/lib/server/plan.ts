@@ -30,7 +30,7 @@ function simplify(points: LatLng[], max: number): LatLng[] {
   return Array.from({ length: max }, (_, i) => points[Math.round(i * step)]);
 }
 
-const none = (reason: string): PointPrices => ({ mode: "none", source: null, stations: [], estimate: null, reason });
+const none = (reason: string): PointPrices => ({ mode: "none", source: null, stations: [], estimate: null, fuelNote: null, reason });
 
 export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   const warnings: string[] = [];
@@ -49,7 +49,7 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   const route = await computeRoute(places, optimize);
   const distanceKm = route.distanceMeters / 1000;
   const path = new RoutePath(decodePolyline(route.encodedPolyline), distanceKm);
-  const plan = planRefuels(distanceKm, req.vehicle);
+  const plan = planRefuels(distanceKm, req.vehicle, req.fillAtStart);
 
   const fuelKms = [0, ...plan.stops.map((s) => s.km)];
   const fuelLocations = fuelKms.map((km) => path.pointAtKm(km));
@@ -71,6 +71,13 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   }
 
   let rate: number | null = req.currency === "EUR" ? 1 : null;
+  // A fill-up before departure shares the start location: fetch its prices once.
+  const priceRequests = new Map<string, ReturnType<typeof pricesAt>>();
+  const pricesOnce = (country: string, at: LatLng, onMotorway: boolean) => {
+    const key = `${country}:${at.lat.toFixed(4)},${at.lng.toFixed(4)}:${onMotorway}`;
+    if (!priceRequests.has(key)) priceRequests.set(key, pricesAt(country, at, req.fuelType, req.currency, onMotorway));
+    return priceRequests.get(key)!;
+  };
   const points: FuelPoint[] = await mapLimit(fuelKms.map((km, i) => ({ km, i })), 4, async ({ km, i }) => {
     const country = fuelCountries[i];
     const base = { kind: i === 0 ? ("start" as const) : ("stop" as const), km, location: fuelLocations[i], country };
@@ -79,7 +86,7 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
       return { ...base, prices: none(country ? `${countryName(country)}: nincs áradat (nem EU-s ország).` : "Ismeretlen ország.") };
     }
     try {
-      const result = await pricesAt(country, fuelLocations[i], req.fuelType, req.currency, i > 0);
+      const result = await pricesOnce(country, fuelLocations[i], km > 0);
       rate = result.rate;
       return { ...base, prices: result.prices };
     } catch {

@@ -1,8 +1,9 @@
-export type FuelType = "diesel" | "petrol";
+export type FuelType = "diesel" | "petrol" | "e10";
 
 export const FUEL_TYPES: { id: FuelType; label: string }[] = [
   { id: "diesel", label: "Dízel" },
-  { id: "petrol", label: "Benzin (95)" },
+  { id: "petrol", label: "Benzin E5 (95)" },
+  { id: "e10", label: "Benzin E10" },
 ];
 
 export type Vehicle = {
@@ -48,8 +49,9 @@ export function validateVehicle(v: Vehicle): string | null {
 /**
  * Plans refuel stops: drive until the tank reaches the reserve level, then fill
  * up — unless the remaining distance can be covered without dipping below it.
+ * With `fillAtStart`, the tank is filled up before departure (a stop at km 0).
  */
-export function planRefuels(totalKm: number, vehicle: Vehicle): RefuelPlan {
+export function planRefuels(totalKm: number, vehicle: Vehicle, fillAtStart = false): RefuelPlan {
   const error = validateVehicle(vehicle);
   if (error) throw new Error(error);
   if (!(totalKm >= 0)) throw new Error("Invalid distance");
@@ -62,6 +64,11 @@ export function planRefuels(totalKm: number, vehicle: Vehicle): RefuelPlan {
   let position = 0;
   let fuel = startLitres;
   const epsilon = 1e-9;
+
+  if (fillAtStart && vehicle.tankSize - fuel > epsilon) {
+    stops.push({ km: 0, litres: vehicle.tankSize - fuel });
+    fuel = vehicle.tankSize;
+  }
 
   while (true) {
     const remainingKm = totalKm - position;
@@ -79,7 +86,7 @@ export function planRefuels(totalKm: number, vehicle: Vehicle): RefuelPlan {
   return { totalKm, totalLitres: totalKm * perKm, startLitres, stops };
 }
 
-export type PriceSource = "manual" | "station" | "cheapest" | "estimate" | "default";
+export type PriceSource = "manual" | "station" | "cheapest" | "average" | "estimate" | "default";
 
 export type PricedPoint = { price: number; source: PriceSource };
 

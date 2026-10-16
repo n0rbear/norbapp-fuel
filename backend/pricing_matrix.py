@@ -31,8 +31,14 @@ ESTIMATE_UNCERTAINTY = 0.035
 
 
 class Fuel(str, Enum):
-    PETROL = "petrol"  # Euro-Super 95 (E5/E10)
+    PETROL = "petrol"  # Euro-Super 95 (E5, or E10 where E5 is not listed)
     DIESEL = "diesel"
+    E10 = "e10"  # Super E10; only some official sources publish it separately
+
+    @property
+    def price_basis(self) -> "Fuel":
+        """The fuel whose base price is used: the Oil Bulletin has no separate E10 series."""
+        return Fuel.PETROL if self is Fuel.E10 else self
 
 
 class BrandTier(str, Enum):
@@ -318,7 +324,7 @@ def get_country(code: str) -> Country | None:
 
 
 def base_price(country_code: str, fuel: Fuel) -> float:
-    return BASE_PRICES[country_code.upper()][fuel]
+    return BASE_PRICES[country_code.upper()][fuel.price_basis]
 
 
 def location_multiplier(country_code: str, location: Location) -> float:

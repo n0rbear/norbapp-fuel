@@ -79,12 +79,30 @@ type PricesResponse = {
   mode: "official" | "estimate";
   source: string;
   fallback_reason?: string | null;
+  /** Fuel the prices are actually for (E10 falls back to petrol where not published). */
+  price_fuel?: string;
   stations?: ApiStation[];
   estimates?: { price: number; price_low: number; price_high: number; brand_tier: string; location: string }[];
   exchange_rate: { rate: number };
 };
 
-export const apiFuel = (fuel: FuelType) => (fuel === "diesel" ? "diesel" : "petrol");
+const E5_INSTEAD_OF_E10 = "Itt nincs külön E10-ár, E5 (95) árral számolunk.";
+
+/**
+ * /api/prices for the requested fuel. An API deployment that predates E10
+ * rejects `fuel=e10` with 422; then the petrol (E5) price is used instead.
+ */
+async function fetchPrices(params: Record<string, string>, fuel: FuelType): Promise<{ data: PricesResponse; fuelNote: string | null }> {
+  try {
+    const data = await fetchJson<PricesResponse>("fuel-api", url("/api/prices", { ...params, fuel }), {}, TIMEOUT_MS);
+    const substituted = fuel === "e10" && data.price_fuel !== undefined && data.price_fuel !== "e10";
+    return { data, fuelNote: substituted ? E5_INSTEAD_OF_E10 : null };
+  } catch (e) {
+    if (fuel !== "e10" || !(e instanceof UpstreamError && e.status === 422)) throw e;
+    const data = await fetchJson<PricesResponse>("fuel-api", url("/api/prices", { ...params, fuel: "petrol" }), {}, TIMEOUT_MS);
+    return { data, fuelNote: E5_INSTEAD_OF_E10 };
+  }
+}
 
 /**
  * Prices around a fuel point. Official countries return nearby stations;
@@ -98,18 +116,15 @@ export async function pricesAt(
   currency: Currency,
   onMotorway: boolean,
 ): Promise<{ prices: PointPrices; rate: number }> {
-  const data = await fetchJson<PricesResponse>(
-    "fuel-api",
-    url("/api/prices", {
+  const { data, fuelNote } = await fetchPrices(
+    {
       country,
-      fuel: apiFuel(fuel),
       lat: point.lat.toFixed(5),
       lng: point.lng.toFixed(5),
       radius_km: String(STATION_RADIUS_KM),
       currency,
-    }),
-    {},
-    TIMEOUT_MS,
+    },
+    fuel,
   );
 
   if (data.mode === "official" && data.stations && data.stations.length > 0) {
@@ -124,16 +139,17 @@ export async function pricesAt(
       }))
       .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
       .slice(0, MAX_STATIONS);
-    return { prices: { mode: "official", source: data.source, stations, estimate: null }, rate: data.exchange_rate.rate };
+    return {
+      prices: { mode: "official", source: data.source, stations, estimate: null, fuelNote },
+      rate: data.exchange_rate.rate,
+    };
   }
 
   // No stations nearby (or the official source failed): take the estimate.
   const location = onMotorway ? "highway" : "city";
-  const estimate = await fetchJson<PricesResponse>(
-    "fuel-api",
-    url("/api/prices", { country, fuel: apiFuel(fuel), brand_tier: "mainstream", location, currency }),
-    {},
-    TIMEOUT_MS,
+  const { data: estimate, fuelNote: estimateNote } = await fetchPrices(
+    { country, brand_tier: "mainstream", location, currency },
+    fuel,
   );
   const e = estimate.estimates?.[0];
   if (!e) throw new UpstreamError("fuel-api", null, "missing estimate");
@@ -143,6 +159,7 @@ export async function pricesAt(
       source: "Becslés (EU Weekly Oil Bulletin)",
       stations: [],
       estimate: { price: e.price, low: e.price_low, high: e.price_high, location: onMotorway ? "highway" : "city" },
+      fuelNote: estimateNote,
     },
     rate: estimate.exchange_rate.rate,
   };

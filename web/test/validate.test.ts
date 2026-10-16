@@ -19,7 +19,14 @@ describe("parsePlanRequest", () => {
     if (r.ok) {
       expect(r.value.waypoints).toEqual([{ address: "Wien" }]);
       expect(r.value.destination).toEqual(valid.destination);
+      expect(r.value.fillAtStart).toBe(false);
     }
+  });
+
+  it("accepts E10 and the fill-at-start flag", () => {
+    const r = parsePlanRequest({ ...valid, fuelType: "e10", fillAtStart: true });
+    expect(r.ok && r.value.fuelType).toBe("e10");
+    expect(r.ok && r.value.fillAtStart).toBe(true);
   });
 
   it("accepts a coordinate origin", () => {
@@ -32,6 +39,7 @@ describe("parsePlanRequest", () => {
     ["blank waypoint", { ...valid, waypoints: [{ address: "" }] }],
     ["unknown fuel", { ...valid, fuelType: "lpg" }],
     ["old fuel id", { ...valid, fuelType: "e5" }],
+    ["lpg as e10 typo", { ...valid, fuelType: "E10" }],
     ["non-EU currency", { ...valid, currency: "CHF" }],
     ["bad consumption", { ...valid, vehicle: { ...valid.vehicle, consumption: "7" } }],
     ["too many waypoints", { ...valid, waypoints: Array(MAX_WAYPOINTS + 1).fill({ address: "x" }) }],

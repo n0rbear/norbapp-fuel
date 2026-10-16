@@ -20,7 +20,8 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
 2. **Napi frissítés 6:00-kor (Europe/Budapest)** – EU Weekly Oil Bulletin átlagárak + EKB-árfolyamok; ha a szolgáltatás alszik, az első kérés pótolja (`GET /api/base-prices`).
 3. **Autópályadíjak** – mind a 27 EU-ország, személyautó: matricák, km-díj, alagutak/hidak; útvonal-becslés a legolcsóbb matrica-kombinációval (`GET /api/tolls`, `/api/tolls/{ország}`, `/api/tolls/estimate`).
 4. **Euro-besorolás** – ahol az útdíj függ tőle (jelenleg Románia), a `euro_class` kötelező; hiányában 422 `euro_class_required`.
-5. **Pénznem** – minden ár kérhető az EU-s pénznemek bármelyikében: EUR, CZK, DKK, HUF, PLN, RON, SEK (`currency=HUF`, lista: `GET /api/currencies`).
+5. **E10** – `fuel=e10`: DE/ES/FR-ben valódi E10-ár, máshol E5 (95) ár `price_fuel`/`fuel_note` jelzéssel.
+6. **Pénznem** – minden ár kérhető az EU-s pénznemek bármelyikében: EUR, CZK, DKK, HUF, PLN, RON, SEK (`currency=HUF`, lista: `GET /api/currencies`).
 
 ## Döntések (ne nyissuk újra)
 
