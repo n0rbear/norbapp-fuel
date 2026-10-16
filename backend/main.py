@@ -19,7 +19,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import pricing_matrix as pm
 from api_clients import MAX_RADIUS_KM, OFFICIAL_CLIENTS, ApiNotConfiguredError, OfficialApiError
+import tolls as tl
 from base_price_updater import updater
+from fx import UnknownCurrencyError, fx
 from pricing_matrix import BrandTier, Fuel, Location
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -45,8 +47,9 @@ app = FastAPI(
     title="NorbApp Fuel API",
     version=APP_VERSION,
     description=(
-        "EU fuel prices: live station prices from official open APIs (DE, AT, ES, FR, IT, PT, SI) "
-        "and heuristic brand x location estimates for the other EU countries."
+        "EU fuel prices: live station prices from official open APIs (DE, AT, ES, FR, IT, PT, SI), "
+        "heuristic brand x location estimates for the other EU countries, and motorway tolls. "
+        "Every price endpoint accepts `currency` (ISO 4217, default EUR)."
     ),
     lifespan=lifespan,
 )
@@ -58,6 +61,42 @@ app.add_middleware(
     allow_methods=["GET"],
     allow_headers=["*"],
 )
+
+
+CurrencyQuery = Query("EUR", min_length=3, max_length=3, description="ISO 4217 display currency, e.g. HUF")
+
+# Response keys holding EUR amounts that are converted to the display currency.
+_PRICE_KEYS = {"price", "price_low", "price_high", "base_price", "min", "max", "avg", "median"}
+
+
+def _require_currency(currency: str) -> str:
+    try:
+        fx.rate(currency)
+    except UnknownCurrencyError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return currency.upper()
+
+
+def _convert(value: Any, currency: str) -> Any:
+    if isinstance(value, dict):
+        return {
+            k: fx.convert(v, currency) if k in _PRICE_KEYS and isinstance(v, (int, float)) and not isinstance(v, bool)
+            else _convert(v, currency)
+            for k, v in value.items()
+        }
+    if isinstance(value, list):
+        return [_convert(v, currency) for v in value]
+    return value
+
+
+def _localize(payload: dict[str, Any], currency: str, per_litre: bool = True) -> dict[str, Any]:
+    """Convert every EUR amount in `payload` to `currency` and label it."""
+    out = _convert(payload, currency)
+    out["currency"] = currency
+    if per_litre:
+        out["unit"] = f"{currency}/l"
+    out["exchange_rate"] = fx.describe(currency)
+    return out
 
 
 def _now() -> str:
@@ -128,14 +167,31 @@ async def health() -> dict[str, str]:
 
 
 @app.get("/api/base-prices", tags=["prices"])
-async def get_base_prices() -> dict[str, Any]:
+async def get_base_prices(currency: str = CurrencyQuery) -> dict[str, Any]:
     """Current national averages (P_base) and the daily refresh status."""
+    currency = _require_currency(currency)
+    updater.ensure_fresh(app.state.http)
+    status = updater.status()
+    prices = {
+        code: {f.value: fx.convert(p, currency) for f, p in values.items()}
+        for code, values in pm.BASE_PRICES.items()
+    }
+    return {**status, "currency": currency, "unit": f"{currency}/l",
+            "exchange_rate": fx.describe(currency), "prices": prices}
+
+
+@app.get("/api/currencies", tags=["meta"])
+async def list_currencies() -> dict[str, Any]:
+    """Every supported display currency with its rate (1 EUR = rate)."""
     updater.ensure_fresh(app.state.http)
     return {
-        **updater.status(),
-        "currency": "EUR",
-        "unit": "EUR/l",
-        "prices": {code: {f.value: p for f, p in values.items()} for code, values in pm.BASE_PRICES.items()},
+        "base": "EUR",
+        "as_of": fx.as_of,
+        "source": fx.source,
+        "currencies": [
+            {"code": code, "rate": rate, "source": "ECB" if code in fx.ecb_codes else "exchangerate-api.com"}
+            for code, rate in sorted(fx.rates.items())
+        ],
     }
 
 
@@ -155,6 +211,7 @@ async def get_prices(
     lat: float | None = Query(None, ge=-90, le=90),
     lng: float | None = Query(None, ge=-180, le=180),
     radius_km: float = Query(10.0, gt=0, le=MAX_RADIUS_KM),
+    currency: str = CurrencyQuery,
 ) -> dict[str, Any]:
     """Main frontend endpoint.
 
@@ -163,6 +220,7 @@ async def get_prices(
       With neither `location` nor `brand_tier`/`brand` the full 3x3 matrix is returned.
     """
     c = _require_country(country)
+    currency = _require_currency(currency)
     updater.ensure_fresh(app.state.http)
     if (lat is None) != (lng is None):
         raise HTTPException(status_code=422, detail="lat and lng must be given together")
@@ -174,8 +232,6 @@ async def get_prices(
         "country_name": c.name,
         "country_name_hu": c.name_hu,
         "fuel": fuel.value,
-        "currency": "EUR",
-        "unit": "EUR/l",
         "generated_at": _now(),
     }
 
@@ -206,7 +262,7 @@ async def get_prices(
                 "summary": _summary([s.price for s in stations]),
                 "stations": [s.as_dict() for s in stations],
             })
-            return response
+            return _localize(response, currency)
 
     response.update({
         "mode": "estimate",
@@ -215,7 +271,7 @@ async def get_prices(
     })
     if fallback_reason:
         response["fallback_reason"] = fallback_reason
-    return response
+    return _localize(response, currency)
 
 
 @app.get("/api/estimate", tags=["prices"])
@@ -225,35 +281,169 @@ async def get_estimate(
     location: Location = Query(Location.CITY),
     brand_tier: BrandTier | None = Query(None),
     brand: str | None = Query(None, max_length=64),
+    currency: str = CurrencyQuery,
 ) -> dict[str, Any]:
     """Single heuristic estimate for any EU country (also for official-API countries)."""
     c = _require_country(country)
+    currency = _require_currency(currency)
     updater.ensure_fresh(app.state.http)
     tier = brand_tier or pm.classify_brand(brand)
     estimate = pm.estimate_price(c.code, fuel, tier, location)
-    return {"currency": "EUR", "unit": "EUR/l", "base_prices_as_of": pm.BASE_PRICES_AS_OF, **estimate.as_dict()}
+    return _localize({"base_prices_as_of": pm.BASE_PRICES_AS_OF, **estimate.as_dict()}, currency)
 
 
 @app.get("/api/matrix", tags=["prices"])
 async def get_matrix(
     country: str = Query(..., min_length=2, max_length=2),
     fuel: Fuel = Query(Fuel.PETROL),
+    currency: str = CurrencyQuery,
 ) -> dict[str, Any]:
     """Full 3x3 brand x location estimate matrix for a country."""
     c = _require_country(country)
+    currency = _require_currency(currency)
     updater.ensure_fresh(app.state.http)
-    return {
+    return _localize({
         "country": c.code,
         "fuel": fuel.value,
-        "currency": "EUR",
-        "unit": "EUR/l",
         "brand_multipliers": {k.value: v for k, v in pm.BRAND_MULTIPLIERS.items()},
         "location_multipliers": {loc.value: pm.location_multiplier(c.code, loc) for loc in Location},
         **_estimate_payload(c, fuel, None, None),
-    }
+    }, currency)
 
 
 @app.get("/api/brands/classify", tags=["prices"])
 async def classify_brand(name: str = Query(..., min_length=1, max_length=64)) -> dict[str, str]:
     """Map a brand or station name to its price tier."""
     return {"name": name, "brand_tier": pm.classify_brand(name).value}
+
+
+# --- Motorway tolls ---------------------------------------------------------
+
+
+def _money(amount: float, from_currency: str, currency: str) -> float:
+    return fx.convert(fx.to_eur(amount, from_currency), currency)
+
+
+def _tolls_dict(t: tl.CountryTolls, currency: str) -> dict[str, Any]:
+    country = pm.COUNTRIES[t.code]
+    return {
+        "country": t.code,
+        "country_name": country.name,
+        "country_name_hu": country.name_hu,
+        "system": t.system,
+        "summary_hu": t.summary_hu,
+        "sold_in_currency": t.currency,
+        "vignettes": [
+            {
+                "id": v.id, "label": v.label, "days": v.days,
+                "price": _money(v.price, t.currency, currency),
+                "price_local": v.price, "note": v.note, "for_trips": v.for_trips,
+            }
+            for v in t.vignettes
+        ],
+        "per_km": _money(t.per_km, t.currency, currency) if t.per_km is not None else None,
+        "special_tolls": [
+            {
+                "id": s.id, "name": s.name, "road": s.road, "note": s.note,
+                "price": _money(s.price, s.currency or t.currency, currency),
+                "price_local": s.price, "local_currency": s.currency or t.currency,
+            }
+            for s in t.special
+        ],
+        "sources": list(t.sources) + [tl.GENERAL_SOURCE],
+    }
+
+
+def _require_tolls(code: str) -> tl.CountryTolls:
+    _require_country(code)
+    return tl.TOLLS[code.upper()]
+
+
+@app.get("/api/tolls", tags=["tolls"])
+async def list_tolls(currency: str = CurrencyQuery) -> dict[str, Any]:
+    """Passenger-car motorway tolls of all 27 EU countries."""
+    currency = _require_currency(currency)
+    return {
+        "as_of": tl.TOLLS_AS_OF,
+        "vehicle": "passenger car <= 3.5 t (class 1)",
+        "currency": currency,
+        "exchange_rate": fx.describe(currency),
+        "countries": [_tolls_dict(t, currency) for t in sorted(tl.TOLLS.values(), key=lambda t: t.code)],
+    }
+
+
+def _parse_km(raw: str | None) -> dict[str, float]:
+    """Parse 'AT:120,FR:500' into {'AT': 120.0, 'FR': 500.0}."""
+    result: dict[str, float] = {}
+    for part in (raw or "").split(","):
+        if not part.strip():
+            continue
+        code, _, km = part.partition(":")
+        try:
+            result[code.strip().upper()] = float(km)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=f"Invalid highway_km entry '{part}'") from exc
+        if result[code.strip().upper()] < 0:
+            raise HTTPException(status_code=422, detail=f"Negative distance in '{part}'")
+    return result
+
+
+@app.get("/api/tolls/estimate", tags=["tolls"])
+async def estimate_tolls(
+    countries: str = Query(..., description="Comma-separated country codes on the route, e.g. AT,HU"),
+    days: int = Query(1, ge=1, le=365, description="Trip length in days (vignette validity needed)"),
+    highway_km: str | None = Query(None, description="Tolled motorway km per distance-based country, e.g. FR:500,IT:120"),
+    special: str | None = Query(None, description="Comma-separated special toll ids to include, e.g. a13-brenner"),
+    currency: str = CurrencyQuery,
+) -> dict[str, Any]:
+    """Estimated toll cost of a trip: cheapest vignette combination per country,
+    per-km estimate for distance-based countries, plus selected special tolls."""
+    currency = _require_currency(currency)
+    codes = list(dict.fromkeys(c.strip().upper() for c in countries.split(",") if c.strip()))
+    if not codes:
+        raise HTTPException(status_code=422, detail="countries is empty")
+    km = _parse_km(highway_km)
+    wanted = {s.strip() for s in (special or "").split(",") if s.strip()}
+
+    items, total_eur = [], 0.0
+    for code in codes:
+        t = _require_tolls(code)
+        item: dict[str, Any] = {"country": code, "system": t.system, "lines": []}
+        if t.system == "vignette":
+            cost, combo = tl.cheapest_vignettes(t.vignettes, days)
+            for v in combo:
+                item["lines"].append({"type": "vignette", "id": v.id, "label": v.label,
+                                      "eur": fx.to_eur(v.price, t.currency)})
+        elif t.system == "distance" and t.per_km is not None and code in km:
+            item["lines"].append({"type": "distance", "km": km[code], "estimate": True,
+                                  "eur": fx.to_eur(t.per_km * km[code], t.currency)})
+        elif t.system == "distance":
+            item["note"] = "Distance-based tolls: pass highway_km for an estimate or pick special tolls."
+        for s in t.special:
+            if s.id in wanted or f"{code}:{s.id}" in wanted:
+                item["lines"].append({"type": "special", "id": s.id, "label": s.name,
+                                      "eur": fx.to_eur(s.price, s.currency or t.currency)})
+        subtotal = sum(line["eur"] for line in item["lines"])
+        total_eur += subtotal
+        for line in item["lines"]:
+            line["price"] = fx.convert(line.pop("eur"), currency)
+        item["subtotal"] = fx.convert(subtotal, currency)
+        items.append(item)
+
+    return {
+        "as_of": tl.TOLLS_AS_OF,
+        "days": days,
+        "currency": currency,
+        "exchange_rate": fx.describe(currency),
+        "countries": items,
+        "total": fx.convert(total_eur, currency),
+    }
+
+
+@app.get("/api/tolls/{country}", tags=["tolls"])
+async def get_tolls(country: str, currency: str = CurrencyQuery) -> dict[str, Any]:
+    """Toll system, vignette prices and special tolls of one country."""
+    currency = _require_currency(currency)
+    t = _require_tolls(country)
+    return {"as_of": tl.TOLLS_AS_OF, "currency": currency,
+            "exchange_rate": fx.describe(currency), **_tolls_dict(t, currency)}

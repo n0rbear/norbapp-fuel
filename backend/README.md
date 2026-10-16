@@ -1,6 +1,6 @@
 # NorbApp Fuel – üzemanyagár-backend (FastAPI)
 
-REST backend a NorbApp Fuel üzemanyagár-követő moduljához. Mind a 27 EU-tagállamra ad árat:
+REST backend a NorbApp Fuel üzemanyagár-követő moduljához. Mind a 27 EU-tagállamra ad üzemanyagárat és autópályadíjat, a felhasználó által választott pénznemben:
 
 | Mód | Országok | Adatforrás |
 |---|---|---|
@@ -54,6 +54,34 @@ Az alapárak **minden reggel 6:00-kor (Europe/Budapest)** frissülnek az EU Week
 - Ha a letöltés nem sikerül, az utolsó jó értékek maradnak érvényben (induláskor a kódba épített `DEFAULT_BASE_PRICES`).
 - Állapot és aktuális értékek: `GET /api/base-prices`.
 
+## Pénznem választása (`fx.py`)
+
+Minden árat visszaadó végpont fogad egy `currency` paramétert (ISO 4217, alapért. `EUR`), pl. `currency=HUF`. A számítás EUR-ban történik, a kimenet konvertált; a válasz `exchange_rate` mezője megadja az árfolyamot, a dátumát és a forrását.
+
+- **Forrás:** az Európai Központi Bank napi referencia-árfolyamai (~30 pénznem, hivatalos), kiegészítve az [exchangerate-api.com](https://www.exchangerate-api.com) nyílt végpontjával a többi ~130 pénznemre – összesen 160+.
+- **Frissítés:** az alapárakkal együtt minden reggel 6:00-kor; amíg az első letöltés nem sikerül, a kódba épített EKB-pillanatkép (2026-10-16) él.
+- `GET /api/currencies`: a választható pénznemek listája árfolyammal – ebből építhető a frontend pénznemválasztója.
+- Kerekítés: 3 tizedes (pl. EUR, USD), 2 tizedes (pl. HUF, CZK), egész (pl. IDR).
+
+## Autópályadíjak (`tolls.py`)
+
+Személyautóra (≤ 3,5 t, 1. kategória), mind a 27 EU-országra, 2026-os árakkal:
+
+| Rendszer | Országok | Adat |
+|---|---|---|
+| `vignette` | AT, BG, CZ, HU, RO, SI, SK | Minden e-matrica időtartam és ár |
+| `distance` | FR, IT, ES, PT, HR, GR, PL, IE | Átlagos km-díj becsléshez + fontos szakaszok |
+| `free` | BE, CY, DE, DK, EE, FI, LT, LU, LV, MT, NL, SE | Nincs általános díj; a fizetős hidak/alagutak külön |
+
+Külön díjak (alagutak, hidak, hágók) minden országnál `special_tolls` alatt: pl. Brenner, Tauern, Karawanken, Mont-Blanc, Fréjus, Storebælt, Øresund, Rio–Antirrio.
+
+Az árakat az eladási pénznemben tárolja (`price_local`), a válaszban a kért pénznemre váltja. Az adatok forrása az üzemeltetők oldalai, ellenőrizve a [fuel-prices.eu](https://www.fuel-prices.eu/tolls/) 2026. szeptemberi listájával. **Évente frissíteni kell** (a matricák általában január 1-jén, Franciaország február 1-jén drágul) – `tolls.py`, `TOLLS_AS_OF`.
+
+Megjegyzések:
+- RO: a 2026.10.01-től érvényes, kibocsátás szerinti tarifa Euro 6 / elektromos autóra; régebbi autóknál legfeljebb +30%.
+- AT: online vett 2 hónapos és éves vignetta csak a vásárlás utáni 18. naptól érvényes.
+- A km-díj átlagérték, a tényleges díj szakaszonként eltér – becslésként kezelendő.
+
 ## REST végpontok
 
 Interaktív dokumentáció: `/docs` (Swagger UI) és `/redoc`.
@@ -67,6 +95,10 @@ Interaktív dokumentáció: `/docs` (Swagger UI) és `/redoc`.
 | `GET /api/estimate` | Egyetlen becslés bármely országra |
 | `GET /api/matrix` | Teljes 3×3 márka × lokáció mátrix + szorzók |
 | `GET /api/brands/classify?name=...` | Márkanév → kategória |
+| `GET /api/currencies` | Választható pénznemek és árfolyamok |
+| `GET /api/tolls` | Mind a 27 ország autópályadíjai |
+| `GET /api/tolls/{country}` | Egy ország díjai (matricák, km-díj, külön díjak) |
+| `GET /api/tolls/estimate` | Útdíj-becslés egy útvonalra (lásd lent) |
 
 ### `GET /api/prices` paraméterek
 
@@ -79,6 +111,7 @@ Interaktív dokumentáció: `/docs` (Swagger UI) és `/redoc`.
 | `brand` | nem | márkanév, automatikusan kategóriára képezve |
 | `lat`, `lng` | nem* | koordináta – a hivatalos országoknál ez kell az élő árakhoz |
 | `radius_km` | nem | keresési sugár, 1–25 km (alapért. 10) |
+| `currency` | nem | megjelenítési pénznem, pl. `HUF` (alapért. `EUR`) |
 
 Hivatalos országban koordinátával a `brand_tier`/`location` szűrőként működik a kutakra (a felismeretlen lokációjú kút `city`-nek számít). Becslési módban szűrő nélkül a teljes 9 elemű mátrix jön vissza.
 
@@ -122,7 +155,24 @@ Válasz hivatalos módban (rövidítve):
 }
 ```
 
-Minden ár **EUR/liter**; a nem euróövezeti országoknál (HU, CZ, PL, RO, SE, DK) a `GET /api/countries` a `local_currency` mezőben jelzi a helyi pénznemet, az átváltás a frontend feladata.
+### `GET /api/tolls/estimate` paraméterek
+
+| Paraméter | Érték |
+|---|---|
+| `countries` | az útvonal országai, pl. `DE,AT,HU` |
+| `days` | az út hossza napban (1–365) – ehhez választja ki a legolcsóbb matrica-kombinációt |
+| `highway_km` | díjköteles km a km-alapú országokban, pl. `FR:500,HR:380` |
+| `special` | beszámítandó külön díjak azonosítói, pl. `a13-brenner,mont-blanc` |
+| `currency` | pénznem |
+
+```bash
+# Budapest → Split egy hétre, forintban
+curl "http://localhost:8000/api/tolls/estimate?countries=HU,SI,HR&days=7&highway_km=HR:380&currency=HUF"
+```
+
+A válasz országonként tételesen (`lines`), részösszeggel (`subtotal`) és végösszeggel (`total`) adja a díjat.
+
+Az árak alapból **EUR**-ban jönnek; bármely más pénznemhez add meg a `currency` paramétert. A `GET /api/countries` a `local_currency` mezőben jelzi az adott ország helyi pénznemét – ez jó alapértelmezés lehet a frontendben.
 
 ## Helyi futtatás
 

@@ -1,4 +1,4 @@
-"""Daily refresh of the national average base prices (P_base).
+"""Daily refresh of the national average base prices (P_base) and FX rates.
 
 Source: European Commission Weekly Oil Bulletin, "prices with taxes" sheet.
 The bulletin is published weekly, but the refresh runs every day at
@@ -24,6 +24,7 @@ import httpx
 from openpyxl import load_workbook
 
 import pricing_matrix as pm
+from fx import fx
 from pricing_matrix import Fuel
 
 logger = logging.getLogger(__name__)
@@ -102,6 +103,7 @@ class BasePriceUpdater:
         self.last_success: datetime | None = None
         self.last_attempt: datetime | None = None
         self.last_error: str | None = None
+        self.fx_error: str | None = None
         self.source_url: str | None = None
         self._lock = asyncio.Lock()
         self._task: asyncio.Task | None = None
@@ -110,21 +112,35 @@ class BasePriceUpdater:
     async def refresh(self, http: httpx.AsyncClient) -> bool:
         async with self._lock:
             self.last_attempt = datetime.now(_tz())
-            try:
-                page = await http.get(BULLETIN_PAGE, timeout=60)
-                page.raise_for_status()
-                url = find_xlsx_url(page.text)
-                xlsx = await http.get(url, timeout=60)
-                xlsx.raise_for_status()
-                prices, as_of = parse_bulletin(xlsx.content)
-            except (httpx.HTTPError, ValueError, KeyError, OSError) as exc:
-                self.last_error = f"{exc.__class__.__name__}: {exc}"[:300]
-                logger.warning("Base price refresh failed: %s", self.last_error)
-                return False
-            pm.apply_base_prices(prices, as_of)
-            self.last_success, self.last_error, self.source_url = datetime.now(_tz()), None, url
-            logger.info("Base prices refreshed: %d countries, bulletin of %s", len(prices), as_of)
-            return True
+            fx_ok = await self._refresh_fx(http)
+            return await self._refresh_prices(http) and fx_ok
+
+    async def _refresh_fx(self, http: httpx.AsyncClient) -> bool:
+        try:
+            await fx.refresh(http)
+        except (httpx.HTTPError, ValueError) as exc:
+            self.fx_error = f"{exc.__class__.__name__}: {exc}"[:300]
+            logger.warning("FX refresh failed: %s", self.fx_error)
+            return False
+        self.fx_error = None
+        return True
+
+    async def _refresh_prices(self, http: httpx.AsyncClient) -> bool:
+        try:
+            page = await http.get(BULLETIN_PAGE, timeout=60)
+            page.raise_for_status()
+            url = find_xlsx_url(page.text)
+            xlsx = await http.get(url, timeout=60)
+            xlsx.raise_for_status()
+            prices, as_of = parse_bulletin(xlsx.content)
+        except (httpx.HTTPError, ValueError, KeyError, OSError) as exc:
+            self.last_error = f"{exc.__class__.__name__}: {exc}"[:300]
+            logger.warning("Base price refresh failed: %s", self.last_error)
+            return False
+        pm.apply_base_prices(prices, as_of)
+        self.last_success, self.last_error, self.source_url = datetime.now(_tz()), None, url
+        logger.info("Base prices refreshed: %d countries, bulletin of %s", len(prices), as_of)
+        return True
 
     def is_stale(self, now: datetime | None = None) -> bool:
         now = now or datetime.now(_tz())
@@ -169,6 +185,9 @@ class BasePriceUpdater:
             "next_refresh": next_scheduled_run(now).isoformat(timespec="minutes") if self.enabled else None,
             "last_success": self.last_success.isoformat(timespec="seconds") if self.last_success else None,
             "last_error": self.last_error,
+            "fx_as_of": fx.as_of,
+            "fx_source": fx.source,
+            "fx_error": self.fx_error,
         }
 
 

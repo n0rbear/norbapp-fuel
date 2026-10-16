@@ -9,9 +9,15 @@ from openpyxl import Workbook
 
 import base_price_updater as bpu
 import pricing_matrix as pm
+from fx import fx
 from pricing_matrix import Fuel
 
 BUDAPEST = ZoneInfo("Europe/Budapest")
+
+ECB_XML = "<Cube time='2026-10-19'>" + "".join(
+    f"<Cube currency='{c}' rate='{r}'/>" for c, r in
+    [("HUF", 400.0)] + [("X" + chr(65 + i) + "Q", 1.5) for i in range(25)]
+) + "</Cube>"
 
 
 def bulletin_xlsx(hu_petrol=1754.08) -> bytes:
@@ -69,6 +75,10 @@ def test_refresh_applies_prices_and_keeps_overrides(monkeypatch):
     monkeypatch.setenv("BASE_PRICES_JSON", '{"MT": {"petrol": 1.111}}')
 
     def handler(request):
+        if "ecb.europa.eu" in str(request.url):
+            return httpx.Response(200, text=ECB_XML)
+        if "er-api" in str(request.url):
+            return httpx.Response(200, json={"result": "success", "rates": {"EUR": 1, "RSD": 117.4}})
         if "weekly-oil-bulletin" in str(request.url):
             return httpx.Response(200, text='<a href="/document/download/abc_en?filename=Weekly%20prices%20with%20Taxes.xlsx">')
         return httpx.Response(200, content=bulletin_xlsx(hu_petrol=1700.0))
@@ -79,6 +89,8 @@ def test_refresh_applies_prices_and_keeps_overrides(monkeypatch):
 
     try:
         assert asyncio.run(run())
+        assert fx.rate("HUF") == 400.0 and fx.rate("RSD") == 117.4
+        assert fx.describe("RSD")["source"] == "exchangerate-api.com"
         assert pm.base_price("HU", Fuel.PETROL) == 1.7
         assert pm.base_price("MT", Fuel.PETROL) == 1.111
         assert pm.BASE_PRICES_AS_OF == "2026-10-19"
@@ -86,6 +98,7 @@ def test_refresh_applies_prices_and_keeps_overrides(monkeypatch):
         pm.BASE_PRICES.clear()
         pm.BASE_PRICES.update(original[0])
         pm.BASE_PRICES_AS_OF = original[1]
+        fx.__init__()
 
 
 def test_refresh_failure_keeps_old_prices():
