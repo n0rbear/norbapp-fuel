@@ -1,0 +1,47 @@
+# Render Blueprint for NorbApp Fuel. Both services deploy from `main`.
+services:
+  # FUEL-API: fuel prices, tolls and currencies (backend/, FastAPI)
+  - type: web
+    name: norbapp-fuel-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: TANKERKOENIG_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: REFRESH_TIME
+        value: "06:00"
+      - key: REFRESH_TZ
+        value: Europe/Budapest
+      - key: LOG_LEVEL
+        value: INFO
+
+  # Web app: fuel.norbapp.com (web/, Next.js)
+  - type: web
+    name: norbapp-fuel-web
+    runtime: node
+    rootDir: web
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    domains:
+      - fuel.norbapp.com
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: FUEL_API_URL
+        value: https://norbapp-fuel-api.onrender.com

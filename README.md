@@ -8,6 +8,10 @@ NorbApp Fuel is an Android reference application for planning trip fuel costs an
 
 The repository is in GitHub publication hardening. API credentials have been removed from Kotlin source files and are now provided through local configuration and generated `BuildConfig` fields.
 
+## Web Version
+
+The web version for `fuel.norbapp.com` lives in [`web/`](web/README.md) (Next.js) and gets prices, tolls and currencies from the FUEL-API in [`backend/`](backend/README.md). These are now the primary focus; the native Android app below is on hold. Both services are described in the root `render.yaml` and deploy from `main`.
+
 ## Main Features
 
 - Route-based fuel cost estimation
@@ -44,9 +48,14 @@ app/
     diagnostics/       NDP telemetry client and privacy sanitizer
     ui/theme/          Compose theme files
   src/main/res/        Android resources
+backend/               FastAPI fuel price backend (official EU APIs + estimation matrix)
 gradle/                Gradle wrapper and version catalog
 docs/                  Publication and project documentation
 ```
+
+## Fuel Price Backend
+
+`backend/` contains a Python FastAPI service that serves fuel prices for all 27 EU countries: live station prices from official open APIs (DE, AT, ES, FR, IT, PT, SI) and heuristic brand x location estimates for the remaining countries. It deploys to Render with the root `render.yaml` blueprint. See `backend/README.md`.
 
 ## Requirements
 
