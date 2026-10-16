@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { I18nProvider } from "@/i18n/I18nProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="hu">
       <body>
-        {children}
+        <I18nProvider>{children}</I18nProvider>
         <ServiceWorker />
       </body>
     </html>

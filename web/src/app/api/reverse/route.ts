@@ -9,9 +9,9 @@ export async function GET(request: Request) {
   const lat = Number(searchParams.get("lat"));
   const lng = Number(searchParams.get("lng"));
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-    return jsonError("Hibás koordináta.", 400);
+    return jsonError("invalidCoordinate", 400);
   }
-  if (!limiter.take(clientKey(request))) return jsonError("Túl sok kérés.", 429);
+  if (!limiter.take(clientKey(request))) return jsonError("tooManyRequests", 429);
 
   try {
     return Response.json({ address: await reverse({ lat, lng }) }, { headers: { "Cache-Control": "no-store" } });

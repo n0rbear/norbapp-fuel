@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { PlaceInput, PlaceSuggestion } from "@/lib/api-types";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { LatLng } from "@/lib/geo";
 
 /** What the user typed, plus coordinates once a suggestion was picked. */
@@ -25,6 +26,7 @@ type Props = {
 
 /** Text input with debounced server-side place suggestions. */
 export function AddressInput({ label, value, onChange, placeholder, near, trailing }: Props) {
+  const { t } = useI18n();
   const id = useId();
   const listId = `${id}-list`;
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
@@ -109,7 +111,11 @@ export function AddressInput({ label, value, onChange, placeholder, near, traili
               }
             }}
           />
-          {picked && <span className="pin" aria-label="Pontos hely kiválasztva" title="Pontos hely kiválasztva">✓</span>}
+          {picked && (
+            <span className="pin" aria-label={t("pickedPlace")} title={t("pickedPlace")}>
+              ✓
+            </span>
+          )}
           {showList && (
             <ul className="suggestions" id={listId} role="listbox">
               {suggestions.map((s, i) => (

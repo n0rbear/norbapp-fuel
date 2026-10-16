@@ -17,8 +17,8 @@ const point = (stations: Station[], kind: FuelPoint["kind"] = "stop"): FuelPoint
   location: { lat: 0, lng: 0 },
   country: "DE",
   prices: stations.length
-    ? { mode: "official", source: "Tankerkoenig (MTS-K)", stations, estimate: null, fuelNote: null }
-    : { mode: "none", source: null, stations: [], estimate: null, fuelNote: null, reason: "n/a" },
+    ? { mode: "official", source: "Tankerkoenig (MTS-K)", stations, estimate: null, e5InsteadOfE10: false }
+    : { mode: "none", source: null, stations: [], estimate: null, e5InsteadOfE10: false, reason: { code: "reasonFetchFailed" } },
 });
 
 const estimated = (price: number): FuelPoint => ({
@@ -31,7 +31,7 @@ const estimated = (price: number): FuelPoint => ({
     source: "Becslés",
     stations: [],
     estimate: { price, low: price * 0.965, high: price * 1.035, location: "highway" },
-    fuelNote: null,
+    e5InsteadOfE10: false,
   },
 });
 

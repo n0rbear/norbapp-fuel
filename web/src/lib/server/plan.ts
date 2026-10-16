@@ -1,6 +1,6 @@
 import "server-only";
 import type { FuelPoint, PlanRequest, PlanResponse, PointPrices } from "../api-types";
-import { countryName } from "../countries";
+import { msg, type AppMessage } from "../../i18n/message";
 import { RoutePath, type LatLng } from "../geo";
 import { motorwayKmByCountry } from "../motorway";
 import { planRefuels } from "../trip";
@@ -29,10 +29,10 @@ function simplify(points: LatLng[], max: number): LatLng[] {
   return Array.from({ length: max }, (_, i) => points[Math.round(i * step)]);
 }
 
-const none = (reason: string): PointPrices => ({ mode: "none", source: null, stations: [], estimate: null, fuelNote: null, reason });
+const none = (reason: AppMessage): PointPrices => ({ mode: "none", source: null, stations: [], estimate: null, e5InsteadOfE10: false, reason });
 
 export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
-  const warnings: string[] = [];
+  const warnings: AppMessage[] = [];
 
   // Round trip: come back to the origin through the destination, so the return
   // leg is a real route (not a mirrored distance).
@@ -73,7 +73,7 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   try {
     supported = await supportedPromise;
   } catch {
-    warnings.push("Az árszolgáltatás most nem érhető el – a megadott alapárral számolunk, útdíj nélkül.");
+    warnings.push(msg("priceServiceDown"));
   }
 
   let rate: number | null = req.currency === "EUR" ? 1 : null;
@@ -87,25 +87,25 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   const points: FuelPoint[] = await mapLimit(fuelKms.map((km, i) => ({ km, i })), 4, async ({ km, i }) => {
     const country = fuelCountries[i];
     const base = { kind: i === 0 ? ("start" as const) : ("stop" as const), km, location: fuelLocations[i], country };
-    if (!supported) return { ...base, prices: none("Az árszolgáltatás nem érhető el.") };
+    if (!supported) return { ...base, prices: none(msg("reasonServiceDown")) };
     if (!country || !supported.has(country)) {
-      return { ...base, prices: none(country ? `${countryName(country)}: nincs áradat (nem EU-s ország).` : "Ismeretlen ország.") };
+      return { ...base, prices: none(country ? msg("reasonNoPriceData", { country }) : msg("reasonUnknownCountry")) };
     }
     try {
       const result = await pricesOnce(country, fuelLocations[i], km > 0);
       rate = result.rate;
       return { ...base, prices: result.prices };
     } catch {
-      return { ...base, prices: none("Az ár most nem kérhető le.") };
+      return { ...base, prices: none(msg("reasonFetchFailed")) };
     }
   });
 
   if (points.some((p) => p.prices.mode === "none")) {
-    warnings.push("Ahol nincs áradat, a megadott alapárral számolunk.");
+    warnings.push(msg("fallbackWhereNoPrice"));
   }
   const outside = countries.filter((c) => supported && !supported.has(c));
   if (outside.length > 0) {
-    warnings.push(`Nem EU-s országok útdíja nincs benne: ${outside.map(countryName).join(", ")}.`);
+    warnings.push(msg("noTollDataFor", { countries: outside.join(",") }));
   }
 
   return {

@@ -1,9 +1,9 @@
 export type FuelType = "diesel" | "petrol" | "e10";
 
-export const FUEL_TYPES: { id: FuelType; label: string }[] = [
-  { id: "diesel", label: "Dízel" },
-  { id: "petrol", label: "Benzin E5 (95)" },
-  { id: "e10", label: "Benzin E10" },
+export const FUEL_TYPES: { id: FuelType; label: "fuelDiesel" | "fuelPetrol" | "fuelE10" }[] = [
+  { id: "diesel", label: "fuelDiesel" },
+  { id: "petrol", label: "fuelPetrol" },
+  { id: "e10", label: "fuelE10" },
 ];
 
 export type Vehicle = {
@@ -38,13 +38,16 @@ export type RefuelPlan = {
   stops: RefuelStop[];
 };
 
-export function validateVehicle(v: Vehicle): string | null {
-  if (!(v.consumption > 0 && v.consumption <= 100)) return "A fogyasztás 0 és 100 l/100 km között legyen.";
-  if (!(v.tankSize >= 5 && v.tankSize <= 500)) return "A tankméret 5 és 500 liter között legyen.";
-  if (!(v.startLevelPct > 0 && v.startLevelPct <= 100)) return "Az indulási tankszint 1 és 100% között legyen.";
-  if (!(v.reservePct >= 0 && v.reservePct < 90)) return "A tartalék 0 és 90% között legyen.";
+/** Returns the message key of the first problem, or null when valid. */
+export function validateVehicle(v: Vehicle): VehicleError | null {
+  if (!(v.consumption > 0 && v.consumption <= 100)) return "consumptionRange";
+  if (!(v.tankSize >= 5 && v.tankSize <= 500)) return "tankRange";
+  if (!(v.startLevelPct > 0 && v.startLevelPct <= 100)) return "startLevelRange";
+  if (!(v.reservePct >= 0 && v.reservePct < 90)) return "reserveRange";
   return null;
 }
+
+export type VehicleError = "consumptionRange" | "tankRange" | "startLevelRange" | "reserveRange";
 
 /**
  * Plans refuel stops: drive until the tank reaches the reserve level, then fill

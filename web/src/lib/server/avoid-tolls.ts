@@ -1,5 +1,5 @@
 import "server-only";
-import { countryName } from "../countries";
+import { msg, type AppMessage } from "../../i18n/message";
 import { RoutePath, type LatLng } from "../geo";
 import { planRuns, type Run } from "../toll-avoid";
 import { countryAt, routeAvoidingTolls, routeThrough, type ComputedRoute, type TollFreeRoute } from "./osm";
@@ -8,7 +8,7 @@ export type AvoidanceResult = {
   route: ComputedRoute;
   /** Countries whose toll roads were actually avoided. */
   avoided: string[];
-  warnings: string[];
+  warnings: AppMessage[];
 };
 
 /**
@@ -20,7 +20,7 @@ export async function applyTollAvoidance(base: ComputedRoute, avoid: ReadonlySet
   const runs = planRuns(path, base.waypoints, countryAt, avoid);
   if (!runs) return { route: base, avoided: [], warnings: [] };
 
-  const warnings: string[] = [];
+  const warnings: AppMessage[] = [];
 
   // 1. Toll-free runs first: their snapped ends become the neighbours' ends.
   const tollFree = await Promise.all(
@@ -29,7 +29,7 @@ export async function applyTollAvoidance(base: ComputedRoute, avoid: ReadonlySet
       try {
         return await routeAvoidingTolls(run.boundaries.map((b) => ({ point: b.point, offMotorway: b.border })));
       } catch {
-        warnings.push(`${countryName(run.avoid)}: a fizetős utak elkerülése most nem érhető el, a leggyorsabb úttal számolunk.`);
+        warnings.push(msg("avoidUnavailable", { country: run.avoid }));
         return null;
       }
     }),
@@ -40,7 +40,7 @@ export async function applyTollAvoidance(base: ComputedRoute, avoid: ReadonlySet
     runs.map(async (run: Run, i): Promise<ComputedRoute | TollFreeRoute> => {
       const free = tollFree[i];
       if (free) {
-        if (free.hasToll) warnings.push(`${countryName(run.avoid!)}: a fizetős utakat nem lehetett teljesen elkerülni.`);
+        if (free.hasToll) warnings.push(msg("avoidIncomplete", { country: run.avoid! }));
         return free;
       }
       const points: LatLng[] = run.boundaries.map((b) => b.point);

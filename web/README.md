@@ -1,6 +1,6 @@
 # NorbApp Fuel – web (fuel.norbapp.com)
 
-Next.js web version of the NorbApp Fuel trip-cost calculator. UI language: Hungarian.
+Next.js web version of the NorbApp Fuel trip-cost calculator. The UI is available in all 24 official EU languages (default: browser language, else Hungarian).
 
 ## Features
 
@@ -14,6 +14,7 @@ Next.js web version of the NorbApp Fuel trip-cost calculator. UI language: Hunga
 - Manual price override and an explicit fallback price where no price data exists (non-EU countries)
 - No Google dependency: OpenStreetMap data via OSRM (routing) and Photon (search)
 - Avoid toll roads per country (vignette roads included): the route is split at the border crossings of the fastest route and the parts in the chosen countries are re-routed toll-free via Valhalla; those countries drop out of the toll estimate. The choice is remembered in the browser.
+- Language selector at the top of the page with all 24 official EU languages; the choice is remembered in the browser. Numbers, money, dates and country names are formatted with `Intl` for the chosen language.
 - Installable PWA (manifest, icons, service worker): the page shell opens offline; `/api/*` (prices, tolls, routes) is never cached.
 
 ## Architecture
@@ -30,6 +31,7 @@ src/
   app/api/health            GET: health check
   components/               Client UI (Planner, Results, AddressInput)
   hooks/                    usePersistentState (localStorage settings)
+  i18n/                     Language list, provider, Intl formatters; messages/<lang>.ts catalogues (hu is the source, others load on demand)
   lib/trip.ts               Refuel planning and cost model (pure, tested)
   lib/geo.ts                Polyline decoding and distance along the route
   lib/motorway.ts           Motorway km per country from OSRM road refs
@@ -42,6 +44,8 @@ src/
   lib/server/               Rate limiting, error mapping
 test/                       Vitest unit tests
 ```
+
+Server routes return message codes (`{ code, params }`) instead of text, so errors and warnings are translated in the browser.
 
 The browser only talks to `/api/*` on this app; those routes are rate limited per IP and call the FUEL-API and the OSM services server-side.
 

@@ -1,27 +1,30 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { EURO_CLASS_LABELS, EURO_CLASSES, type ApiError, type EuroClass, type PlanRequest, type PlanResponse, type TollEstimate } from "@/lib/api-types";
-import { countryName } from "@/lib/countries";
-import { formatDuration, formatKm, formatLitres, formatMoney, formatPricePerLitre, currencySymbol, toInputDecimal } from "@/lib/format";
+import { useI18n } from "@/i18n/I18nProvider";
+import { msg, type AppMessage } from "@/i18n/message";
+import type { MessageKey } from "@/i18n/messages/hu";
+import { EURO_CLASSES, euroClassLabel, type ApiError, type EuroClass, type PlanRequest, type PlanResponse, type TollEstimate } from "@/lib/api-types";
+import { toInputDecimal } from "@/lib/format";
 import { parseDecimal, resolvePrices } from "@/lib/pricing";
 import { computeFuelCost, type PriceSource } from "@/lib/trip";
 
-const SOURCE_LABEL: Record<PriceSource, string> = {
-  manual: "kézi ár",
-  station: "kiválasztott kút",
-  cheapest: "legolcsóbb közeli kút",
-  average: "környékbeli átlagár",
-  estimate: "becslés",
-  default: "alapár",
+const SOURCE_LABEL: Record<PriceSource, MessageKey> = {
+  manual: "sourceManual",
+  station: "sourceStation",
+  cheapest: "sourceCheapest",
+  average: "sourceAverage",
+  estimate: "sourceEstimate",
+  default: "sourceDefault",
 };
 
 /** Default fallback price (EUR/l) where no price data exists, converted to the chosen currency. */
 const FALLBACK_EUR = 1.7;
 
-function attribution(source: string): string {
+function attribution(source: string, estimateLabel: string): string {
   // Tankerkönig data is CC BY 4.0 and must be credited this way.
-  return /tankerk/i.test(source) ? "Daten: MTS-K / Tankerkönig (CC BY 4.0)" : source;
+  if (/tankerk/i.test(source)) return "Daten: MTS-K / Tankerkönig (CC BY 4.0)";
+  return source === "EU Weekly Oil Bulletin" ? estimateLabel : source;
 }
 
 type Props = {
@@ -36,6 +39,7 @@ type Props = {
 };
 
 export function Results({ request, data, stale, euroClass, onEuroClassChange, loading, onAvoidTollsChange }: Props) {
+  const { t, tm, fmt } = useI18n();
   const currency = data.currency;
   const [selected, setSelected] = useState<Record<number, string | undefined>>({});
   const [manualPrice, setManualPrice] = useState("");
@@ -65,48 +69,48 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
 
   return (
     <section className="card results" aria-live="polite">
-      {stale && <p className="notice">A beállítások megváltoztak – a frissítéshez nyomd meg újra a Kalkulációt.</p>}
+      {stale && <p className="notice">{t("stale")}</p>}
 
-      <h2>Eredmény</h2>
+      <h2>{t("result")}</h2>
       <div className="stats">
-        <Stat label="Távolság" value={formatKm(data.distanceKm)} />
-        <Stat label="Menetidő" value={formatDuration(data.durationSec)} />
-        <Stat label="Elfogyasztott üzemanyag" value={formatLitres(data.plan.totalLitres)} />
-        <Stat label="Üzemanyagköltség" value={formatMoney(cost.fuelCost, currency)} />
-        <Stat label="Útdíjak" value={tolls.loading ? "…" : formatMoney(tollCost, currency)} />
-        <Stat label="Összesen" value={formatMoney(cost.fuelCost + tollCost, currency)} highlight />
+        <Stat label={t("distance")} value={fmt.km(data.distanceKm)} />
+        <Stat label={t("duration")} value={fmt.duration(data.durationSec)} />
+        <Stat label={t("fuelUsed")} value={fmt.litres(data.plan.totalLitres)} />
+        <Stat label={t("fuelCost")} value={fmt.money(cost.fuelCost, currency)} />
+        <Stat label={t("tolls")} value={tolls.loading ? "…" : fmt.money(tollCost, currency)} />
+        <Stat label={t("total")} value={fmt.money(cost.fuelCost + tollCost, currency)} highlight />
       </div>
       <p className="hint">
-        Az üzemanyagköltség az úton ténylegesen elfogyasztott mennyiséget árazza.
-        {data.plan.stops.length > 0 && <> Útközbeni tankolásokra fizetendő: {formatMoney(cost.paidAtStops, currency)}.</>}
-        {usesDefault && <> Ahol nincs áradat, az alapárral számolunk.</>}
+        {t("costNote")}
+        {data.plan.stops.length > 0 && <> {t("paidAtStops", { amount: fmt.money(cost.paidAtStops, currency) })}</>}
+        {usesDefault && <> {t("defaultUsedNote")}</>}
       </p>
 
-      {data.warnings.map((w) => (
-        <p key={w} className="notice">
-          {w}
+      {data.warnings.map((w, i) => (
+        <p key={i} className="notice">
+          {tm(w)}
         </p>
       ))}
 
-      <h3>Árak</h3>
+      <h3>{t("prices")}</h3>
       <div className="grid">
         <div className="field">
-          <label htmlFor="manual-price">Kézi ár (minden pontra)</label>
+          <label htmlFor="manual-price">{t("manualPrice")}</label>
           <div className="unit-input">
             <input
               id="manual-price"
               inputMode="decimal"
-              placeholder="üres = kútárak"
+              placeholder={t("manualPlaceholder")}
               value={manualPrice}
               aria-invalid={manualInvalid}
               onChange={(e) => setManualPrice(e.target.value)}
             />
-            <span>{currencySymbol(currency)}/l</span>
+            <span>{fmt.currencySymbol(currency)}/l</span>
           </div>
-          {manualInvalid && <small className="error">Érvénytelen ár.</small>}
+          {manualInvalid && <small className="error">{t("invalidPrice")}</small>}
         </div>
         <div className="field">
-          <label htmlFor="default-price">Alapár, ha nincs áradat</label>
+          <label htmlFor="default-price">{t("defaultPrice")}</label>
           <div className="unit-input">
             <input
               id="default-price"
@@ -115,13 +119,13 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
               aria-invalid={fallbackInvalid}
               onChange={(e) => setDefaultPrice(e.target.value)}
             />
-            <span>{currencySymbol(currency)}/l</span>
+            <span>{fmt.currencySymbol(currency)}/l</span>
           </div>
-          {fallbackInvalid && <small className="error">Adj meg érvényes árat.</small>}
+          {fallbackInvalid && <small className="error">{t("enterValidPrice")}</small>}
         </div>
       </div>
 
-      <h3>Tankolás</h3>
+      <h3>{t("refuelling")}</h3>
       <ol className="points">
         {data.points.map((point, i) => {
           const segment = cost.segments[i];
@@ -132,37 +136,37 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
               <div className="point-head">
                 <strong>
                   {point.kind === "start"
-                    ? `Indulás – ${formatLitres(data.plan.startLitres)} a tankban (${request.vehicle.startLevelPct}%)`
+                    ? t("startTank", { litres: fmt.litres(data.plan.startLitres), pct: request.vehicle.startLevelPct })
                     : point.km < 0.5
-                      ? `${i}. tankolás – indulás előtt`
-                      : `${i}. tankolás – ${formatKm(point.km)}-nél`}
+                      ? t("stopBeforeStart", { n: i })
+                      : t("stopAtKm", { n: i, km: fmt.km(point.km) })}
                 </strong>
-                <span className="muted">{point.country ? countryName(point.country) : "ismeretlen ország"}</span>
+                <span className="muted">{point.country ? fmt.countryName(point.country) : t("unknownCountry")}</span>
               </div>
               <div className="point-meta">
-                {stop && <span>Tankolandó: {formatLitres(stop.litres)}</span>}
+                {stop && <span>{t("toFill", { litres: fmt.litres(stop.litres) })}</span>}
                 <span>
-                  {formatPricePerLitre(segment.price, currency)}{" "}
-                  <span className="badge">{SOURCE_LABEL[segment.source]}</span>
+                  {fmt.pricePerLitre(segment.price, currency)}{" "}
+                  <span className="badge">{t(SOURCE_LABEL[segment.source])}</span>
                 </span>
               </div>
 
               {point.kind === "start" && (
-                <p className="muted small">
-                  Ez nem tankolás: a tankban lévő üzemanyagot a környékbeli átlagárral számoljuk, amíg az első
-                  tankolásig elfogy.
-                </p>
+                <p className="muted small">{t("startNotRefuel")}</p>
               )}
-              {prices.fuelNote && <p className="muted small">{prices.fuelNote}</p>}
+              {prices.e5InsteadOfE10 && <p className="muted small">{t("e5InsteadOfE10")}</p>}
               {prices.mode === "estimate" && (
                 <p className="muted small">
-                  Becsült ár ({prices.estimate.location === "highway" ? "autópálya" : "város"}, átlagos márka):{" "}
-                  {formatPricePerLitre(prices.estimate.low, currency)} – {formatPricePerLitre(prices.estimate.high, currency)}
+                  {t("estimateRange", {
+                    where: t(prices.estimate.location === "highway" ? "whereHighway" : "whereCity"),
+                    low: fmt.pricePerLitre(prices.estimate.low, currency),
+                    high: fmt.pricePerLitre(prices.estimate.high, currency),
+                  })}
                 </p>
               )}
-              {prices.mode === "none" && <p className="muted small">{prices.reason}</p>}
+              {prices.mode === "none" && <p className="muted small">{tm(prices.reason)}</p>}
               {point.kind === "stop" && prices.stations.length > 0 && (
-                <div className="stations" role="radiogroup" aria-label="Kút kiválasztása">
+                <div className="stations" role="radiogroup" aria-label={t("chooseStation")}>
                   {prices.stations.map((s) => {
                     const isOn = selected[i] === s.id;
                     return (
@@ -177,11 +181,11 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
                       >
                         <span className="station-name">{s.name}</span>
                         <span className="station-price">
-                          {s.price !== null ? formatPricePerLitre(s.price, currency) : "nincs ár"}
+                          {s.price !== null ? fmt.pricePerLitre(s.price, currency) : t("noPrice")}
                         </span>
                         <span className="muted small">
                           {s.address}
-                          {s.distanceKm !== null && ` · ${formatKm(s.distanceKm)}`}
+                          {s.distanceKm !== null && ` · ${fmt.km(s.distanceKm)}`}
                         </span>
                       </button>
                     );
@@ -192,9 +196,13 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
           );
         })}
       </ol>
-      {sources.length > 0 && <p className="hint">Árforrás: {sources.map(attribution).join(" · ")}</p>}
+      {sources.length > 0 && (
+        <p className="hint">
+          {t("priceSource", { sources: sources.map((s) => attribution(s, t("estimateSource"))).join(" · ") })}
+        </p>
+      )}
 
-      <h3>Útdíjak</h3>
+      <h3>{t("tolls")}</h3>
       <Tolls
         tolls={tolls}
         currency={currency}
@@ -210,12 +218,26 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
 }
 
 type TollsState = ReturnType<typeof useTolls>;
+type TollLine = Extract<TollEstimate, { status: "ok" }>["countries"][number]["lines"][number];
+
+/** Vignette products are named from their id ("10d", "2m", "1y"); unknown ones keep the API label. */
+function tollLineLabel(line: TollLine, t: ReturnType<typeof useI18n>["t"], fmt: ReturnType<typeof useI18n>["fmt"]): string {
+  if (line.kind === "distance") return t("distanceToll", { km: fmt.decimal(line.km ?? 0, 0) });
+  const id = line.id ?? "";
+  const days = /^(\d+)d$/.exec(id);
+  if (days) return t("vignetteDays", { n: Number(days[1]) });
+  const months = /^(\d+)m$/.exec(id);
+  if (months) return t("vignetteMonths", { n: Number(months[1]) });
+  if (id === "1y") return t("vignetteYear");
+  if (id === "weekend") return t("vignetteWeekend");
+  return line.label;
+}
 
 /** Loads the toll estimate for the route; re-fetches when days or euro class change. */
 function useTolls(data: PlanResponse, euroClass: EuroClass | null) {
   const [days, setDays] = useState("1");
   const [excluded, setExcluded] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState<{ key: string; result: TollEstimate | null; error: string | null } | null>(null);
+  const [loaded, setLoaded] = useState<{ key: string; result: TollEstimate | null; error: AppMessage | null } | null>(null);
 
   const dayCount = Number(days);
   const daysValid = Number.isInteger(dayCount) && dayCount >= 1 && dayCount <= 365;
@@ -242,14 +264,14 @@ function useTolls(data: PlanResponse, euroClass: EuroClass | null) {
       .then(async (res) => {
         const body = (await res.json()) as TollEstimate | ApiError;
         if (!res.ok || "error" in body) {
-          setLoaded({ key: query, result: null, error: "error" in body ? body.error : "Az útdíj nem kérhető le." });
+          setLoaded({ key: query, result: null, error: "error" in body ? body.error : msg("tollsFailed") });
         } else {
           setLoaded({ key: query, result: body, error: null });
         }
       })
       .catch((e: unknown) => {
         if (!(e instanceof DOMException && e.name === "AbortError")) {
-          setLoaded({ key: query, result: null, error: "Az útdíj nem kérhető le." });
+          setLoaded({ key: query, result: null, error: msg("tollsFailed") });
         }
       });
     return () => controller.abort();
@@ -292,20 +314,21 @@ function Tolls({
   loading: boolean;
   onAvoidTollsChange: (country: string, avoidTolls: boolean) => void;
 }) {
+  const { t, tm, fmt } = useI18n();
   const avoided =
     data.avoidedTollCountries.length > 0 ? (
       <ul className="tolls">
         {data.avoidedTollCountries.map((c) => (
           <li key={c}>
-            <strong>{countryName(c)}</strong>
-            <span className="toll-amount">fizetős utak nélkül</span>
+            <strong>{fmt.countryName(c)}</strong>
+            <span className="toll-amount">{t("tollFreeRoute")}</span>
             {requestedAvoid.includes(c) ? (
               <label className="check avoid-toggle small">
                 <input type="checkbox" checked disabled={loading} onChange={() => onAvoidTollsChange(c, false)} />
-                Fizetős utak kerülése
+                {t("avoidTolls")}
               </label>
             ) : (
-              <span className="avoid-toggle small">A díjmentes kerülőút érinti.</span>
+              <span className="avoid-toggle small">{t("detourTouches")}</span>
             )}
           </li>
         ))}
@@ -316,7 +339,7 @@ function Tolls({
     return (
       <>
         {avoided}
-        {!avoided && <p className="muted">Az útvonal országaira nincs útdíjadat.</p>}
+        {!avoided && <p className="muted">{t("noTollData")}</p>}
       </>
     );
   }
@@ -324,7 +347,7 @@ function Tolls({
   return (
     <>
       <div className="field narrow-field">
-        <label htmlFor="trip-days">Utazás hossza</label>
+        <label htmlFor="trip-days">{t("tripLength")}</label>
         <div className="unit-input">
           <input
             id="trip-days"
@@ -333,29 +356,29 @@ function Tolls({
             aria-invalid={!tolls.daysValid}
             onChange={(e) => tolls.setDays(e.target.value)}
           />
-          <span>nap</span>
+          <span>{t("days")}</span>
         </div>
-        <small className="hint">Ehhez választjuk a legolcsóbb matrica-kombinációt.</small>
-        {!tolls.daysValid && <small className="error">1 és 365 közötti egész számot adj meg.</small>}
+        <small className="hint">{t("tripLengthHint")}</small>
+        {!tolls.daysValid && <small className="error">{t("daysInvalid")}</small>}
       </div>
 
-      {tolls.loading && <p className="muted">Útdíjak lekérése…</p>}
-      {tolls.error && <p className="error">{tolls.error}</p>}
+      {tolls.loading && <p className="muted">{t("loadingTolls")}</p>}
+      {tolls.error && <p className="error">{tm(tolls.error)}</p>}
 
       {tolls.result?.status === "euro_class_required" && (
         <div className="notice">
           <label htmlFor="euro-class-inline">
-            Az útvonalon kibocsátásfüggő útdíj van (pl. Románia). Add meg az autó Euro-besorolását:
+            {t("euroClassRequired")}
           </label>{" "}
           <select
             id="euro-class-inline"
             value={euroClass ?? ""}
             onChange={(e) => e.target.value && onEuroClassChange(e.target.value as EuroClass)}
           >
-            <option value="">Válassz…</option>
+            <option value="">{t("choose")}</option>
             {EURO_CLASSES.map((c) => (
               <option key={c} value={c}>
-                {EURO_CLASS_LABELS[c]}
+                {euroClassLabel(c, t)}
               </option>
             ))}
           </select>
@@ -374,9 +397,9 @@ function Tolls({
                     disabled={c.subtotal === 0}
                     onChange={(e) => tolls.setExcluded((x) => ({ ...x, [c.country]: !e.target.checked }))}
                   />
-                  <strong>{countryName(c.country)}</strong>
+                  <strong>{fmt.countryName(c.country)}</strong>
                 </label>
-                <span className="toll-amount">{c.subtotal > 0 ? formatMoney(c.subtotal, currency) : "díjmentes"}</span>
+                <span className="toll-amount">{c.subtotal > 0 ? fmt.money(c.subtotal, currency) : t("tollFree")}</span>
                 {c.system !== "free" && (
                   <label className="check avoid-toggle small">
                     <input
@@ -385,14 +408,14 @@ function Tolls({
                       disabled={loading}
                       onChange={() => onAvoidTollsChange(c.country, true)}
                     />
-                    Fizetős utak kerülése
+                    {t("avoidTolls")}
                   </label>
                 )}
                 {c.lines.length > 0 && (
                   <ul className="toll-lines muted small">
                     {c.lines.map((l, i) => (
                       <li key={i}>
-                        {l.label}: {formatMoney(l.price, currency)}
+                        {tollLineLabel(l, t, fmt)}: {fmt.money(l.price, currency)}
                       </li>
                     ))}
                   </ul>
@@ -401,11 +424,7 @@ function Tolls({
             ))}
           </ul>
           {avoided}
-          <p className="hint">
-            Személyautó, {tolls.result.asOf} szerinti díjak. A km-alapú díj becslés; alagutak, hidak külön díja
-            nincs benne. Ha egy országra már van matricád, vedd ki a pipát. A „Fizetős utak kerülése” az adott
-            országon belül díjmentes utakon tervez (a határátkelő marad), és a böngésző megjegyzi.
-          </p>
+          <p className="hint">{t("tollFootnote", { asOf: tolls.result.asOf })}</p>
         </>
       )}
     </>
