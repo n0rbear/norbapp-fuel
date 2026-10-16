@@ -1,9 +1,8 @@
-export type FuelType = "diesel" | "e5" | "e10";
+export type FuelType = "diesel" | "petrol";
 
 export const FUEL_TYPES: { id: FuelType; label: string }[] = [
   { id: "diesel", label: "Dízel" },
-  { id: "e5", label: "Benzin E5 (95)" },
-  { id: "e10", label: "Benzin E10" },
+  { id: "petrol", label: "Benzin (95)" },
 ];
 
 export type Vehicle = {
@@ -80,7 +79,7 @@ export function planRefuels(totalKm: number, vehicle: Vehicle): RefuelPlan {
   return { totalKm, totalLitres: totalKm * perKm, startLitres, stops };
 }
 
-export type PriceSource = "manual" | "station" | "cheapest" | "default";
+export type PriceSource = "manual" | "station" | "cheapest" | "estimate" | "default";
 
 export type PricedPoint = { price: number; source: PriceSource };
 

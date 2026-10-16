@@ -1,4 +1,4 @@
-import type { PlaceInput, PlanRequest } from "./api-types";
+import { CURRENCIES, EURO_CLASSES, type Currency, type EuroClass, type PlaceInput, type PlanRequest } from "./api-types";
 import { FUEL_TYPES, validateVehicle, type FuelType } from "./trip";
 
 export const MAX_WAYPOINTS = 10;
@@ -55,6 +55,9 @@ export function parsePlanRequest(body: unknown): Result<PlanRequest> {
   const fuelType = body.fuelType as FuelType;
   if (!FUEL_TYPES.some((f) => f.id === fuelType)) return { ok: false, error: "Ismeretlen üzemanyagtípus." };
 
+  const currency = body.currency as Currency;
+  if (!CURRENCIES.includes(currency)) return { ok: false, error: "Ismeretlen pénznem." };
+
   if (!isObject(body.vehicle)) return { ok: false, error: "Hiányzó járműadatok." };
   const vehicle = {
     consumption: finite(body.vehicle.consumption) ?? NaN,
@@ -74,7 +77,47 @@ export function parsePlanRequest(body: unknown): Result<PlanRequest> {
       roundTrip: body.roundTrip === true,
       optimizeWaypoints: body.optimizeWaypoints === true,
       fuelType,
+      currency,
       vehicle,
     },
   };
+}
+
+export type TollsQuery = {
+  countries: string[];
+  days: number;
+  highwayKm: Record<string, number>;
+  euroClass: EuroClass | null;
+  currency: Currency;
+};
+
+const COUNTRY_CODE = /^[A-Z]{2}$/;
+
+/** Validates the query string of GET /api/tolls. */
+export function parseTollsQuery(params: URLSearchParams): Result<TollsQuery> {
+  const countries = (params.get("countries") ?? "").split(",").filter(Boolean);
+  if (countries.length === 0 || countries.length > 30 || !countries.every((c) => COUNTRY_CODE.test(c))) {
+    return { ok: false, error: "Hibás országlista." };
+  }
+
+  const days = Number(params.get("days"));
+  if (!Number.isInteger(days) || days < 1 || days > 365) return { ok: false, error: "Az út hossza 1 és 365 nap között legyen." };
+
+  const highwayKm: Record<string, number> = {};
+  for (const pair of (params.get("highway_km") ?? "").split(",").filter(Boolean)) {
+    const [code, km] = pair.split(":");
+    const value = Number(km);
+    if (!COUNTRY_CODE.test(code) || !Number.isFinite(value) || value < 0 || value > 20_000) {
+      return { ok: false, error: "Hibás autópálya-km." };
+    }
+    highwayKm[code] = value;
+  }
+
+  const rawClass = params.get("euro_class") || null;
+  if (rawClass !== null && !EURO_CLASSES.includes(rawClass as EuroClass)) return { ok: false, error: "Ismeretlen Euro-besorolás." };
+
+  const currency = params.get("currency") as Currency;
+  if (!CURRENCIES.includes(currency)) return { ok: false, error: "Ismeretlen pénznem." };
+
+  return { ok: true, value: { countries, days, highwayKm, euroClass: rawClass as EuroClass | null, currency } };
 }

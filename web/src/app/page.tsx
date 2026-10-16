@@ -7,7 +7,7 @@ export default function Home() {
         <p className="brand">NorbApp Fuel</p>
         <h1>Útiköltség-kalkulátor</h1>
         <p className="muted">
-          Útvonal, tankolási pontok és matricák egy helyen. Élő kútárak Németországban és Ausztriában.
+          Útvonal, tankolási pontok, üzemanyagárak és útdíjak mind a 27 EU-országra – a választott pénznemben.
         </p>
       </header>
       <Planner />
@@ -16,7 +16,7 @@ export default function Home() {
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
           OpenStreetMap
         </a>{" "}
-        közreműködők · Útvonal: OSRM · Címkeresés: Photon · Kútárak: Tankerkönig (CC BY 4.0), E-Control.
+        közreműködők · Útvonal: OSRM · Címkeresés: Photon · Árak és útdíjak: NorbApp FUEL-API (Tankerkönig/MTS-K CC BY 4.0, E-Control, nemzeti nyílt adatok, EU Weekly Oil Bulletin, EKB).
       </footer>
     </main>
   );

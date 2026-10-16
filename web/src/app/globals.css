@@ -118,6 +118,7 @@ body {
 }
 input[type="text"],
 input:not([type]),
+select,
 .unit-input input {
   width: 100%;
   background: var(--surface);
@@ -129,6 +130,7 @@ input:not([type]),
   min-width: 0;
 }
 input:focus-visible,
+select:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
@@ -373,16 +375,32 @@ input[aria-invalid="true"] {
   font-variant-numeric: tabular-nums;
 }
 
-.vignettes {
+.tolls {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
-.vignettes li {
-  display: flex;
-  justify-content: space-between;
+.tolls > li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
   align-items: center;
-  gap: 12px;
+}
+.toll-amount {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.toll-lines {
+  grid-column: 1 / -1;
+  padding-left: 26px;
+}
+.narrow-field .unit-input input {
+  width: 80px;
+  flex: none;
+}
+.notice select {
+  margin-top: 6px;
+  width: auto;
 }
 
 .footer {

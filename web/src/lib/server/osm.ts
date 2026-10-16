@@ -1,7 +1,7 @@
 import "server-only";
 import { iso1A2Code } from "@rapideditor/country-coder";
 import type { PlaceInput, PlaceSuggestion } from "../api-types";
-import type { LatLng } from "../geo";
+import { decodePolyline, type LatLng } from "../geo";
 import { UserError } from "./env";
 import { fetchJson, UpstreamError } from "./http";
 
@@ -63,7 +63,8 @@ async function photon(path: string, params: Record<string, string>): Promise<Pla
 
 export async function autocomplete(q: string, near?: LatLng): Promise<PlaceSuggestion[]> {
   const params: Record<string, string> = { q, limit: "6" };
-  if (near) Object.assign(params, { lat: String(near.lat), lon: String(near.lng) });
+  // zoom=4 keeps the bias weak, so "Paris" means Paris, not a café near the user.
+  if (near) Object.assign(params, { lat: String(near.lat), lon: String(near.lng), zoom: "4" });
   const results = await photon("/api/", params);
   // Different OSM objects can share a label (e.g. a city and its boundary).
   return results.filter((r, i) => results.findIndex((x) => x.label === r.label) === i);
@@ -83,13 +84,21 @@ async function resolve(place: PlaceInput): Promise<LatLng> {
 
 // --- OSRM (routing) ---
 
+export type RouteStep = { distanceMeters: number; ref: string | null; midpoint: LatLng };
+
 export type ComputedRoute = {
   distanceMeters: number;
   durationSec: number;
   encodedPolyline: string;
+  steps: RouteStep[];
 };
 
-type OsrmRoute = { distance: number; duration: number; geometry: string };
+type OsrmRoute = {
+  distance: number;
+  duration: number;
+  geometry: string;
+  legs?: { steps?: { distance: number; ref?: string; geometry: string }[] }[];
+};
 type OsrmResponse = { code: string; routes?: OsrmRoute[]; trips?: OsrmRoute[] };
 
 /**
@@ -101,7 +110,8 @@ export async function computeRoute(places: PlaceInput[], optimize: boolean): Pro
   const coords = await Promise.all(places.map(resolve));
   const path = coords.map((c) => `${c.lng.toFixed(6)},${c.lat.toFixed(6)}`).join(";");
   const useTrip = optimize && places.length > 3;
-  const params = new URLSearchParams({ overview: "full", geometries: "polyline" });
+  // Steps carry road refs ("A 6"), used to estimate motorway km per country.
+  const params = new URLSearchParams({ overview: "full", geometries: "polyline", steps: "true" });
   if (useTrip) {
     params.set("source", "first");
     params.set("destination", "last");
@@ -128,5 +138,13 @@ export async function computeRoute(places: PlaceInput[], optimize: boolean): Pro
   if (data.code !== "Ok" || !route?.geometry || !(route.distance > 0)) {
     throw new UserError("Nem található útvonal a megadott pontok között.", 422);
   }
-  return { distanceMeters: route.distance, durationSec: route.duration, encodedPolyline: route.geometry };
+  const steps: RouteStep[] = (route.legs ?? []).flatMap((leg) =>
+    (leg.steps ?? [])
+      .filter((s) => s.distance > 0 && s.geometry)
+      .map((s) => {
+        const pts = decodePolyline(s.geometry);
+        return { distanceMeters: s.distance, ref: s.ref?.trim() || null, midpoint: pts[Math.floor(pts.length / 2)] };
+      }),
+  );
+  return { distanceMeters: route.distance, durationSec: route.duration, encodedPolyline: route.geometry, steps };
 }

@@ -17,5 +17,3 @@ services:
         value: "22"
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
-      - key: TANKERKOENIG_API_KEY
-        sync: false

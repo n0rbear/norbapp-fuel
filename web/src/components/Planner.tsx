@@ -1,7 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { ApiError, PlanRequest, PlanResponse } from "@/lib/api-types";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CURRENCIES,
+  EURO_CLASSES,
+  type ApiError,
+  type Currency,
+  type CurrencyInfo,
+  EURO_CLASS_LABELS,
+  type EuroClass,
+  type PlanRequest,
+  type PlanResponse,
+} from "@/lib/api-types";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { parseDecimal } from "@/lib/pricing";
 import { DEFAULT_VEHICLE, FUEL_TYPES, validateVehicle, type FuelType, type Vehicle } from "@/lib/trip";
 import { MAX_WAYPOINTS } from "@/lib/validate";
@@ -24,6 +35,9 @@ const VEHICLE_FIELDS: { key: keyof Vehicle; label: string; unit: string }[] = [
   { key: "reservePct", label: "Tartalék, ami alá nem mész", unit: "%" },
 ];
 
+const isCurrency = (v: string): v is Currency => (CURRENCIES as readonly string[]).includes(v);
+const isEuroClassOrUnset = (v: string): v is EuroClass | "" => v === "" || (EURO_CLASSES as readonly string[]).includes(v);
+
 export function Planner() {
   const [origin, setOrigin] = useState<PlaceValue>(emptyPlace);
   const [locating, setLocating] = useState(false);
@@ -33,6 +47,18 @@ export function Planner() {
   const [optimize, setOptimize] = useState(false);
   const [fuelType, setFuelType] = useState<FuelType>("diesel");
   const [vehicleForm, setVehicleForm] = useState<VehicleForm>(toForm(DEFAULT_VEHICLE));
+  const [currency, setCurrency] = usePersistentState<Currency>("fuel.currency", "HUF", isCurrency);
+  const [euroClass, setEuroClass] = usePersistentState<EuroClass | "">("fuel.euroClass", "", isEuroClassOrUnset);
+  const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo[] | null>(null);
+
+  useEffect(() => {
+    // Wake the sleeping price service early, and load currency names.
+    fetch("/api/warmup", { method: "POST" }).catch(() => {});
+    fetch("/api/currencies")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { currencies: CurrencyInfo[] } | null) => d && setCurrencyInfo(d.currencies))
+      .catch(() => {});
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,9 +84,10 @@ export function Planner() {
       roundTrip,
       optimizeWaypoints: optimize,
       fuelType,
+      currency,
       vehicle,
     };
-  }, [origin, destination, waypoints, roundTrip, optimize, fuelType, vehicle]);
+  }, [origin, destination, waypoints, roundTrip, optimize, fuelType, currency, vehicle]);
 
   const stale = !!result && JSON.stringify(result.request) !== JSON.stringify(request);
 
@@ -236,6 +263,32 @@ export function Planner() {
           ))}
         </div>
 
+        <div className="grid">
+          <div className="field">
+            <label htmlFor="euro-class">Euro-besorolás</label>
+            <select id="euro-class" value={euroClass} onChange={(e) => setEuroClass(e.target.value as EuroClass | "")}>
+              <option value="">Nincs megadva</option>
+              {EURO_CLASSES.map((c) => (
+                <option key={c} value={c}>
+                  {EURO_CLASS_LABELS[c]}
+                </option>
+              ))}
+            </select>
+            <small className="hint">Ott kell, ahol az útdíj függ tőle (pl. Románia).</small>
+          </div>
+          <div className="field">
+            <label htmlFor="currency">Pénznem</label>
+            <select id="currency" value={currency} onChange={(e) => setCurrency(e.target.value as Currency)}>
+              {(currencyInfo ?? CURRENCIES.map((code) => ({ code, name: code, rate: 0 }))).map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code === c.name ? c.code : `${c.code} – ${c.name}`}
+                </option>
+              ))}
+            </select>
+            <small className="hint">Árfolyam: Európai Központi Bank.</small>
+          </div>
+        </div>
+
         {error && (
           <p className="error" role="alert">
             {error}
@@ -245,10 +298,22 @@ export function Planner() {
         <button type="submit" className="btn primary" disabled={loading}>
           {loading ? "Tervezés…" : "Kalkuláció"}
         </button>
+        {loading && (
+          <p className="hint" role="status">
+            Az első kérés akár egy percig is eltarthat, amíg az árszolgáltatás felébred.
+          </p>
+        )}
       </form>
 
       {result && (
-        <Results key={result.id} request={result.request} data={result.response} stale={stale} />
+        <Results
+          key={result.id}
+          request={result.request}
+          data={result.response}
+          stale={stale}
+          euroClass={euroClass || null}
+          onEuroClassChange={setEuroClass}
+        />
       )}
     </>
   );

@@ -1,9 +1,11 @@
 import "server-only";
-import type { FuelPoint, PlanRequest, PlanResponse } from "../api-types";
+import type { FuelPoint, PlanRequest, PlanResponse, PointPrices } from "../api-types";
+import { countryName } from "../countries";
 import { decodePolyline, RoutePath, type LatLng } from "../geo";
+import { motorwayKmByCountry } from "../motorway";
 import { planRefuels } from "../trip";
+import { pricesAt, supportedCountries } from "./fuel-api";
 import { computeRoute, countryAt } from "./osm";
-import { fetchStations, providerFor } from "./stations";
 
 const COUNTRY_SAMPLE_EVERY_KM = 2;
 const COUNTRY_MAX_SAMPLES = 5_000;
@@ -28,6 +30,8 @@ function simplify(points: LatLng[], max: number): LatLng[] {
   return Array.from({ length: max }, (_, i) => points[Math.round(i * step)]);
 }
 
+const none = (reason: string): PointPrices => ({ mode: "none", source: null, stations: [], estimate: null, reason });
+
 export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   const warnings: string[] = [];
 
@@ -38,6 +42,10 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
     : [req.origin, ...req.waypoints, req.destination];
   const optimize = req.optimizeWaypoints && !req.roundTrip;
 
+  // Wake the price service while the route is being computed.
+  const supportedPromise = supportedCountries();
+  supportedPromise.catch(() => {});
+
   const route = await computeRoute(places, optimize);
   const distanceKm = route.distanceMeters / 1000;
   const path = new RoutePath(decodePolyline(route.encodedPolyline), distanceKm);
@@ -46,44 +54,56 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   const fuelKms = [0, ...plan.stops.map((s) => s.km)];
   const fuelLocations = fuelKms.map((km) => path.pointAtKm(km));
 
-  // Countries along the route (for vignettes) and at each fuel point, from
-  // offline border data.
+  // Countries along the route and at each fuel point, from offline border data.
   const countries: string[] = [];
   for (const sample of path.sample(COUNTRY_SAMPLE_EVERY_KM, COUNTRY_MAX_SAMPLES)) {
     const c = countryAt(sample);
     if (c && !countries.includes(c)) countries.push(c);
   }
   const fuelCountries = fuelLocations.map(countryAt);
+  const motorwayKm = motorwayKmByCountry(route.steps, countryAt);
 
+  let supported: Set<string> | null = null;
+  try {
+    supported = await supportedPromise;
+  } catch {
+    warnings.push("Az árszolgáltatás most nem érhető el – a megadott alapárral számolunk, útdíj nélkül.");
+  }
+
+  let rate: number | null = req.currency === "EUR" ? 1 : null;
   const points: FuelPoint[] = await mapLimit(fuelKms.map((km, i) => ({ km, i })), 4, async ({ km, i }) => {
     const country = fuelCountries[i];
-    const provider = providerFor(country);
-    const base = {
-      kind: i === 0 ? ("start" as const) : ("stop" as const),
-      km,
-      location: fuelLocations[i],
-      country,
-      provider,
-    };
-    if (!provider) return { ...base, stations: [], stationsError: null };
+    const base = { kind: i === 0 ? ("start" as const) : ("stop" as const), km, location: fuelLocations[i], country };
+    if (!supported) return { ...base, prices: none("Az árszolgáltatás nem érhető el.") };
+    if (!country || !supported.has(country)) {
+      return { ...base, prices: none(country ? `${countryName(country)}: nincs áradat (nem EU-s ország).` : "Ismeretlen ország.") };
+    }
     try {
-      return { ...base, stations: await fetchStations(provider, fuelLocations[i], req.fuelType), stationsError: null };
+      const result = await pricesAt(country, fuelLocations[i], req.fuelType, req.currency, i > 0);
+      rate = result.rate;
+      return { ...base, prices: result.prices };
     } catch {
-      return { ...base, stations: [], stationsError: "A kútlista most nem érhető el." };
+      return { ...base, prices: none("Az ár most nem kérhető le.") };
     }
   });
 
-  if (points.some((p) => !p.provider)) {
-    warnings.push(
-      "Élő kútárak csak Németországban és Ausztriában érhetők el; máshol a megadott alapár szerint számolunk.",
-    );
+  if (points.some((p) => p.prices.mode === "none")) {
+    warnings.push("Ahol nincs áradat, a megadott alapárral számolunk.");
+  }
+  const outside = countries.filter((c) => supported && !supported.has(c));
+  if (outside.length > 0) {
+    warnings.push(`Nem EU-s országok útdíja nincs benne: ${outside.map(countryName).join(", ")}.`);
   }
 
   return {
     distanceKm,
     durationSec: route.durationSec,
     plan,
+    currency: req.currency,
+    rate,
     countries,
+    tollCountries: supported ? countries.filter((c) => supported.has(c)) : [],
+    motorwayKm,
     points,
     path: simplify(path.points, PATH_MAX_POINTS),
     warnings,

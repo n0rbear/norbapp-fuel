@@ -16,9 +16,22 @@ const point = (stations: Station[]): FuelPoint => ({
   km: 0,
   location: { lat: 0, lng: 0 },
   country: "DE",
-  provider: "tankerkoenig",
-  stations,
-  stationsError: null,
+  prices: stations.length
+    ? { mode: "official", source: "Tankerkoenig (MTS-K)", stations, estimate: null }
+    : { mode: "none", source: null, stations: [], estimate: null, reason: "n/a" },
+});
+
+const estimated = (price: number): FuelPoint => ({
+  kind: "stop",
+  km: 400,
+  location: { lat: 0, lng: 0 },
+  country: "HU",
+  prices: {
+    mode: "estimate",
+    source: "Becslés",
+    stations: [],
+    estimate: { price, low: price * 0.965, high: price * 1.035, location: "highway" },
+  },
 });
 
 describe("resolvePrices", () => {
@@ -36,6 +49,12 @@ describe("resolvePrices", () => {
       price: 1.9,
       source: "station",
     });
+  });
+
+  it("uses the estimate where there are no stations", () => {
+    expect(resolvePrices([estimated(740.32)], { manualPrice: null, defaultPrice: 600, selected: {} })).toEqual([
+      { price: 740.32, source: "estimate" },
+    ]);
   });
 
   it("lets the manual price override everything", () => {
