@@ -1,14 +1,13 @@
 import "server-only";
 import type { FuelPoint, PlanRequest, PlanResponse, PointPrices } from "../api-types";
 import { countryName } from "../countries";
-import { decodePolyline, RoutePath, type LatLng } from "../geo";
+import { RoutePath, type LatLng } from "../geo";
 import { motorwayKmByCountry } from "../motorway";
 import { planRefuels } from "../trip";
 import { pricesAt, supportedCountries } from "./fuel-api";
+import { applyTollAvoidance } from "./avoid-tolls";
 import { computeRoute, countryAt } from "./osm";
 
-const COUNTRY_SAMPLE_EVERY_KM = 2;
-const COUNTRY_MAX_SAMPLES = 5_000;
 const PATH_MAX_POINTS = 300;
 
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -46,20 +45,21 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
   const supportedPromise = supportedCountries();
   supportedPromise.catch(() => {});
 
-  const route = await computeRoute(places, optimize);
+  const fastest = await computeRoute(places, optimize);
+  const { route, avoided, warnings: avoidWarnings } = await applyTollAvoidance(
+    fastest,
+    new Set(req.avoidTollCountries),
+  );
+  warnings.push(...avoidWarnings);
   const distanceKm = route.distanceMeters / 1000;
-  const path = new RoutePath(decodePolyline(route.encodedPolyline), distanceKm);
+  const path = new RoutePath(route.points, distanceKm);
   const plan = planRefuels(distanceKm, req.vehicle, req.fillAtStart);
 
   const fuelKms = [0, ...plan.stops.map((s) => s.km)];
   const fuelLocations = fuelKms.map((km) => path.pointAtKm(km));
 
   // Countries along the route and at each fuel point, from offline border data.
-  const countries: string[] = [];
-  for (const sample of path.sample(COUNTRY_SAMPLE_EVERY_KM, COUNTRY_MAX_SAMPLES)) {
-    const c = countryAt(sample);
-    if (c && !countries.includes(c)) countries.push(c);
-  }
+  const countries = path.regionsAlong(countryAt);
   const fuelCountries = fuelLocations.map(countryAt);
   const motorwayKm = motorwayKmByCountry(route.steps, countryAt);
 
@@ -109,7 +109,9 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
     currency: req.currency,
     rate,
     countries,
-    tollCountries: supported ? countries.filter((c) => supported.has(c)) : [],
+    // Countries driven toll-free need no vignette or toll estimate.
+    tollCountries: supported ? countries.filter((c) => supported.has(c) && !avoided.includes(c)) : [],
+    avoidedTollCountries: avoided,
     motorwayKm,
     points,
     path: simplify(path.points, PATH_MAX_POINTS),

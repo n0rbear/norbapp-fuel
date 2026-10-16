@@ -35,6 +35,8 @@ const VEHICLE_FIELDS: { key: keyof Vehicle; label: string; unit: string }[] = [
   { key: "reservePct", label: "Tartalék, ami alá nem mész", unit: "%" },
 ];
 
+const isCountryList = (v: string): v is string => /^([A-Z]{2}(,[A-Z]{2})*)?$/.test(v);
+
 const isCurrency = (v: string): v is Currency => (CURRENCIES as readonly string[]).includes(v);
 const isEuroClassOrUnset = (v: string): v is EuroClass | "" => v === "" || (EURO_CLASSES as readonly string[]).includes(v);
 
@@ -51,6 +53,9 @@ export function Planner() {
   const [currency, setCurrency] = usePersistentState<Currency>("fuel.currency", "HUF", isCurrency);
   const [euroClass, setEuroClass] = usePersistentState<EuroClass | "">("fuel.euroClass", "", isEuroClassOrUnset);
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo[] | null>(null);
+  // Countries where the user drives toll-free; remembered across visits.
+  const [avoidList, setAvoidList] = usePersistentState<string>("fuel.avoidTolls", "", isCountryList);
+  const avoidTollCountries = useMemo(() => avoidList.split(",").filter(Boolean).sort(), [avoidList]);
 
   useEffect(() => {
     // Wake the sleeping price service early, and load currency names.
@@ -88,8 +93,9 @@ export function Planner() {
       currency,
       vehicle,
       fillAtStart: fillAtStart && vehicle.startLevelPct < 100,
+      avoidTollCountries,
     };
-  }, [origin, destination, waypoints, roundTrip, optimize, fuelType, currency, vehicle, fillAtStart]);
+  }, [origin, destination, waypoints, roundTrip, optimize, fuelType, currency, vehicle, fillAtStart, avoidTollCountries]);
 
   const stale = !!result && JSON.stringify(result.request) !== JSON.stringify(request);
 
@@ -146,19 +152,24 @@ export function Planner() {
       return;
     }
 
+    await runPlan(request);
+  };
+
+  const runPlan = async (planRequest: PlanRequest) => {
+    setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
+        body: JSON.stringify(planRequest),
       });
       const data = (await res.json()) as PlanResponse | ApiError;
       if (!res.ok || "error" in data) {
         setError("error" in data ? data.error : "Hiba történt a tervezéskor.");
         return;
       }
-      setResult({ id: Date.now(), request, response: data });
+      setResult({ id: Date.now(), request: planRequest, response: data });
     } catch {
       setError("Nem sikerült elérni a szervert. Ellenőrizd az internetkapcsolatot.");
     } finally {
@@ -322,6 +333,16 @@ export function Planner() {
           stale={stale}
           euroClass={euroClass || null}
           onEuroClassChange={setEuroClass}
+          loading={loading}
+          onAvoidTollsChange={(country, avoidTolls) => {
+            // Re-plan the shown trip with the new toll preference right away.
+            const next = new Set(avoidTollCountries);
+            if (avoidTolls) next.add(country);
+            else next.delete(country);
+            const list = [...next].sort();
+            setAvoidList(list.join(","));
+            void runPlan({ ...result.request, avoidTollCountries: list });
+          }}
         />
       )}
     </>

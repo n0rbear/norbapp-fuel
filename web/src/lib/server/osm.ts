@@ -89,8 +89,10 @@ export type RouteStep = { distanceMeters: number; ref: string | null; midpoint: 
 export type ComputedRoute = {
   distanceMeters: number;
   durationSec: number;
-  encodedPolyline: string;
+  points: LatLng[];
   steps: RouteStep[];
+  /** The input places as routed, in visiting order (start and end included). */
+  waypoints: LatLng[];
 };
 
 type OsrmRoute = {
@@ -99,17 +101,16 @@ type OsrmRoute = {
   geometry: string;
   legs?: { steps?: { distance: number; ref?: string; geometry: string }[] }[];
 };
-type OsrmResponse = { code: string; routes?: OsrmRoute[]; trips?: OsrmRoute[] };
+type OsrmResponse = {
+  code: string;
+  routes?: OsrmRoute[];
+  trips?: OsrmRoute[];
+  waypoints?: { location: [number, number]; waypoint_index?: number }[];
+};
 
-/**
- * Routes through all places in order. With `optimize`, intermediate stops are
- * reordered (OSRM trip service) while the first and last stay fixed.
- */
-export async function computeRoute(places: PlaceInput[], optimize: boolean): Promise<ComputedRoute> {
-  if (places.length < 2) throw new UserError("Legalább két pont szükséges.");
-  const coords = await Promise.all(places.map(resolve));
+async function osrm(coords: LatLng[], optimize: boolean): Promise<ComputedRoute> {
   const path = coords.map((c) => `${c.lng.toFixed(6)},${c.lat.toFixed(6)}`).join(";");
-  const useTrip = optimize && places.length > 3;
+  const useTrip = optimize && coords.length > 3;
   // Steps carry road refs ("A 6"), used to estimate motorway km per country.
   const params = new URLSearchParams({ overview: "full", geometries: "polyline", steps: "true" });
   if (useTrip) {
@@ -146,5 +147,86 @@ export async function computeRoute(places: PlaceInput[], optimize: boolean): Pro
         return { distanceMeters: s.distance, ref: s.ref?.trim() || null, midpoint: pts[Math.floor(pts.length / 2)] };
       }),
   );
-  return { distanceMeters: route.distance, durationSec: route.duration, encodedPolyline: route.geometry, steps };
+  const snapped = (data.waypoints ?? []).map((w, i) => ({
+    order: useTrip ? (w.waypoint_index ?? i) : i,
+    point: { lat: w.location[1], lng: w.location[0] },
+  }));
+  const waypoints =
+    snapped.length === coords.length ? snapped.sort((a, b) => a.order - b.order).map((w) => w.point) : coords;
+  return {
+    distanceMeters: route.distance,
+    durationSec: route.duration,
+    points: decodePolyline(route.geometry),
+    steps,
+    waypoints,
+  };
+}
+
+/**
+ * Routes through all places in order. With `optimize`, intermediate stops are
+ * reordered (OSRM trip service) while the first and last stay fixed.
+ */
+export async function computeRoute(places: PlaceInput[], optimize: boolean): Promise<ComputedRoute> {
+  if (places.length < 2) throw new UserError("Legalább két pont szükséges.");
+  return osrm(await Promise.all(places.map(resolve)), optimize);
+}
+
+/** Fastest route through the given points, in order. */
+export function routeThrough(points: LatLng[]): Promise<ComputedRoute> {
+  return osrm(points, false);
+}
+
+// --- Valhalla (toll-free routing) ---
+
+// OSRM instances cannot avoid tolls; Valhalla can (vignette motorways are
+// tagged as tolls in OSM too).
+const VALHALLA_URL = process.env.VALHALLA_URL || "https://valhalla1.openstreetmap.de";
+
+type ValhallaResponse = {
+  trip?: {
+    summary: { length: number; time: number; has_toll?: boolean };
+    legs: { shape: string }[];
+  };
+};
+
+export type TollFreeRoute = { distanceMeters: number; durationSec: number; points: LatLng[]; hasToll: boolean };
+
+/**
+ * Route avoiding toll roads through `points`. Points flagged `offMotorway`
+ * (border crossings) snap to the nearest non-motorway road.
+ */
+export async function routeAvoidingTolls(points: { point: LatLng; offMotorway: boolean }[]): Promise<TollFreeRoute> {
+  const locations = points.map(({ point, offMotorway }, i) => ({
+    lat: point.lat,
+    lon: point.lng,
+    type: i === 0 || i === points.length - 1 ? "break" : "through",
+    ...(offMotorway ? { search_filter: { max_road_class: "primary" } } : {}),
+  }));
+  const data = await fetchJson<ValhallaResponse>(
+    "valhalla",
+    `${VALHALLA_URL}/route`,
+    {
+      method: "POST",
+      headers: { ...HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        locations,
+        costing: "auto",
+        costing_options: { auto: { use_tolls: 0 } },
+        units: "kilometers",
+        directions_type: "none",
+      }),
+    },
+    30_000,
+  );
+  const trip = data.trip;
+  if (!trip || trip.legs.length === 0) throw new UpstreamError("valhalla", null, "no route");
+  return {
+    distanceMeters: trip.summary.length * 1000,
+    durationSec: trip.summary.time,
+    points: trip.legs.flatMap((leg, i) => {
+      const pts = decodePolyline(leg.shape, 6);
+      return i === 0 ? pts : pts.slice(1);
+    }),
+    hasToll: trip.summary.has_toll === true,
+  };
 }

@@ -23,6 +23,13 @@ describe("parsePlanRequest", () => {
     }
   });
 
+  it("normalises the toll-avoidance country list", () => {
+    const r = parsePlanRequest({ ...valid, avoidTollCountries: ["HU", "AT", "HU"] });
+    expect(r.ok && r.value.avoidTollCountries).toEqual(["AT", "HU"]);
+    expect(parsePlanRequest({ ...valid, avoidTollCountries: ["hu"] }).ok).toBe(false);
+    expect(parsePlanRequest({ ...valid, avoidTollCountries: "HU" }).ok).toBe(false);
+  });
+
   it("accepts E10 and the fill-at-start flag", () => {
     const r = parsePlanRequest({ ...valid, fuelType: "e10", fillAtStart: true });
     expect(r.ok && r.value.fuelType).toBe("e10");

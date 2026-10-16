@@ -37,6 +37,8 @@ export type PlanRequest = {
   vehicle: Vehicle;
   /** Fill the tank up before departure (only matters below 100%). */
   fillAtStart: boolean;
+  /** Countries where toll roads (incl. vignette roads) should be avoided. */
+  avoidTollCountries: string[];
 };
 
 export type Station = {
@@ -80,8 +82,10 @@ export type PlanResponse = {
   rate: number | null;
   /** Countries crossed, in route order. */
   countries: string[];
-  /** Countries the FUEL-API covers (EU), subset of `countries`. */
+  /** Countries needing a toll estimate (EU, not driven toll-free), subset of `countries`. */
   tollCountries: string[];
+  /** Countries where the route avoids toll roads. */
+  avoidedTollCountries: string[];
   /** Approximate motorway km per country (from road refs), for distance-based tolls. */
   motorwayKm: Record<string, number>;
   points: FuelPoint[];
