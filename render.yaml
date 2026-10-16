@@ -1,0 +1,23 @@
+# Render Blueprint for fuel.norbapp.com
+services:
+  - type: web
+    name: norbapp-fuel-web
+    runtime: node
+    rootDir: web
+    plan: starter
+    region: frankfurt
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    domains:
+      - fuel.norbapp.com
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: TANKERKOENIG_API_KEY
+        sync: false

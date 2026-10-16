@@ -8,6 +8,10 @@ NorbApp Fuel is an Android reference application for planning trip fuel costs an
 
 The repository is in GitHub publication hardening. API credentials have been removed from Kotlin source files and are now provided through local configuration and generated `BuildConfig` fields.
 
+## Web Version
+
+The web version for `fuel.norbapp.com` lives in [`web/`](web/README.md) (Next.js). It is now the primary focus; the native Android app below is on hold.
+
 ## Main Features
 
 - Route-based fuel cost estimation
