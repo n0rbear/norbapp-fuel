@@ -1,33 +1,11 @@
 "use client";
 
 import { useI18n } from "@/i18n/I18nProvider";
-import { SITE } from "@/lib/site";
+import Link from "next/link";
+import { advertiseCopy } from "@/i18n/advertise";
 
 // House ad shown beside the app on wide screens until a paying advertiser
-// takes the space. Hungarian, German and English; other languages get English.
-const COPY = {
-  hu: {
-    label: "Hirdetési lehetőség",
-    title: "Itt az Ön reklámjának a helye",
-    body: "Érje el azokat, akik épp most tervezik európai útjukat – tankolás, útdíj, útvonal.",
-    cta: "Hirdetés feladása",
-    subject: "Hirdetés – Fuel by NorbApp",
-  },
-  de: {
-    label: "Werbefläche",
-    title: "Hier könnte Ihre Werbung stehen",
-    body: "Erreichen Sie Autofahrer genau dann, wenn sie ihre Reise durch Europa planen – Tanken, Maut, Route.",
-    cta: "Jetzt anfragen",
-    subject: "Werbung – Fuel by NorbApp",
-  },
-  en: {
-    label: "Advertising space",
-    title: "Your ad could be here",
-    body: "Reach drivers right when they plan their trip across Europe – fuel, tolls, route.",
-    cta: "Advertise here",
-    subject: "Advertising – Fuel by NorbApp",
-  },
-} as const;
+// takes the space; it links to the /advertise page.
 
 /** Road, fuel pump and route pins, drawn to fill the banner's top half. */
 function Artwork({ id }: { id: string }) {
@@ -73,11 +51,10 @@ function Artwork({ id }: { id: string }) {
 
 export function SideBanner({ side }: { side: "left" | "right" }) {
   const { locale } = useI18n();
-  const copy = locale === "hu" || locale === "de" ? COPY[locale] : COPY.en;
-  const href = `mailto:${SITE.email}?subject=${encodeURIComponent(copy.subject)}`;
+  const copy = advertiseCopy(locale);
   return (
     <aside className={`sideBanner sideBanner-${side}`} aria-label={copy.label}>
-      <a href={href} className="sideBannerCard">
+      <Link href="/advertise" className="sideBannerCard">
         <Artwork id={`sb-${side}`} />
         <span className="sideBannerText">
           <span className="sideBannerLabel">{copy.label}</span>
@@ -86,7 +63,7 @@ export function SideBanner({ side }: { side: "left" | "right" }) {
           <span className="sideBannerCta">{copy.cta} →</span>
           <span className="sideBannerMeta">Fuel by NorbApp · 300 × 600</span>
         </span>
-      </a>
+      </Link>
     </aside>
   );
 }
@@ -94,11 +71,10 @@ export function SideBanner({ side }: { side: "left" | "right" }) {
 /** The same house ad as a horizontal strip, for screens too narrow for the side banners. */
 export function BannerStrip() {
   const { locale } = useI18n();
-  const copy = locale === "hu" || locale === "de" ? COPY[locale] : COPY.en;
-  const href = `mailto:${SITE.email}?subject=${encodeURIComponent(copy.subject)}`;
+  const copy = advertiseCopy(locale);
   return (
     <aside className="bannerStrip" aria-label={copy.label}>
-      <a href={href} className="bannerStripCard">
+      <Link href="/advertise" className="bannerStripCard">
         <Artwork id="sb-strip" />
         <span className="bannerStripText">
           <span className="sideBannerLabel">{copy.label}</span>
@@ -106,7 +82,7 @@ export function BannerStrip() {
           <span className="bannerStripBody">{copy.body}</span>
         </span>
         <span className="sideBannerCta">{copy.cta} →</span>
-      </a>
+      </Link>
     </aside>
   );
 }
