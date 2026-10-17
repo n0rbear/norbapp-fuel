@@ -25,6 +25,8 @@ from fx import EU_CURRENCIES, fx
 from pricing_matrix import BrandTier, Fuel, Location
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
+# httpx logs every request URL at INFO, which would put API keys (e.g. Tankerkönig) in the logs.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger("norbapp-fuel")
 
 APP_VERSION = "1.0.0"

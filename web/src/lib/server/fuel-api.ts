@@ -7,9 +7,11 @@ import { UserError } from "./env";
 import { fetchJson, UpstreamError } from "./http";
 
 // NorbApp FUEL-API (backend/ on feature/fuel-price-backend). It runs on a
-// free Render instance that sleeps, so the first request can take ~60 s.
+// free Render instance that sleeps; waking it up has been seen to take ~100 s.
 const FUEL_API_URL = (process.env.FUEL_API_URL || "https://norbapp-fuel-api-fra.onrender.com").replace(/\/$/, "");
-const TIMEOUT_MS = 70_000;
+const TIMEOUT_MS = 30_000;
+const WAKE_TIMEOUT_MS = 150_000;
+const AWAKE_FOR_MS = 5 * 60_000;
 const STATION_RADIUS_KM = 10;
 const MAX_STATIONS = 8;
 
@@ -20,13 +22,47 @@ function url(path: string, params: Record<string, string | undefined> = {}): str
   return `${FUEL_API_URL}${path}${query.size ? `?${query}` : ""}`;
 }
 
-let lastWakeUp = 0;
+let awakeUntil = 0;
+let waking: Promise<void> | null = null;
 
-/** Fire-and-forget wake-up of the sleeping free instance, at most once a minute. */
+/**
+ * Resolves once the FUEL-API answers /health. Concurrent callers share one
+ * wake-up; while the instance boots, Render may answer with 5xx, so it polls
+ * until WAKE_TIMEOUT_MS. Never rejects: the request that follows reports the error.
+ */
+function awake(): Promise<void> {
+  if (Date.now() < awakeUntil) return Promise.resolve();
+  waking ??= (async () => {
+    const deadline = Date.now() + WAKE_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+      try {
+        const res = await fetch(url("/health"), {
+          signal: AbortSignal.timeout(Math.max(1_000, deadline - Date.now())),
+          cache: "no-store",
+        });
+        if (res.ok) {
+          awakeUntil = Date.now() + AWAKE_FOR_MS;
+          return;
+        }
+      } catch {
+        // timeout or connection error while booting: retry until the deadline
+      }
+      await new Promise((r) => setTimeout(r, 2_000));
+    }
+  })().finally(() => {
+    waking = null;
+  });
+  return waking;
+}
+
+/** Starts waking the sleeping free instance without waiting for it. */
 export function wakeUp(): void {
-  if (Date.now() - lastWakeUp < 60_000) return;
-  lastWakeUp = Date.now();
-  fetch(url("/health"), { signal: AbortSignal.timeout(TIMEOUT_MS), cache: "no-store" }).catch(() => {});
+  void awake();
+}
+
+async function apiJson<T>(path: string, params: Record<string, string | undefined> = {}): Promise<T> {
+  await awake();
+  return fetchJson<T>("fuel-api", url(path, params), {}, TIMEOUT_MS);
 }
 
 // --- cached reference data ---
@@ -47,7 +83,7 @@ type CountriesResponse = { countries: { code: string; mode: "official" | "estima
 /** EU country codes the FUEL-API knows (non-EU countries get a 404 there). */
 export function supportedCountries(): Promise<Set<string>> {
   return cached("countries", 6 * 3600_000, async () => {
-    const data = await fetchJson<CountriesResponse>("fuel-api", url("/api/countries"), {}, TIMEOUT_MS);
+    const data = await apiJson<CountriesResponse>("/api/countries");
     return new Set(data.countries.map((c) => c.code));
   });
 }
@@ -56,7 +92,7 @@ type CurrenciesResponse = { as_of: string; currencies: { code: Currency; name_hu
 
 export function currencies(): Promise<{ asOf: string; currencies: CurrencyInfo[] }> {
   return cached("currencies", 3600_000, async () => {
-    const data = await fetchJson<CurrenciesResponse>("fuel-api", url("/api/currencies"), {}, TIMEOUT_MS);
+    const data = await apiJson<CurrenciesResponse>("/api/currencies");
     return {
       asOf: data.as_of,
       currencies: data.currencies.map((c) => ({ code: c.code, name: c.name_hu, rate: c.rate })),
@@ -93,12 +129,12 @@ type PricesResponse = {
  */
 async function fetchPrices(params: Record<string, string>, fuel: FuelType): Promise<{ data: PricesResponse; e5InsteadOfE10: boolean }> {
   try {
-    const data = await fetchJson<PricesResponse>("fuel-api", url("/api/prices", { ...params, fuel }), {}, TIMEOUT_MS);
+    const data = await apiJson<PricesResponse>("/api/prices", { ...params, fuel });
     const substituted = fuel === "e10" && data.price_fuel !== undefined && data.price_fuel !== "e10";
     return { data, e5InsteadOfE10: substituted };
   } catch (e) {
     if (fuel !== "e10" || !(e instanceof UpstreamError && e.status === 422)) throw e;
-    const data = await fetchJson<PricesResponse>("fuel-api", url("/api/prices", { ...params, fuel: "petrol" }), {}, TIMEOUT_MS);
+    const data = await apiJson<PricesResponse>("/api/prices", { ...params, fuel: "petrol" });
     return { data, e5InsteadOfE10: true };
   }
 }
@@ -191,18 +227,13 @@ export async function estimateTolls(params: {
     .map(([c, km]) => `${c}:${Math.round(km)}`)
     .join(",");
   try {
-    const data = await fetchJson<TollsResponse>(
-      "fuel-api",
-      url("/api/tolls/estimate", {
+    const data = await apiJson<TollsResponse>("/api/tolls/estimate", {
         countries: params.countries.join(","),
         days: String(params.days),
         highway_km: highwayKm,
         euro_class: params.euroClass ?? undefined,
         currency: params.currency,
-      }),
-      {},
-      TIMEOUT_MS,
-    );
+      });
     return {
       status: "ok",
       asOf: data.as_of,
