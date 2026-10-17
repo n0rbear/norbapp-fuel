@@ -763,3 +763,66 @@ input[aria-invalid="true"] {
 .legal .card a.advertiseButton.secondary {
   color: var(--text);
 }
+
+/* PWA install invitation */
+.installPrompt {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 30;
+  width: min(560px, calc(100vw - 24px));
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(6, 38, 38, 0.25);
+  animation: installIn 0.3s ease-out;
+}
+@keyframes installIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+}
+.installPrompt img {
+  border-radius: 10px;
+  flex: 0 0 44px;
+}
+.installText {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+.installText span {
+  color: var(--muted);
+}
+.installActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.installPrimary,
+.installLater {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.installPrimary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: 1px solid var(--accent);
+}
+.installLater {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}

@@ -15,6 +15,11 @@ export const nl: Messages = {
   privacySettings: "Privacy-instellingen",
   advertisement: "Advertentie",
   backToApp: "Terug naar de calculator",
+  installTitle: "Fuel installeren",
+  installBody: "Open het direct vanaf je beginscherm – het start zelfs offline.",
+  installButton: "Installeren",
+  installLater: "Niet nu",
+  installIosSteps: "Tik op Deel en daarna op ‘Zet op beginscherm’.",
 
   route: "Route",
   origin: "Vertrek",

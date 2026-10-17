@@ -15,6 +15,11 @@ export const fi: Messages = {
   privacySettings: "Tietosuoja-asetukset",
   advertisement: "Mainos",
   backToApp: "Takaisin laskuriin",
+  installTitle: "Asenna Fuel",
+  installBody: "Avaa se suoraan kotivalikosta – se käynnistyy myös ilman yhteyttä.",
+  installButton: "Asenna",
+  installLater: "Ei nyt",
+  installIosSteps: "Napauta Jaa ja sitten ”Lisää Koti-valikkoon”.",
 
   route: "Reitti",
   origin: "Lähtöpaikka",

@@ -15,6 +15,11 @@ export const sv: Messages = {
   privacySettings: "Integritetsinställningar",
   advertisement: "Annons",
   backToApp: "Tillbaka till kalkylatorn",
+  installTitle: "Installera Fuel",
+  installBody: "Öppna den direkt från hemskärmen – den startar även offline.",
+  installButton: "Installera",
+  installLater: "Inte nu",
+  installIosSteps: "Tryck på Dela och sedan på ”Lägg till på hemskärmen”.",
 
   route: "Rutt",
   origin: "Start",

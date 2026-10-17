@@ -15,6 +15,11 @@ export const lv: Messages = {
   privacySettings: "Privātuma iestatījumi",
   advertisement: "Reklāma",
   backToApp: "Atpakaļ uz kalkulatoru",
+  installTitle: "Instalējiet Fuel",
+  installBody: "Atveriet to tieši no sākuma ekrāna – tas darbojas arī bezsaistē.",
+  installButton: "Instalēt",
+  installLater: "Ne tagad",
+  installIosSteps: "Pieskarieties “Kopīgot” un pēc tam “Pievienot sākuma ekrānam”.",
 
   route: "Maršruts",
   origin: "Sākumpunkts",

@@ -15,6 +15,11 @@ export const et: Messages = {
   privacySettings: "Privaatsusseaded",
   advertisement: "Reklaam",
   backToApp: "Tagasi kalkulaatorisse",
+  installTitle: "Paigalda Fuel",
+  installBody: "Ava see otse avakuvalt – see käivitub ka võrguühenduseta.",
+  installButton: "Paigalda",
+  installLater: "Mitte praegu",
+  installIosSteps: "Puuduta nuppu Jaga ja seejärel „Lisa avakuvale”.",
 
   route: "Marsruut",
   origin: "Lähtekoht",

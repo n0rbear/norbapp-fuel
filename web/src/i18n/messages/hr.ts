@@ -15,6 +15,11 @@ export const hr: Messages = {
   privacySettings: "Postavke privatnosti",
   advertisement: "Oglas",
   backToApp: "Natrag na kalkulator",
+  installTitle: "Instalirajte Fuel",
+  installBody: "Otvorite ga izravno s početnog zaslona – radi i bez interneta.",
+  installButton: "Instaliraj",
+  installLater: "Ne sada",
+  installIosSteps: "Dodirnite Dijeli, a zatim „Dodaj na početni zaslon”.",
 
   route: "Ruta",
   origin: "Polazište",

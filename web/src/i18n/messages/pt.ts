@@ -15,6 +15,11 @@ export const pt: Messages = {
   privacySettings: "Definições de privacidade",
   advertisement: "Publicidade",
   backToApp: "Voltar à calculadora",
+  installTitle: "Instalar o Fuel",
+  installBody: "Abra-o diretamente a partir do ecrã principal – até arranca offline.",
+  installButton: "Instalar",
+  installLater: "Agora não",
+  installIosSteps: "Toque em Partilhar e depois em «Adicionar ao ecrã principal».",
 
   route: "Percurso",
   origin: "Partida",
