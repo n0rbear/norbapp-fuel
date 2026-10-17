@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const lv: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Ceļojuma izmaksu kalkulators",
   subtitle:
     "Maršruts, uzpildes pieturas, degvielas cenas un ceļa nodevas 27 ES valstīs, kā arī Šveicē, Lihtenšteinā un Monako – jūsu izvēlētajā valūtā.",
   language: "Valoda",
   footerDisclaimer: "Cenas ir orientējošas.",
   footerMapData: "Kartes dati © {osm} līdzautori",
-  footerRouting: "Maršrutēšana",
-  footerSearch: "Adrešu meklēšana",
-  footerPricesTolls: "Cenas un ceļa nodevas",
+  legalNav: "Juridiskā informācija",
+  imprint: "Impresums",
+  privacy: "Privātums",
+  sources: "Avoti un licences",
+  privacySettings: "Privātuma iestatījumi",
+  advertisement: "Reklāma",
+  backToApp: "Atpakaļ uz kalkulatoru",
 
   route: "Maršruts",
   origin: "Sākumpunkts",
@@ -46,7 +50,7 @@ export const lv: Messages = {
   currencyHint: "Valūtu kursi: Eiropas Centrālā banka.",
   calculate: "Aprēķināt",
   planning: "Plāno…",
-  coldStartHint: "Pirmais pieprasījums var aizņemt līdz minūtei, kamēr cenu pakalpojums tiek palaists.",
+  coldStartHint: "Pirmais pieprasījums var aizņemt līdz divām minūtēm, kamēr cenu pakalpojums startē.",
 
   geoUnsupported: "Jūsu pārlūkprogramma neatbalsta ģeolokāciju.",
   geoDenied: "Piekļuve atrašanās vietai nav atļauta.",

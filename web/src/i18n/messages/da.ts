@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const da: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Beregner til rejseomkostninger",
   subtitle:
     "Rute, tankstop, brændstofpriser og vejafgifter for de 27 EU-lande samt Schweiz, Liechtenstein og Monaco – i den valuta, du vælger.",
   language: "Sprog",
   footerDisclaimer: "Priserne er vejledende.",
   footerMapData: "Kortdata © {osm}-bidragydere",
-  footerRouting: "Ruteplanlægning",
-  footerSearch: "Adressesøgning",
-  footerPricesTolls: "Priser og vejafgifter",
+  legalNav: "Juridisk",
+  imprint: "Kolofon",
+  privacy: "Privatliv",
+  sources: "Kilder og licenser",
+  privacySettings: "Privatlivsindstillinger",
+  advertisement: "Annonce",
+  backToApp: "Tilbage til beregneren",
 
   route: "Rute",
   origin: "Start",
@@ -46,7 +50,7 @@ export const da: Messages = {
   currencyHint: "Valutakurser: Den Europæiske Centralbank.",
   calculate: "Beregn",
   planning: "Planlægger…",
-  coldStartHint: "Den første forespørgsel kan tage op til et minut, mens pristjenesten starter op.",
+  coldStartHint: "Den første forespørgsel kan tage op til to minutter, mens pristjenesten starter.",
 
   geoUnsupported: "Din browser understøtter ikke geolokation.",
   geoDenied: "Adgang til placering er ikke tilladt.",

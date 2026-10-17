@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const ga: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Áireamhán costais turais",
   subtitle:
     "Bealach, stadanna breosla, praghsanna breosla agus dolaí do 27 tír an AE chomh maith leis an Eilvéis, Lichtinstéin agus Monacó – san airgeadra is rogha leat.",
   language: "Teanga",
   footerDisclaimer: "Is praghsanna táscacha iad seo.",
   footerMapData: "Sonraí léarscáile © rannpháirtithe {osm}",
-  footerRouting: "Ródú",
-  footerSearch: "Cuardach seoltaí",
-  footerPricesTolls: "Praghsanna agus dolaí",
+  legalNav: "Faisnéis dhlíthiúil",
+  imprint: "Impressum",
+  privacy: "Príobháideachas",
+  sources: "Foinsí agus ceadúnais",
+  privacySettings: "Socruithe príobháideachais",
+  advertisement: "Fógra",
+  backToApp: "Ar ais chuig an áireamhán",
 
   route: "Bealach",
   origin: "Tús",
@@ -46,7 +50,7 @@ export const ga: Messages = {
   currencyHint: "Rátaí malairte: an Banc Ceannais Eorpach.",
   calculate: "Ríomh",
   planning: "Á phleanáil…",
-  coldStartHint: "D'fhéadfadh suas le nóiméad a bheith i gceist leis an gcéad iarratas fad a dhúisíonn an tseirbhís praghsanna.",
+  coldStartHint: "D’fhéadfadh suas le dhá nóiméad a bheith i gceist leis an gcéad iarratas fad a thosaíonn an tseirbhís praghsanna.",
 
   geoUnsupported: "Ní thacaíonn do bhrabhsálaí le geoshuíomh.",
   geoDenied: "Níl rochtain ar do shuíomh ceadaithe.",

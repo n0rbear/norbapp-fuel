@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const sl: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Izračun stroškov poti",
   subtitle:
     "Pot, postanki za tankanje, cene goriva in cestnine za 27 držav EU ter Švico, Lihtenštajn in Monako – v valuti po vaši izbiri.",
   language: "Jezik",
   footerDisclaimer: "Cene so okvirne.",
   footerMapData: "Podatki zemljevida © sodelavci {osm}",
-  footerRouting: "Načrtovanje poti",
-  footerSearch: "Iskanje naslovov",
-  footerPricesTolls: "Cene in cestnine",
+  legalNav: "Pravne informacije",
+  imprint: "Kolofon",
+  privacy: "Zasebnost",
+  sources: "Viri in licence",
+  privacySettings: "Nastavitve zasebnosti",
+  advertisement: "Oglas",
+  backToApp: "Nazaj na kalkulator",
 
   route: "Pot",
   origin: "Začetek",
@@ -46,7 +50,7 @@ export const sl: Messages = {
   currencyHint: "Menjalni tečaji: Evropska centralna banka.",
   calculate: "Izračunaj",
   planning: "Načrtovanje…",
-  coldStartHint: "Prva zahteva lahko traja do minute, dokler se storitev cen ne zažene.",
+  coldStartHint: "Prva zahteva lahko traja do dve minuti, medtem ko se storitev cen zažene.",
 
   geoUnsupported: "Vaš brskalnik ne podpira geolokacije.",
   geoDenied: "Dostop do lokacije ni dovoljen.",

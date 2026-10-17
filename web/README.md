@@ -81,8 +81,16 @@ npm run build
 | `OSRM_URL` | no | OSRM base URL incl. profile path. Default: `https://routing.openstreetmap.de/routed-car` |
 | `PHOTON_URL` | no | Photon base URL. Default: `https://photon.komoot.io` |
 | `VALHALLA_URL` | no | Valhalla base URL for toll-free routing. Default: `https://valhalla1.openstreetmap.de` |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | no | AdSense publisher ID (`ca-pub-…`). Build-time. When set: the AdSense script loads, ad slots appear, `/ads.txt` is served, the privacy notice shows its advertising section and the footer gets a "Privacy settings" link. |
+| `NEXT_PUBLIC_ADSENSE_SLOT_TOP`, `NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM` | no | Ad unit IDs for the slot under the title and the one under the planner. |
 
-The OSM defaults are free public instances with fair-use policies (identifying User-Agent, moderate request rates). For heavier traffic, self-host OSRM/Photon and point these variables at them. Map data © OpenStreetMap contributors (ODbL); the attribution is shown in the page footer, and the Tankerkönig credit ("Daten: MTS-K / Tankerkönig") under the prices.
+The OSM defaults are free public instances with fair-use policies (identifying User-Agent, moderate request rates). For heavier traffic, self-host OSRM/Photon and point these variables at them. Map data © OpenStreetMap contributors (ODbL); the attribution is shown in the page footer and on `/sources`, and the Tankerkönig credit ("Daten: MTS-K / Tankerkönig") under the prices.
+
+### Ads and consent
+
+Before setting `NEXT_PUBLIC_ADSENSE_CLIENT`, turn on the GDPR consent message in AdSense (Privacy & messaging → European regulations). That is Google's certified CMP; the AdSense script shows it to visitors in the EEA, the UK and Switzerland before personalised ads, and the footer's "Privacy settings" link reopens it. The `NEXT_PUBLIC_*` variables are read at build time, so redeploy after changing them.
+
+Legal pages: `/impressum`, `/privacy`, `/sources` (texts in `src/i18n/legal.ts`, in hu/de/en; other languages show English).
 
 ## Deployment (Render)
 

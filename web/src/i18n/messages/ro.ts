@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const ro: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Calculator de costuri de călătorie",
   subtitle:
     "Traseu, opriri de alimentare, prețuri la carburant și taxe de drum pentru cele 27 de țări UE, plus Elveția, Liechtenstein și Monaco – în moneda aleasă.",
   language: "Limbă",
   footerDisclaimer: "Prețurile sunt orientative.",
   footerMapData: "Date hartă © contributorii {osm}",
-  footerRouting: "Calcul traseu",
-  footerSearch: "Căutare adrese",
-  footerPricesTolls: "Prețuri și taxe de drum",
+  legalNav: "Informații legale",
+  imprint: "Impressum",
+  privacy: "Confidențialitate",
+  sources: "Surse și licențe",
+  privacySettings: "Setări de confidențialitate",
+  advertisement: "Reclamă",
+  backToApp: "Înapoi la calculator",
 
   route: "Traseu",
   origin: "Plecare",
@@ -46,7 +50,7 @@ export const ro: Messages = {
   currencyHint: "Cursuri de schimb: Banca Centrală Europeană.",
   calculate: "Calculează",
   planning: "Se planifică…",
-  coldStartHint: "Prima cerere poate dura până la un minut, cât timp serviciul de prețuri pornește.",
+  coldStartHint: "Prima solicitare poate dura până la două minute, cât timp pornește serviciul de prețuri.",
 
   geoUnsupported: "Browserul nu acceptă geolocalizarea.",
   geoDenied: "Accesul la locație nu este permis.",

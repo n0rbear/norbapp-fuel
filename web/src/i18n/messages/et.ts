@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const et: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Reisikulude kalkulaator",
   subtitle:
     "Marsruut, tankimispeatused, kütusehinnad ja teemaksud 27 ELi riigis ning Šveitsis, Liechtensteinis ja Monacos – teie valitud valuutas.",
   language: "Keel",
   footerDisclaimer: "Hinnad on soovituslikud.",
   footerMapData: "Kaardiandmed © {osm} kaastöötajad",
-  footerRouting: "Marsruutimine",
-  footerSearch: "Aadressiotsing",
-  footerPricesTolls: "Hinnad ja teemaksud",
+  legalNav: "Õiguslik teave",
+  imprint: "Impressum",
+  privacy: "Privaatsus",
+  sources: "Allikad ja litsentsid",
+  privacySettings: "Privaatsusseaded",
+  advertisement: "Reklaam",
+  backToApp: "Tagasi kalkulaatorisse",
 
   route: "Marsruut",
   origin: "Lähtekoht",
@@ -46,7 +50,7 @@ export const et: Messages = {
   currencyHint: "Vahetuskursid: Euroopa Keskpank.",
   calculate: "Arvuta",
   planning: "Planeerimine…",
-  coldStartHint: "Esimene päring võib võtta kuni minuti, kuni hinnateenus käivitub.",
+  coldStartHint: "Esimene päring võib võtta kuni kaks minutit, kuni hinnateenus käivitub.",
 
   geoUnsupported: "Teie brauser ei toeta asukoha määramist.",
   geoDenied: "Juurdepääs asukohale pole lubatud.",

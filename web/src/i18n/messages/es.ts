@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const es: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Calculadora de costes de viaje",
   subtitle:
     "Ruta, paradas para repostar, precios de combustible y peajes para los 27 países de la UE además de Suiza, Liechtenstein y Mónaco, en la moneda que elijas.",
   language: "Idioma",
   footerDisclaimer: "Los precios son orientativos.",
   footerMapData: "Datos del mapa © colaboradores de {osm}",
-  footerRouting: "Rutas",
-  footerSearch: "Búsqueda de direcciones",
-  footerPricesTolls: "Precios y peajes",
+  legalNav: "Información legal",
+  imprint: "Aviso legal",
+  privacy: "Privacidad",
+  sources: "Fuentes y licencias",
+  privacySettings: "Configuración de privacidad",
+  advertisement: "Publicidad",
+  backToApp: "Volver a la calculadora",
 
   route: "Ruta",
   origin: "Salida",
@@ -46,7 +50,7 @@ export const es: Messages = {
   currencyHint: "Tipos de cambio: Banco Central Europeo.",
   calculate: "Calcular",
   planning: "Calculando…",
-  coldStartHint: "La primera consulta puede tardar hasta un minuto mientras se activa el servicio de precios.",
+  coldStartHint: "La primera consulta puede tardar hasta dos minutos mientras se activa el servicio de precios.",
 
   geoUnsupported: "Tu navegador no admite la geolocalización.",
   geoDenied: "No se permite el acceso a la ubicación.",

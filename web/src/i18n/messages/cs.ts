@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const cs: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Kalkulačka nákladů na cestu",
   subtitle:
     "Trasa, zastávky na tankování, ceny paliva a mýtné pro 27 zemí EU a také Švýcarsko, Lichtenštejnsko a Monako – ve zvolené měně.",
   language: "Jazyk",
   footerDisclaimer: "Ceny jsou orientační.",
   footerMapData: "Mapová data © přispěvatelé {osm}",
-  footerRouting: "Plánování trasy",
-  footerSearch: "Vyhledávání adres",
-  footerPricesTolls: "Ceny a mýtné",
+  legalNav: "Právní informace",
+  imprint: "Tiráž",
+  privacy: "Ochrana soukromí",
+  sources: "Zdroje a licence",
+  privacySettings: "Nastavení soukromí",
+  advertisement: "Reklama",
+  backToApp: "Zpět na kalkulačku",
 
   route: "Trasa",
   origin: "Start",
@@ -46,7 +50,7 @@ export const cs: Messages = {
   currencyHint: "Směnné kurzy: Evropská centrální banka.",
   calculate: "Spočítat",
   planning: "Plánování…",
-  coldStartHint: "První dotaz může trvat až minutu, než se cenová služba spustí.",
+  coldStartHint: "První dotaz může trvat až dvě minuty, než se cenová služba spustí.",
 
   geoUnsupported: "Váš prohlížeč nepodporuje určování polohy.",
   geoDenied: "Přístup k poloze není povolen.",

@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const fi: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Matkakululaskuri",
   subtitle:
     "Reitti, tankkauspysähdykset, polttoaineen hinnat ja tiemaksut 27 EU-maassa sekä Sveitsissä, Liechtensteinissa ja Monacossa – valitsemassasi valuutassa.",
   language: "Kieli",
   footerDisclaimer: "Hinnat ovat suuntaa antavia.",
   footerMapData: "Karttatiedot © {osm} -tekijät",
-  footerRouting: "Reititys",
-  footerSearch: "Osoitehaku",
-  footerPricesTolls: "Hinnat ja tiemaksut",
+  legalNav: "Oikeudelliset tiedot",
+  imprint: "Julkaisutiedot",
+  privacy: "Tietosuoja",
+  sources: "Lähteet ja lisenssit",
+  privacySettings: "Tietosuoja-asetukset",
+  advertisement: "Mainos",
+  backToApp: "Takaisin laskuriin",
 
   route: "Reitti",
   origin: "Lähtöpaikka",
@@ -46,7 +50,7 @@ export const fi: Messages = {
   currencyHint: "Valuuttakurssit: Euroopan keskuspankki.",
   calculate: "Laske",
   planning: "Suunnitellaan…",
-  coldStartHint: "Ensimmäinen pyyntö voi kestää jopa minuutin, kun hintapalvelu käynnistyy.",
+  coldStartHint: "Ensimmäinen haku voi kestää jopa kaksi minuuttia, kun hintapalvelu käynnistyy.",
 
   geoUnsupported: "Selaimesi ei tue paikannusta.",
   geoDenied: "Sijainnin käyttöä ei ole sallittu.",

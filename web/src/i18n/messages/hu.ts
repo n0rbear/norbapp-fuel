@@ -4,16 +4,20 @@
  */
 export const hu = {
   // Page
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Útiköltség-kalkulátor",
   subtitle:
     "Útvonal, tankolási pontok, üzemanyagárak és útdíjak a 27 EU-országra, valamint Svájcra, Liechtensteinre és Monacóra – a választott pénznemben.",
   language: "Nyelv",
   footerDisclaimer: "Az árak tájékoztató jellegűek.",
   footerMapData: "Térképadatok © {osm} közreműködők",
-  footerRouting: "Útvonal",
-  footerSearch: "Címkeresés",
-  footerPricesTolls: "Árak és útdíjak",
+  legalNav: "Jogi információk",
+  imprint: "Impresszum",
+  privacy: "Adatvédelem",
+  sources: "Források és licencek",
+  privacySettings: "Adatvédelmi beállítások",
+  advertisement: "Hirdetés",
+  backToApp: "Vissza a kalkulátorhoz",
 
   // Route form
   route: "Útvonal",
@@ -51,7 +55,7 @@ export const hu = {
   currencyHint: "Árfolyam: Európai Központi Bank.",
   calculate: "Kalkuláció",
   planning: "Tervezés…",
-  coldStartHint: "Az első kérés akár egy percig is eltarthat, amíg az árszolgáltatás felébred.",
+  coldStartHint: "Az első kérés akár két percig is eltarthat, amíg az árszolgáltatás felébred.",
 
   // Client-side errors
   geoUnsupported: "A böngésző nem támogatja a helymeghatározást.",

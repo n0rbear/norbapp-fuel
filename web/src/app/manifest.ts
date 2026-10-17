@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "NorbApp Fuel – útiköltség-kalkulátor",
-    short_name: "NorbApp Fuel",
+    name: "Fuel by NorbApp – útiköltség-kalkulátor",
+    short_name: "Fuel",
     description: "Útvonal, tankolási pontok, üzemanyagárak és útdíjak a 27 EU-országra, Svájcra, Liechtensteinre és Monacóra.",
     lang: "hu",
     start_url: "/",

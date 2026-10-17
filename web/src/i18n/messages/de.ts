@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const de: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Reisekostenrechner",
   subtitle:
     "Route, Tankstopps, Kraftstoffpreise und Mautgebühren für die 27 EU-Länder sowie die Schweiz, Liechtenstein und Monaco – in der Währung Ihrer Wahl.",
   language: "Sprache",
   footerDisclaimer: "Die Preise sind unverbindlich.",
   footerMapData: "Kartendaten © {osm}-Mitwirkende",
-  footerRouting: "Routing",
-  footerSearch: "Adresssuche",
-  footerPricesTolls: "Preise und Maut",
+  legalNav: "Rechtliches",
+  imprint: "Impressum",
+  privacy: "Datenschutz",
+  sources: "Quellen und Lizenzen",
+  privacySettings: "Datenschutz-Einstellungen",
+  advertisement: "Anzeige",
+  backToApp: "Zurück zum Rechner",
 
   route: "Route",
   origin: "Start",
@@ -46,7 +50,7 @@ export const de: Messages = {
   currencyHint: "Wechselkurse: Europäische Zentralbank.",
   calculate: "Berechnen",
   planning: "Wird geplant…",
-  coldStartHint: "Die erste Anfrage kann bis zu einer Minute dauern, während der Preisdienst startet.",
+  coldStartHint: "Die erste Anfrage kann bis zu zwei Minuten dauern, während der Preisdienst startet.",
 
   geoUnsupported: "Ihr Browser unterstützt keine Standortbestimmung.",
   geoDenied: "Der Standortzugriff ist nicht erlaubt.",

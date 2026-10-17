@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const bg: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Калкулатор на разходите за пътуване",
   subtitle:
     "Маршрут, спирки за зареждане, цени на горивата и пътни такси за 27-те държави от ЕС, както и за Швейцария, Лихтенщайн и Монако – във валута по ваш избор.",
   language: "Език",
   footerDisclaimer: "Цените са ориентировъчни.",
   footerMapData: "Картографски данни © сътрудници на {osm}",
-  footerRouting: "Маршрутизация",
-  footerSearch: "Търсене на адрес",
-  footerPricesTolls: "Цени и пътни такси",
+  legalNav: "Правна информация",
+  imprint: "Импресум",
+  privacy: "Поверителност",
+  sources: "Източници и лицензи",
+  privacySettings: "Настройки за поверителност",
+  advertisement: "Реклама",
+  backToApp: "Обратно към калкулатора",
 
   route: "Маршрут",
   origin: "Начало",
@@ -46,7 +50,7 @@ export const bg: Messages = {
   currencyHint: "Валутни курсове: Европейска централна банка.",
   calculate: "Изчисли",
   planning: "Планиране…",
-  coldStartHint: "Първата заявка може да отнеме до минута, докато услугата за цени се стартира.",
+  coldStartHint: "Първата заявка може да отнеме до две минути, докато услугата за цени стартира.",
 
   geoUnsupported: "Браузърът ви не поддържа геолокация.",
   geoDenied: "Достъпът до местоположението не е разрешен.",

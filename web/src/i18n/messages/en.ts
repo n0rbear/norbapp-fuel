@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const en: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Trip cost calculator",
   subtitle:
     "Route, refuelling stops, fuel prices and tolls for the 27 EU countries plus Switzerland, Liechtenstein and Monaco – in the currency of your choice.",
   language: "Language",
   footerDisclaimer: "Prices are indicative.",
   footerMapData: "Map data © {osm} contributors",
-  footerRouting: "Routing",
-  footerSearch: "Address search",
-  footerPricesTolls: "Prices and tolls",
+  legalNav: "Legal",
+  imprint: "Imprint",
+  privacy: "Privacy",
+  sources: "Sources and licences",
+  privacySettings: "Privacy settings",
+  advertisement: "Advertisement",
+  backToApp: "Back to the calculator",
 
   route: "Route",
   origin: "Start",
@@ -46,7 +50,7 @@ export const en: Messages = {
   currencyHint: "Exchange rates: European Central Bank.",
   calculate: "Calculate",
   planning: "Planning…",
-  coldStartHint: "The first request can take up to a minute while the price service wakes up.",
+  coldStartHint: "The first request can take up to two minutes while the price service wakes up.",
 
   geoUnsupported: "Your browser does not support geolocation.",
   geoDenied: "Location access is not allowed.",
