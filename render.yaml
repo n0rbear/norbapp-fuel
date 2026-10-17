@@ -1,11 +1,13 @@
-# Render Blueprint for NorbApp Fuel. Both services deploy from `main`.
+# Render Blueprint for Fuel by NorbApp. Both services deploy from `main`.
+# Both run on the paid Starter plan (like Keto Mentor's API) so they never
+# spin down; on the free plan the first request after idle took ~2 minutes.
 services:
   # FUEL-API: fuel prices, tolls and currencies (backend/, FastAPI)
   - type: web
     name: norbapp-fuel-api-fra
     runtime: python
     rootDir: backend
-    plan: free
+    plan: starter
     region: frankfurt
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
@@ -30,7 +32,7 @@ services:
     name: norbapp-fuel-web
     runtime: node
     rootDir: web
-    plan: free
+    plan: starter
     region: frankfurt
     buildCommand: npm ci && npm run build
     startCommand: npm start
