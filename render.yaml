@@ -1,6 +1,8 @@
 # Render Blueprint for Fuel by NorbApp. Both services deploy from `main`.
-# Free plan; both are kept awake by the Keto Mentor API, which requests
-# their health checks every 10 minutes (KEEP_AWAKE_URLS on keto-mentor-api).
+# Free plan. The web service also runs the FUEL-API, so only it has to stay
+# awake: the Keto Mentor API requests its health check every 10 minutes
+# (KEEP_AWAKE_URLS on keto-mentor-api). The separate API service below is
+# kept as a fallback and can be removed.
 services:
   # FUEL-API: fuel prices, tolls and currencies (backend/, FastAPI)
   - type: web
@@ -45,5 +47,13 @@ services:
         value: "22"
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
+      # The FUEL-API runs inside this service (web/scripts/setup-api.mjs and
+      # web/scripts/start.mjs); FUEL_API_URL is only the fallback without Python.
       - key: FUEL_API_URL
         value: https://norbapp-fuel-api-fra.onrender.com
+      - key: TANKERKOENIG_API_KEY
+        sync: false
+      - key: REFRESH_TIME
+        value: "06:00"
+      - key: REFRESH_TZ
+        value: Europe/Budapest
