@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useI18n } from "@/i18n/I18nProvider";
+import { advertiseCopy } from "@/i18n/advertise";
 import { ADS_ENABLED, SITE } from "@/lib/site";
 
 type GoogleFc = { callbackQueue?: (() => void)[]; showRevocationMessage?: () => void };
@@ -15,7 +16,7 @@ function openConsent() {
 }
 
 export function SiteFooter() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [mapBefore, mapAfter] = t("footerMapData").split("{osm}");
   return (
     <footer className="siteFooter">
@@ -42,6 +43,7 @@ export function SiteFooter() {
           <Link href="/impressum">{t("imprint")}</Link>
           <Link href="/privacy">{t("privacy")}</Link>
           <Link href="/sources">{t("sources")}</Link>
+          <Link href="/advertise">{advertiseCopy(locale).label}</Link>
           {ADS_ENABLED ? (
             <button type="button" className="linkButton" onClick={openConsent}>
               {t("privacySettings")}

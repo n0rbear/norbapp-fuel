@@ -712,3 +712,54 @@ input[aria-invalid="true"] {
     padding: 7px 12px;
   }
 }
+
+/* Advertise page */
+.advertise .lead {
+  font-size: 1.05rem;
+}
+.advertiseList {
+  margin: 0;
+  padding-left: 1.2em;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.advertiseEmail {
+  font-weight: 700;
+  font-size: 1.1rem;
+  word-break: break-all;
+}
+.advertiseActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.advertiseButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.advertiseButton.primary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: 1px solid var(--accent);
+}
+.advertiseButton.secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.legal .card a.advertiseButton {
+  text-decoration: none;
+}
+.legal .card a.advertiseButton.primary {
+  color: var(--accent-contrast);
+}
+.legal .card a.advertiseButton.secondary {
+  color: var(--text);
+}
