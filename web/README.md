@@ -92,6 +92,10 @@ Before setting `NEXT_PUBLIC_ADSENSE_CLIENT`, turn on the GDPR consent message in
 
 Legal pages: `/impressum`, `/privacy`, `/sources` (texts in `src/i18n/legal.ts`, in hu/de/en; other languages show English).
 
+## One service: web + FUEL-API
+
+On Render the web service also runs the FUEL-API. `npm run build` runs the setup script after `next build`: it installs `backend/` into a Python virtualenv (`.api-venv`, or `pip --target` as a fallback) and writes `.api-runtime.json`. `npm start` runs the start script, which starts uvicorn on `127.0.0.1:8001` (restarted if it exits), points `FUEL_API_URL` at it and starts Next.js on `$PORT`. Both scripts are in `web/scripts/`. Without Python the build still succeeds and the app uses the external `FUEL_API_URL`. The API's own variables (`TANKERKOENIG_API_KEY`, `REFRESH_TIME`, `REFRESH_TZ`, …) must be set on the web service. Locally: `EMBED_FUEL_API=1 npm run build && npm start`.
+
 ## Deployment (Render)
 
 The live service is `norbapp-fuel-web` on Render (free plan, Frankfurt): https://norbapp-fuel-web.onrender.com. `render.yaml` in the repository root describes the same setup as a Blueprint (root directory `web`, health check `/api/health`, custom domain `fuel.norbapp.com`). Point DNS for `fuel.norbapp.com` (CNAME) to the Render service hostname.

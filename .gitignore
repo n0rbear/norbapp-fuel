@@ -36,3 +36,8 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+
+# Embedded FUEL-API runtime (web/scripts/setup-api.mjs)
+.api-venv/
+.api-packages/
+web/.api-runtime.json
