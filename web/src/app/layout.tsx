@@ -3,6 +3,7 @@ import Script from "next/script";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { BannerStrip, SideBanner } from "@/components/SideBanner";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { ADS, ADS_ENABLED } from "@/lib/site";
 import "./globals.css";
@@ -30,7 +31,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <I18nProvider>
           <SiteHeader />
-          {children}
+          <div className="withSideBanners">
+            <SideBanner side="left" />
+            <div className="mainColumn">{children}</div>
+            <SideBanner side="right" />
+          </div>
+          <BannerStrip />
           <SiteFooter />
         </I18nProvider>
         <ServiceWorker />
