@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       : undefined;
 
   if (q.length < 3 || q.length > 200) return Response.json({ suggestions: [] });
-  if (!limiter.take(clientKey(request))) return jsonError("Túl sok kérés.", 429);
+  if (!limiter.take(clientKey(request))) return jsonError("tooManyRequests", 429);
 
   try {
     return Response.json({ suggestions: await autocomplete(q, near) }, { headers: { "Cache-Control": "no-store" } });

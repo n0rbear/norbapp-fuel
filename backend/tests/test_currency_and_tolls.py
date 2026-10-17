@@ -63,7 +63,7 @@ def test_tolls_country_endpoint(client):
     assert data["system"] == "vignette"
     daily = next(v for v in data["vignettes"] if v["id"] == "1d")
     assert daily["price"] == pytest.approx(5550, abs=1)
-    assert client.get("/api/tolls/ch").status_code == 404
+    assert client.get("/api/tolls/no").status_code == 404
 
 
 def test_toll_trip_estimate(client):

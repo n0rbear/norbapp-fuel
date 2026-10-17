@@ -8,7 +8,7 @@ const limiter = new RateLimiter(30, 30);
 export async function GET(request: Request) {
   const parsed = parseTollsQuery(new URL(request.url).searchParams);
   if (!parsed.ok) return jsonError(parsed.error, 400);
-  if (!limiter.take(clientKey(request))) return jsonError("Túl sok kérés.", 429);
+  if (!limiter.take(clientKey(request))) return jsonError("tooManyRequests", 429);
 
   try {
     return Response.json(await estimateTolls(parsed.value), { headers: { "Cache-Control": "no-store" } });

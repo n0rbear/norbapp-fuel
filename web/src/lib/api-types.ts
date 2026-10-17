@@ -1,4 +1,5 @@
 import type { LatLng } from "./geo";
+import type { AppMessage } from "../i18n/message";
 import type { FuelType, RefuelPlan, Vehicle } from "./trip";
 
 /** Free text (geocoded on the server) or a location picked from suggestions. */
@@ -15,16 +16,12 @@ export type CurrencyInfo = { code: Currency; name: string; rate: number };
 export const EURO_CLASSES = ["electric", "6", "5", "4", "3", "2", "1", "0"] as const;
 export type EuroClass = (typeof EURO_CLASSES)[number];
 
-export const EURO_CLASS_LABELS: Record<EuroClass, string> = {
-  electric: "Elektromos",
-  "6": "Euro 6",
-  "5": "Euro 5",
-  "4": "Euro 4",
-  "3": "Euro 3",
-  "2": "Euro 2",
-  "1": "Euro 1",
-  "0": "Euro 0 / ismeretlen",
-};
+/** Display label of a Euro emission class; `t` translates the two worded ones. */
+export function euroClassLabel(c: EuroClass, t: (key: "euroElectric" | "euroUnknown") => string): string {
+  if (c === "electric") return t("euroElectric");
+  if (c === "0") return t("euroUnknown");
+  return `Euro ${c}`;
+}
 
 export type PlanRequest = {
   origin: PlaceInput;
@@ -53,17 +50,17 @@ export type Station = {
 };
 
 export type PointPrices =
-  | { mode: "official"; source: string; stations: Station[]; estimate: null; fuelNote: string | null }
+  | { mode: "official"; source: string; stations: Station[]; estimate: null; e5InsteadOfE10: boolean }
   | {
       mode: "estimate";
       source: string;
       stations: [];
       estimate: { price: number; low: number; high: number; location: "highway" | "city" };
-      /** Set when E10 was asked for but only an E5 (Super 95) price exists here. */
-      fuelNote: string | null;
+      /** E10 was asked for but only an E5 (Super 95) price exists here. */
+      e5InsteadOfE10: boolean;
     }
   /** Outside the EU, or the price service failed. */
-  | { mode: "none"; source: null; stations: []; estimate: null; fuelNote: null; reason: string };
+  | { mode: "none"; source: null; stations: []; estimate: null; e5InsteadOfE10: false; reason: AppMessage };
 
 export type FuelPoint = {
   kind: "start" | "stop";
@@ -91,7 +88,7 @@ export type PlanResponse = {
   points: FuelPoint[];
   /** Simplified route geometry for display. */
   path: LatLng[];
-  warnings: string[];
+  warnings: AppMessage[];
 };
 
 export type TollEstimate =
@@ -103,9 +100,16 @@ export type TollEstimate =
         country: string;
         system: "vignette" | "distance" | "free";
         subtotal: number;
-        lines: { label: string; price: number }[];
+        lines: {
+          kind: "vignette" | "distance" | "other";
+          /** Vignette product id from the FUEL-API (e.g. "10d", "1y"). */
+          id: string | null;
+          km: number | null;
+          label: string;
+          price: number;
+        }[];
       }[];
     }
   | { status: "euro_class_required" };
 
-export type ApiError = { error: string };
+export type ApiError = { error: AppMessage };

@@ -52,6 +52,29 @@ body {
   gap: 16px;
 }
 
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -8px;
+}
+.language {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.language select {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 .masthead h1 {
   font-size: 1.75rem;
   font-weight: 700;

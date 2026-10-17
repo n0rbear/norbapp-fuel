@@ -26,12 +26,13 @@ def test_health(client):
 
 def test_countries(client):
     data = client.get("/api/countries").json()["countries"]
-    assert len(data) == 27
+    assert sum(c["eu"] for c in data) == 27
+    assert len(data) == 30  # + CH, LI, MC
     assert sum(c["mode"] == "official" for c in data) == 7
 
 
 def test_unknown_country(client):
-    assert client.get("/api/prices", params={"country": "CH"}).status_code == 404
+    assert client.get("/api/prices", params={"country": "NO"}).status_code == 404
 
 
 def test_estimate_country_full_matrix(client):
@@ -133,7 +134,7 @@ def test_seven_clients_registered():
 def test_base_prices_endpoint(client):
     data = client.get("/api/base-prices").json()
     assert data["schedule"] == "daily 06:00 Europe/Budapest"
-    assert len(data["prices"]) == 27
+    assert len(data["prices"]) == 30
 
 
 # --- E10 ---------------------------------------------------------------------
@@ -207,3 +208,68 @@ def test_e10_estimate_uses_petrol_base(client):
 def test_countries_report_e10_support(client):
     data = {c["code"]: c for c in client.get("/api/countries").json()["countries"]}
     assert {code for code, c in data.items() if c.get("official_api", {}).get("supports_e10")} == {"DE", "ES", "FR"}
+
+
+# --- Switzerland, Liechtenstein, Monaco --------------------------------------
+
+
+def test_non_eu_neighbours_listed(client):
+    data = {c["code"]: c for c in client.get("/api/countries").json()["countries"]}
+    assert len(data) == 30
+    for code in ("CH", "LI", "MC"):
+        assert data[code]["eu"] is False and data[code]["mode"] == "estimate"
+    assert data["CH"]["local_currency"] == "CHF"
+    assert data["MC"]["base_price_source"]["derived_from"] == "FR"
+    assert data["HU"]["eu"] is True
+
+
+def test_swiss_estimate_converts_chf_base(client):
+    import pricing_matrix as pm
+    from fx import fx
+
+    data = client.get("/api/prices", params={"country": "CH", "fuel": "diesel", "location": "city", "brand_tier": "mainstream"}).json()
+    # With the anchor-week bulletin and rate, the Swiss price is the TCS anchor.
+    expected = round(2.313 / fx.rate("CHF"), 3)
+    assert data["mode"] == "estimate"
+    assert data["estimates"][0]["base_price"] == pytest.approx(expected, abs=0.002)
+    assert "TCS" in data["base_price_source"]["source"]
+    assert pm.base_price("LI", pm.Fuel.DIESEL) == pm.base_price("CH", pm.Fuel.DIESEL)
+
+
+def test_monaco_follows_french_average(client):
+    import pricing_matrix as pm
+
+    assert pm.base_price("MC", pm.Fuel.PETROL) == pm.base_price("FR", pm.Fuel.PETROL)
+    assert client.get("/api/prices", params={"country": "MC"}).json()["mode"] == "estimate"
+
+
+def test_swiss_base_price_override(monkeypatch):
+    import pricing_matrix as pm
+
+    monkeypatch.setenv("BASE_PRICES_JSON", '{"CH": {"petrol": 2.5, "diesel": 2.6}}')
+    saved = dict(pm.BASE_PRICES)
+    try:
+        pm.BASE_PRICES.clear()
+        pm.BASE_PRICES.update(pm._build_base_prices())
+        assert pm.base_price("CH", pm.Fuel.PETROL) == 2.5
+        assert pm.base_price("LI", pm.Fuel.DIESEL) == 2.6
+        assert "manual override" in pm.base_price_source("CH")["source"]
+    finally:
+        pm.BASE_PRICES.clear()
+        pm.BASE_PRICES.update(saved)
+
+
+def test_swiss_vignette_in_toll_estimate(client):
+    from fx import fx
+
+    data = client.get("/api/tolls/estimate", params={"countries": "DE,CH,LI", "days": 3, "currency": "EUR"}).json()
+    by = {c["country"]: c for c in data["countries"]}
+    assert by["CH"]["system"] == "vignette"
+    assert by["CH"]["subtotal"] == pytest.approx(round(40 / fx.rate("CHF"), 3), abs=0.01)
+    assert by["LI"]["subtotal"] == 0
+
+
+def test_chf_is_not_a_display_currency(client):
+    assert client.get("/api/prices", params={"country": "CH", "currency": "CHF"}).status_code == 422
+    codes = [c["code"] for c in client.get("/api/currencies").json()["currencies"]]
+    assert "CHF" not in codes

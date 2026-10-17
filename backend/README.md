@@ -58,6 +58,26 @@ Az alapárak **minden reggel 6:00-kor (Europe/Budapest)** frissülnek az EU Week
 
 `fuel=e10` esetén külön E10-ár csak ott jön, ahol a hivatalos forrás közli: **DE** (Tankerkönig), **ES** (Gasolina 95 E10), **FR** (E10). Máshol – AT, IT, PT, SI és a becslési országok – az Euro-Super 95 (E5) ára jön, mert a forrás vagy az EU Weekly Oil Bulletin nem ad külön E10-sorozatot. A válasz `price_fuel` mezője megmondja, melyik üzemanyag árát tartalmazza, eltérés esetén `fuel_note` is jön; a `GET /api/countries` `official_api.supports_e10` mezője jelzi az E10-képes forrásokat.
 
+## Svájc, Liechtenstein, Monaco
+
+A 27 EU-ország mellett ez a három nem EU-s ország is elérhető (`GET /api/countries` → `eu: false`), becslési módban:
+
+| Ország | Alapár | Útdíj |
+|---|---|---|
+| CH | TCS Benzinpreis-Radar országos átlag (horgony: 2026-10-06, benzin 2,028 / dízel 2,313 CHF/l), **minden reggel** az alábbi képlettel továbbvezetve | éves e-matrica 40 CHF |
+| LI | a svájci alapár (azonos piac és pénznem) | nincs |
+| MC | a francia átlagár (Franciaországból ellátva, francia adók) – naponta frissül | nincs |
+
+Svájcra nincs nyílt, naponta frissülő árforrás, ezért a svájci alapár a TCS-horgonyból indul, és a szomszédos országok (DE, AT, FR, IT) reggelente frissülő Bulletin-átlagának változását követi:
+
+```
+CH(t) [CHF] = horgony + 0,897 × (ref(t) × CHF-árfolyam(t) − ref(horgony) × CHF-árfolyam(horgony))
+```
+
+A 0,897 (= 1,081 / 1,205) azt fejezi ki, hogy a szomszédos árakban ~20,5% ÁFA van, a svájciakban 8,1% (a svájci ásványolajadó literenként fix), így a beszerzési ár változása kb. 90%-ban jelenik meg. Új TCS-adatnál a horgonyt (`SWISS_ANCHOR`, `pricing_matrix.py`) érdemes frissíteni; a `BASE_PRICES_JSON` felülírás továbbra is működik (`{"CH": {"petrol": 2.2, "diesel": 2.5}}`, EUR/l).
+
+A CHF csak átváltásra szolgál (svájci alapár, matrica), megjelenítési pénznemként nem választható.
+
 ## Pénznem választása (`fx.py`)
 
 Minden árat visszaadó végpont fogad egy `currency` paramétert (alapért. `EUR`), pl. `currency=HUF`. Csak az EU-ban használt pénznemek választhatók: **EUR, CZK, DKK, HUF, PLN, RON, SEK** (Bulgária 2026 óta euróövezeti). Más kódra 422-es hiba jön. A számítás EUR-ban történik, a kimenet konvertált; a válasz `exchange_rate` mezője megadja az árfolyamot és a dátumát.

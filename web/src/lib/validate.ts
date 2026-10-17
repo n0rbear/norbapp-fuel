@@ -1,10 +1,11 @@
 import { CURRENCIES, EURO_CLASSES, type Currency, type EuroClass, type PlaceInput, type PlanRequest } from "./api-types";
+import { msg, type AppMessage } from "../i18n/message";
 import { FUEL_TYPES, validateVehicle, type FuelType } from "./trip";
 
 export const MAX_WAYPOINTS = 10;
 const MAX_ADDRESS_LENGTH = 200;
 
-type Result<T> = { ok: true; value: T } | { ok: false; error: string };
+type Result<T> = { ok: true; value: T } | { ok: false; error: AppMessage };
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -38,32 +39,32 @@ function place(v: unknown): PlaceInput | null {
 
 /** Validates an untrusted JSON body. */
 export function parsePlanRequest(body: unknown): Result<PlanRequest> {
-  if (!isObject(body)) return { ok: false, error: "Hibás kérés." };
+  if (!isObject(body)) return { ok: false, error: msg("invalidRequest") };
 
   const origin = place(body.origin);
-  if (!origin) return { ok: false, error: "Add meg az indulási helyet." };
+  if (!origin) return { ok: false, error: msg("originMissing") };
 
   const destination = place(body.destination);
-  if (!destination) return { ok: false, error: "Add meg az úti célt." };
+  if (!destination) return { ok: false, error: msg("destinationMissing") };
 
-  if (body.waypoints !== undefined && !Array.isArray(body.waypoints)) return { ok: false, error: "Hibás megállólista." };
+  if (body.waypoints !== undefined && !Array.isArray(body.waypoints)) return { ok: false, error: msg("waypointsInvalid") };
   const rawWaypoints = (body.waypoints as unknown[] | undefined) ?? [];
-  if (rawWaypoints.length > MAX_WAYPOINTS) return { ok: false, error: `Legfeljebb ${MAX_WAYPOINTS} megálló adható meg.` };
+  if (rawWaypoints.length > MAX_WAYPOINTS) return { ok: false, error: msg("tooManyWaypoints", { max: MAX_WAYPOINTS }) };
   const waypoints = rawWaypoints.map(place);
-  if (waypoints.some((w) => w === null)) return { ok: false, error: "Hibás vagy üres megálló." };
+  if (waypoints.some((w) => w === null)) return { ok: false, error: msg("waypointInvalid") };
 
   const fuelType = body.fuelType as FuelType;
-  if (!FUEL_TYPES.some((f) => f.id === fuelType)) return { ok: false, error: "Ismeretlen üzemanyagtípus." };
+  if (!FUEL_TYPES.some((f) => f.id === fuelType)) return { ok: false, error: msg("fuelUnknown") };
 
   const currency = body.currency as Currency;
-  if (!CURRENCIES.includes(currency)) return { ok: false, error: "Ismeretlen pénznem." };
+  if (!CURRENCIES.includes(currency)) return { ok: false, error: msg("currencyUnknown") };
 
   const avoid = body.avoidTollCountries ?? [];
   if (!Array.isArray(avoid) || avoid.length > 30 || !avoid.every((c) => typeof c === "string" && /^[A-Z]{2}$/.test(c))) {
-    return { ok: false, error: "Hibás országlista." };
+    return { ok: false, error: msg("countryListInvalid") };
   }
 
-  if (!isObject(body.vehicle)) return { ok: false, error: "Hiányzó járműadatok." };
+  if (!isObject(body.vehicle)) return { ok: false, error: msg("vehicleMissing") };
   const vehicle = {
     consumption: finite(body.vehicle.consumption) ?? NaN,
     tankSize: finite(body.vehicle.tankSize) ?? NaN,
@@ -71,7 +72,7 @@ export function parsePlanRequest(body: unknown): Result<PlanRequest> {
     reservePct: finite(body.vehicle.reservePct) ?? NaN,
   };
   const vehicleError = validateVehicle(vehicle);
-  if (vehicleError) return { ok: false, error: vehicleError };
+  if (vehicleError) return { ok: false, error: msg(vehicleError) };
 
   return {
     ok: true,
@@ -104,27 +105,27 @@ const COUNTRY_CODE = /^[A-Z]{2}$/;
 export function parseTollsQuery(params: URLSearchParams): Result<TollsQuery> {
   const countries = (params.get("countries") ?? "").split(",").filter(Boolean);
   if (countries.length === 0 || countries.length > 30 || !countries.every((c) => COUNTRY_CODE.test(c))) {
-    return { ok: false, error: "Hibás országlista." };
+    return { ok: false, error: msg("countryListInvalid") };
   }
 
   const days = Number(params.get("days"));
-  if (!Number.isInteger(days) || days < 1 || days > 365) return { ok: false, error: "Az út hossza 1 és 365 nap között legyen." };
+  if (!Number.isInteger(days) || days < 1 || days > 365) return { ok: false, error: msg("daysRange") };
 
   const highwayKm: Record<string, number> = {};
   for (const pair of (params.get("highway_km") ?? "").split(",").filter(Boolean)) {
     const [code, km] = pair.split(":");
     const value = Number(km);
     if (!COUNTRY_CODE.test(code) || !Number.isFinite(value) || value < 0 || value > 20_000) {
-      return { ok: false, error: "Hibás autópálya-km." };
+      return { ok: false, error: msg("highwayKmInvalid") };
     }
     highwayKm[code] = value;
   }
 
   const rawClass = params.get("euro_class") || null;
-  if (rawClass !== null && !EURO_CLASSES.includes(rawClass as EuroClass)) return { ok: false, error: "Ismeretlen Euro-besorolás." };
+  if (rawClass !== null && !EURO_CLASSES.includes(rawClass as EuroClass)) return { ok: false, error: msg("euroClassUnknown") };
 
   const currency = params.get("currency") as Currency;
-  if (!CURRENCIES.includes(currency)) return { ok: false, error: "Ismeretlen pénznem." };
+  if (!CURRENCIES.includes(currency)) return { ok: false, error: msg("currencyUnknown") };
 
   return { ok: true, value: { countries, days, highwayKm, euroClass: rawClass as EuroClass | null, currency } };
 }

@@ -6,13 +6,14 @@ import {
   EURO_CLASSES,
   type ApiError,
   type Currency,
-  type CurrencyInfo,
-  EURO_CLASS_LABELS,
+  euroClassLabel,
   type EuroClass,
   type PlanRequest,
   type PlanResponse,
 } from "@/lib/api-types";
 import { usePersistentState } from "@/hooks/usePersistentState";
+import { msg, type AppMessage } from "@/i18n/message";
+import { useI18n } from "@/i18n/I18nProvider";
 import { parseDecimal } from "@/lib/pricing";
 import { DEFAULT_VEHICLE, FUEL_TYPES, validateVehicle, type FuelType, type Vehicle } from "@/lib/trip";
 import { MAX_WAYPOINTS } from "@/lib/validate";
@@ -28,11 +29,11 @@ const toForm = (v: Vehicle): VehicleForm => ({
   reservePct: String(v.reservePct),
 });
 
-const VEHICLE_FIELDS: { key: keyof Vehicle; label: string; unit: string }[] = [
-  { key: "consumption", label: "Fogyasztás", unit: "l/100 km" },
-  { key: "tankSize", label: "Tankméret", unit: "l" },
-  { key: "startLevelPct", label: "Tankszint induláskor", unit: "%" },
-  { key: "reservePct", label: "Tartalék, ami alá nem mész", unit: "%" },
+const VEHICLE_FIELDS: { key: keyof Vehicle; label: "consumption" | "tankSize" | "startLevel" | "reserve"; unit: string }[] = [
+  { key: "consumption", label: "consumption", unit: "l/100 km" },
+  { key: "tankSize", label: "tankSize", unit: "l" },
+  { key: "startLevelPct", label: "startLevel", unit: "%" },
+  { key: "reservePct", label: "reserve", unit: "%" },
 ];
 
 const isCountryList = (v: string): v is string => /^([A-Z]{2}(,[A-Z]{2})*)?$/.test(v);
@@ -41,6 +42,15 @@ const isCurrency = (v: string): v is Currency => (CURRENCIES as readonly string[
 const isEuroClassOrUnset = (v: string): v is EuroClass | "" => v === "" || (EURO_CLASSES as readonly string[]).includes(v);
 
 export function Planner() {
+  const { t, tm, locale } = useI18n();
+  const currencyLabel = (code: Currency) => {
+    try {
+      const name = new Intl.DisplayNames([locale], { type: "currency" }).of(code);
+      return name && name !== code ? `${code} – ${name}` : code;
+    } catch {
+      return code;
+    }
+  };
   const [origin, setOrigin] = useState<PlaceValue>(emptyPlace);
   const [locating, setLocating] = useState(false);
   const [destination, setDestination] = useState<PlaceValue>(emptyPlace);
@@ -52,22 +62,17 @@ export function Planner() {
   const [fillAtStart, setFillAtStart] = useState(false);
   const [currency, setCurrency] = usePersistentState<Currency>("fuel.currency", "HUF", isCurrency);
   const [euroClass, setEuroClass] = usePersistentState<EuroClass | "">("fuel.euroClass", "", isEuroClassOrUnset);
-  const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo[] | null>(null);
   // Countries where the user drives toll-free; remembered across visits.
   const [avoidList, setAvoidList] = usePersistentState<string>("fuel.avoidTolls", "", isCountryList);
   const avoidTollCountries = useMemo(() => avoidList.split(",").filter(Boolean).sort(), [avoidList]);
 
   useEffect(() => {
-    // Wake the sleeping price service early, and load currency names.
+    // Wake the sleeping price service early.
     fetch("/api/warmup", { method: "POST" }).catch(() => {});
-    fetch("/api/currencies")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { currencies: CurrencyInfo[] } | null) => d && setCurrencyInfo(d.currencies))
-      .catch(() => {});
   }, []);
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AppMessage | null>(null);
   const [result, setResult] = useState<{ id: number; request: PlanRequest; response: PlanResponse } | null>(null);
 
   const vehicle: Vehicle | null = useMemo(() => {
@@ -101,7 +106,7 @@ export function Planner() {
 
   const useMyLocation = () => {
     if (!("geolocation" in navigator)) {
-      setError("A böngésző nem támogatja a helymeghatározást.");
+      setError(msg("geoUnsupported"));
       return;
     }
     setLocating(true);
@@ -109,7 +114,7 @@ export function Planner() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        let label = "Jelenlegi pozíció";
+        let label = t("currentPosition");
         try {
           const res = await fetch(`/api/reverse?lat=${location.lat}&lng=${location.lng}`);
           if (res.ok) label = ((await res.json()) as { address: string | null }).address ?? label;
@@ -122,9 +127,7 @@ export function Planner() {
       (err) => {
         setLocating(false);
         setError(
-          err.code === err.PERMISSION_DENIED
-            ? "A helymeghatározás nincs engedélyezve."
-            : "Nem sikerült meghatározni a pozíciót.",
+          err.code === err.PERMISSION_DENIED ? msg("geoDenied") : msg("geoFailed"),
         );
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
@@ -135,20 +138,20 @@ export function Planner() {
     e.preventDefault();
     setError(null);
     if (!vehicle || !request) {
-      setError("Ellenőrizd a jármű adatait (számokat adj meg).");
+      setError(msg("checkVehicle"));
       return;
     }
     const vehicleError = validateVehicle(vehicle);
     if (vehicleError) {
-      setError(vehicleError);
+      setError(msg(vehicleError));
       return;
     }
     if (!origin.text.trim()) {
-      setError("Add meg az indulási helyet.");
+      setError(msg("originMissing"));
       return;
     }
     if (!destination.text.trim()) {
-      setError("Add meg az úti célt.");
+      setError(msg("destinationMissing"));
       return;
     }
 
@@ -166,12 +169,12 @@ export function Planner() {
       });
       const data = (await res.json()) as PlanResponse | ApiError;
       if (!res.ok || "error" in data) {
-        setError("error" in data ? data.error : "Hiba történt a tervezéskor.");
+        setError("error" in data ? data.error : msg("planFailed"));
         return;
       }
       setResult({ id: Date.now(), request: planRequest, response: data });
     } catch {
-      setError("Nem sikerült elérni a szervert. Ellenőrizd az internetkapcsolatot.");
+      setError(msg("serverUnreachable"));
     } finally {
       setLoading(false);
     }
@@ -180,16 +183,16 @@ export function Planner() {
   return (
     <>
       <form className="card" onSubmit={submit} noValidate>
-        <h2>Útvonal</h2>
+        <h2>{t("route")}</h2>
 
         <AddressInput
-          label="Indulás"
+          label={t("origin")}
           value={origin}
           onChange={setOrigin}
-          placeholder="pl. Budapest"
+          placeholder={t("originPlaceholder")}
           trailing={
             <button type="button" className="btn ghost" onClick={useMyLocation} disabled={locating}>
-              {locating ? "Keresés…" : "Saját pozíció"}
+              {locating ? t("locating") : t("myLocation")}
             </button>
           }
         />
@@ -197,7 +200,7 @@ export function Planner() {
         {waypoints.map((w, i) => (
           <AddressInput
             key={i}
-            label={`${i + 1}. megálló`}
+            label={t("stopN", { n: i + 1 })}
             value={w}
             onChange={(v) => setWaypoints((ws) => ws.map((x, j) => (j === i ? v : x)))}
             near={origin.location}
@@ -205,7 +208,7 @@ export function Planner() {
               <button
                 type="button"
                 className="btn ghost"
-                aria-label={`${i + 1}. megálló törlése`}
+                aria-label={t("removeStopN", { n: i + 1 })}
                 onClick={() => setWaypoints((ws) => ws.filter((_, j) => j !== i))}
               >
                 ✕
@@ -215,10 +218,10 @@ export function Planner() {
         ))}
 
         <AddressInput
-          label="Úti cél"
+          label={t("destination")}
           value={destination}
           onChange={setDestination}
-          placeholder="pl. München"
+          placeholder={t("destinationPlaceholder")}
           near={origin.location}
         />
 
@@ -229,22 +232,22 @@ export function Planner() {
             disabled={waypoints.length >= MAX_WAYPOINTS}
             onClick={() => setWaypoints((ws) => [...ws, emptyPlace])}
           >
-            + Megálló
+            {t("addStop")}
           </button>
           <label className="check">
             <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} />
-            Oda-vissza
+            {t("roundTrip")}
           </label>
           {waypoints.length > 1 && !roundTrip && (
             <label className="check">
               <input type="checkbox" checked={optimize} onChange={(e) => setOptimize(e.target.checked)} />
-              Megállók sorrendjének optimalizálása
+              {t("optimizeStops")}
             </label>
           )}
         </div>
 
-        <h2>Jármű és üzemanyag</h2>
-        <div className="segmented" role="radiogroup" aria-label="Üzemanyag">
+        <h2>{t("vehicleAndFuel")}</h2>
+        <div className="segmented" role="radiogroup" aria-label={t("fuel")}>
           {FUEL_TYPES.map((f) => (
             <button
               key={f.id}
@@ -254,7 +257,7 @@ export function Planner() {
               className={fuelType === f.id ? "on" : ""}
               onClick={() => setFuelType(f.id)}
             >
-              {f.label}
+              {t(f.label)}
             </button>
           ))}
         </div>
@@ -262,7 +265,7 @@ export function Planner() {
         <div className="grid">
           {VEHICLE_FIELDS.map(({ key, label, unit }) => (
             <div className="field" key={key}>
-              <label htmlFor={`v-${key}`}>{label}</label>
+              <label htmlFor={`v-${key}`}>{t(label)}</label>
               <div className="unit-input">
                 <input
                   id={`v-${key}`}
@@ -279,48 +282,48 @@ export function Planner() {
         {vehicle && vehicle.startLevelPct < 100 && (
           <label className="check">
             <input type="checkbox" checked={fillAtStart} onChange={(e) => setFillAtStart(e.target.checked)} />
-            Indulás előtt teletankolok
+            {t("fillAtStart")}
           </label>
         )}
 
         <div className="grid">
           <div className="field">
-            <label htmlFor="euro-class">Euro-besorolás</label>
+            <label htmlFor="euro-class">{t("euroClass")}</label>
             <select id="euro-class" value={euroClass} onChange={(e) => setEuroClass(e.target.value as EuroClass | "")}>
-              <option value="">Nincs megadva</option>
+              <option value="">{t("euroClassUnset")}</option>
               {EURO_CLASSES.map((c) => (
                 <option key={c} value={c}>
-                  {EURO_CLASS_LABELS[c]}
+                  {euroClassLabel(c, t)}
                 </option>
               ))}
             </select>
-            <small className="hint">Ott kell, ahol az útdíj függ tőle (pl. Románia).</small>
+            <small className="hint">{t("euroClassHint")}</small>
           </div>
           <div className="field">
-            <label htmlFor="currency">Pénznem</label>
+            <label htmlFor="currency">{t("currency")}</label>
             <select id="currency" value={currency} onChange={(e) => setCurrency(e.target.value as Currency)}>
-              {(currencyInfo ?? CURRENCIES.map((code) => ({ code, name: code, rate: 0 }))).map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code === c.name ? c.code : `${c.code} – ${c.name}`}
+              {CURRENCIES.map((code) => (
+                <option key={code} value={code}>
+                  {currencyLabel(code)}
                 </option>
               ))}
             </select>
-            <small className="hint">Árfolyam: Európai Központi Bank.</small>
+            <small className="hint">{t("currencyHint")}</small>
           </div>
         </div>
 
         {error && (
           <p className="error" role="alert">
-            {error}
+            {tm(error)}
           </p>
         )}
 
         <button type="submit" className="btn primary" disabled={loading}>
-          {loading ? "Tervezés…" : "Kalkuláció"}
+          {loading ? t("planning") : t("calculate")}
         </button>
         {loading && (
           <p className="hint" role="status">
-            Az első kérés akár egy percig is eltarthat, amíg az árszolgáltatás felébred.
+            {t("coldStartHint")}
           </p>
         )}
       </form>

@@ -7,14 +7,14 @@ const limiter = new RateLimiter(10, 10);
 
 export async function POST(request: Request) {
   if (!limiter.take(clientKey(request))) {
-    return jsonError("Túl sok kérés, várj egy percet.", 429);
+    return jsonError("tooManyRequests", 429);
   }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return jsonError("Hibás kérés.", 400);
+    return jsonError("invalidRequest", 400);
   }
 
   const parsed = parsePlanRequest(body);

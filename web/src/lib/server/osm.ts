@@ -2,6 +2,7 @@ import "server-only";
 import { iso1A2Code } from "@rapideditor/country-coder";
 import type { PlaceInput, PlaceSuggestion } from "../api-types";
 import { decodePolyline, type LatLng } from "../geo";
+import { msg } from "../../i18n/message";
 import { UserError } from "./env";
 import { fetchJson, UpstreamError } from "./http";
 
@@ -78,7 +79,7 @@ export async function reverse(point: LatLng): Promise<string | null> {
 async function resolve(place: PlaceInput): Promise<LatLng> {
   if ("location" in place) return place.location;
   const [first] = await photon("/api/", { q: place.address, limit: "1" });
-  if (!first) throw new UserError(`Nem található: „${place.address}”. Válassz a javaslatok közül.`, 422);
+  if (!first) throw new UserError(msg("placeNotFound", { address: place.address }), 422);
   return first.location;
 }
 
@@ -130,14 +131,14 @@ async function osrm(coords: LatLng[], optimize: boolean): Promise<ComputedRoute>
   } catch (e) {
     // OSRM answers 400 with code NoRoute / NoSegment for unreachable points.
     if (e instanceof UpstreamError && e.status === 400) {
-      throw new UserError("Az útvonal nem tervezhető a megadott pontok között.", 422);
+      throw new UserError(msg("routeImpossible"), 422);
     }
     throw e;
   }
 
   const route = (useTrip ? data.trips : data.routes)?.[0];
   if (data.code !== "Ok" || !route?.geometry || !(route.distance > 0)) {
-    throw new UserError("Nem található útvonal a megadott pontok között.", 422);
+    throw new UserError(msg("routeNotFound"), 422);
   }
   const steps: RouteStep[] = (route.legs ?? []).flatMap((leg) =>
     (leg.steps ?? [])
@@ -167,7 +168,7 @@ async function osrm(coords: LatLng[], optimize: boolean): Promise<ComputedRoute>
  * reordered (OSRM trip service) while the first and last stay fixed.
  */
 export async function computeRoute(places: PlaceInput[], optimize: boolean): Promise<ComputedRoute> {
-  if (places.length < 2) throw new UserError("Legalább két pont szükséges.");
+  if (places.length < 2) throw new UserError(msg("needTwoPoints"));
   return osrm(await Promise.all(places.map(resolve)), optimize);
 }
 

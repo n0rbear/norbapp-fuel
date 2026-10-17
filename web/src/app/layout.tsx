@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { I18nProvider } from "@/i18n/I18nProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://fuel.norbapp.com"),
   title: "NorbApp Fuel – útiköltség-kalkulátor",
   description:
-    "Tervezd meg az út üzemanyag- és útdíjköltségét: útvonal, tankolási pontok, kútárak és útdíjak a 27 EU-országra, választható pénznemben.",
+    "Tervezd meg az út üzemanyag- és útdíjköltségét: útvonal, tankolási pontok, kútárak és útdíjak a 27 EU-országra és Svájcra, Liechtensteinre, Monacóra, választható pénznemben.",
   applicationName: "NorbApp Fuel",
   appleWebApp: { capable: true, title: "NorbApp Fuel", statusBarStyle: "default" },
   icons: { apple: "/icons/apple-touch-icon.png" },
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="hu">
       <body>
-        {children}
+        <I18nProvider>{children}</I18nProvider>
         <ServiceWorker />
       </body>
     </html>
