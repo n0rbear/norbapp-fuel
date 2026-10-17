@@ -15,6 +15,11 @@ export const el: Messages = {
   privacySettings: "Ρυθμίσεις απορρήτου",
   advertisement: "Διαφήμιση",
   backToApp: "Πίσω στον υπολογιστή",
+  installTitle: "Εγκαταστήστε το Fuel",
+  installBody: "Ανοίξτε το απευθείας από την αρχική οθόνη – ξεκινά ακόμη και εκτός σύνδεσης.",
+  installButton: "Εγκατάσταση",
+  installLater: "Όχι τώρα",
+  installIosSteps: "Πατήστε Κοινή χρήση και μετά «Προσθήκη στην οθόνη Αφετηρίας».",
 
   route: "Διαδρομή",
   origin: "Αφετηρία",

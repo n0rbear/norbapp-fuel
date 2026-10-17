@@ -15,6 +15,11 @@ export const mt: Messages = {
   privacySettings: "Settings tal-privatezza",
   advertisement: "Reklam",
   backToApp: "Lura għall-kalkulatur",
+  installTitle: "Installa Fuel",
+  installBody: "Iftħu direttament mill-iskrin ewlieni – jibda anke offline.",
+  installButton: "Installa",
+  installLater: "Mhux issa",
+  installIosSteps: "Agħfas Share, imbagħad “Add to Home Screen”.",
 
   route: "Rotta",
   origin: "Tluq",

@@ -15,6 +15,11 @@ export const bg: Messages = {
   privacySettings: "Настройки за поверителност",
   advertisement: "Реклама",
   backToApp: "Обратно към калкулатора",
+  installTitle: "Инсталирайте Fuel",
+  installBody: "Отваряйте го направо от началния екран – стартира и без интернет.",
+  installButton: "Инсталиране",
+  installLater: "Не сега",
+  installIosSteps: "Докоснете „Споделяне“, след това „Добавяне към начален екран“.",
 
   route: "Маршрут",
   origin: "Начало",

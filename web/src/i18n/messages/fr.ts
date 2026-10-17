@@ -15,6 +15,11 @@ export const fr: Messages = {
   privacySettings: "Paramètres de confidentialité",
   advertisement: "Publicité",
   backToApp: "Retour au calculateur",
+  installTitle: "Installer Fuel",
+  installBody: "Ouvrez-le directement depuis l’écran d’accueil – il démarre même hors ligne.",
+  installButton: "Installer",
+  installLater: "Plus tard",
+  installIosSteps: "Touchez Partager, puis « Sur l’écran d’accueil ».",
 
   route: "Itinéraire",
   origin: "Départ",

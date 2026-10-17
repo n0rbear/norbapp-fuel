@@ -15,6 +15,11 @@ export const it: Messages = {
   privacySettings: "Impostazioni privacy",
   advertisement: "Pubblicità",
   backToApp: "Torna al calcolatore",
+  installTitle: "Installa Fuel",
+  installBody: "Aprilo direttamente dalla schermata Home – si avvia anche offline.",
+  installButton: "Installa",
+  installLater: "Non ora",
+  installIosSteps: "Tocca Condividi, poi «Aggiungi alla schermata Home».",
 
   route: "Percorso",
   origin: "Partenza",

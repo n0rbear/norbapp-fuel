@@ -15,6 +15,11 @@ export const lt: Messages = {
   privacySettings: "Privatumo nustatymai",
   advertisement: "Reklama",
   backToApp: "Atgal į skaičiuoklę",
+  installTitle: "Įdiekite Fuel",
+  installBody: "Atidarykite tiesiai iš pradžios ekrano – veikia net be interneto.",
+  installButton: "Įdiegti",
+  installLater: "Ne dabar",
+  installIosSteps: "Bakstelėkite „Bendrinti“, tada „Įtraukti į pradžios ekraną“.",
 
   route: "Maršrutas",
   origin: "Pradžia",

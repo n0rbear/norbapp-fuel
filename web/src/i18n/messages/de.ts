@@ -15,6 +15,11 @@ export const de: Messages = {
   privacySettings: "Datenschutz-Einstellungen",
   advertisement: "Anzeige",
   backToApp: "Zurück zum Rechner",
+  installTitle: "Fuel installieren",
+  installBody: "Direkt vom Startbildschirm öffnen – startet sogar offline.",
+  installButton: "Installieren",
+  installLater: "Jetzt nicht",
+  installIosSteps: "Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“.",
 
   route: "Route",
   origin: "Start",

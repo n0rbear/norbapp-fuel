@@ -15,6 +15,11 @@ export const sk: Messages = {
   privacySettings: "Nastavenia súkromia",
   advertisement: "Reklama",
   backToApp: "Späť na kalkulačku",
+  installTitle: "Nainštalujte si Fuel",
+  installBody: "Otvárajte ho priamo z plochy – spustí sa aj offline.",
+  installButton: "Inštalovať",
+  installLater: "Teraz nie",
+  installIosSteps: "Ťuknite na Zdieľať a potom na „Pridať na plochu“.",
 
   route: "Trasa",
   origin: "Štart",

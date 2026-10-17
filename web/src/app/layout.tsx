@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
           <BannerStrip />
           <SiteFooter />
+          <InstallPrompt />
         </I18nProvider>
         <ServiceWorker />
         {ADS_ENABLED ? (

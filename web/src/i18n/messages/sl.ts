@@ -15,6 +15,11 @@ export const sl: Messages = {
   privacySettings: "Nastavitve zasebnosti",
   advertisement: "Oglas",
   backToApp: "Nazaj na kalkulator",
+  installTitle: "Namestite Fuel",
+  installBody: "Odprite ga neposredno z začetnega zaslona – deluje tudi brez povezave.",
+  installButton: "Namesti",
+  installLater: "Ne zdaj",
+  installIosSteps: "Tapnite Deli in nato »Dodaj na začetni zaslon«.",
 
   route: "Pot",
   origin: "Začetek",

@@ -15,6 +15,11 @@ export const da: Messages = {
   privacySettings: "Privatlivsindstillinger",
   advertisement: "Annonce",
   backToApp: "Tilbage til beregneren",
+  installTitle: "Installer Fuel",
+  installBody: "Åbn den direkte fra hjemmeskærmen – den starter også offline.",
+  installButton: "Installer",
+  installLater: "Ikke nu",
+  installIosSteps: "Tryk på Del og derefter på »Føj til hjemmeskærm«.",
 
   route: "Rute",
   origin: "Start",

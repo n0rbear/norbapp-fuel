@@ -15,6 +15,11 @@ export const es: Messages = {
   privacySettings: "Configuración de privacidad",
   advertisement: "Publicidad",
   backToApp: "Volver a la calculadora",
+  installTitle: "Instala Fuel",
+  installBody: "Ábrelo directamente desde la pantalla de inicio; funciona incluso sin conexión.",
+  installButton: "Instalar",
+  installLater: "Ahora no",
+  installIosSteps: "Toca Compartir y luego «Añadir a pantalla de inicio».",
 
   route: "Ruta",
   origin: "Salida",

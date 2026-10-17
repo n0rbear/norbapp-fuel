@@ -18,6 +18,11 @@ export const hu = {
   privacySettings: "Adatvédelmi beállítások",
   advertisement: "Hirdetés",
   backToApp: "Vissza a kalkulátorhoz",
+  installTitle: "Telepítsd a Fuelt",
+  installBody: "Egy koppintással elérhető a kezdőképernyőről, és internet nélkül is megnyílik.",
+  installButton: "Telepítés",
+  installLater: "Most nem",
+  installIosSteps: "Koppints a Megosztás gombra, majd a „Főképernyőhöz adás” pontra.",
 
   // Route form
   route: "Útvonal",

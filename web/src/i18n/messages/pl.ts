@@ -15,6 +15,11 @@ export const pl: Messages = {
   privacySettings: "Ustawienia prywatności",
   advertisement: "Reklama",
   backToApp: "Powrót do kalkulatora",
+  installTitle: "Zainstaluj Fuel",
+  installBody: "Otwieraj prosto z ekranu głównego – działa nawet offline.",
+  installButton: "Zainstaluj",
+  installLater: "Nie teraz",
+  installIosSteps: "Stuknij Udostępnij, a potem „Do ekranu początkowego”.",
 
   route: "Trasa",
   origin: "Start",

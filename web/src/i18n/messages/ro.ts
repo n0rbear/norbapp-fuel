@@ -15,6 +15,11 @@ export const ro: Messages = {
   privacySettings: "Setări de confidențialitate",
   advertisement: "Reclamă",
   backToApp: "Înapoi la calculator",
+  installTitle: "Instalați Fuel",
+  installBody: "Deschideți-l direct de pe ecranul principal – pornește și offline.",
+  installButton: "Instalează",
+  installLater: "Nu acum",
+  installIosSteps: "Atingeți Partajați, apoi „Adaugă pe ecranul principal”.",
 
   route: "Traseu",
   origin: "Plecare",

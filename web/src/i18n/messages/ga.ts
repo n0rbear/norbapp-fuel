@@ -15,6 +15,11 @@ export const ga: Messages = {
   privacySettings: "Socruithe príobháideachais",
   advertisement: "Fógra",
   backToApp: "Ar ais chuig an áireamhán",
+  installTitle: "Suiteáil Fuel",
+  installBody: "Oscail é go díreach ón scáileán baile – oibríonn sé as líne fiú.",
+  installButton: "Suiteáil",
+  installLater: "Ní anois",
+  installIosSteps: "Tapáil Comhroinn, ansin “Cuir leis an Scáileán Baile”.",
 
   route: "Bealach",
   origin: "Tús",
