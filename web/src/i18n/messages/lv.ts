@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const lv: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Ceļojuma izmaksu kalkulators",
   subtitle:
     "Maršruts, uzpildes pieturas, degvielas cenas un ceļa nodevas 27 ES valstīs, kā arī Šveicē, Lihtenšteinā un Monako – jūsu izvēlētajā valūtā.",
   language: "Valoda",
   footerDisclaimer: "Cenas ir orientējošas.",
   footerMapData: "Kartes dati © {osm} līdzautori",
-  footerRouting: "Maršrutēšana",
-  footerSearch: "Adrešu meklēšana",
-  footerPricesTolls: "Cenas un ceļa nodevas",
+  legalNav: "Juridiskā informācija",
+  imprint: "Impresums",
+  privacy: "Privātums",
+  sources: "Avoti un licences",
+  privacySettings: "Privātuma iestatījumi",
+  advertisement: "Reklāma",
+  backToApp: "Atpakaļ uz kalkulatoru",
 
   route: "Maršruts",
   origin: "Sākumpunkts",

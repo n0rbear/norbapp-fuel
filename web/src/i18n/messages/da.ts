@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const da: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Beregner til rejseomkostninger",
   subtitle:
     "Rute, tankstop, brændstofpriser og vejafgifter for de 27 EU-lande samt Schweiz, Liechtenstein og Monaco – i den valuta, du vælger.",
   language: "Sprog",
   footerDisclaimer: "Priserne er vejledende.",
   footerMapData: "Kortdata © {osm}-bidragydere",
-  footerRouting: "Ruteplanlægning",
-  footerSearch: "Adressesøgning",
-  footerPricesTolls: "Priser og vejafgifter",
+  legalNav: "Juridisk",
+  imprint: "Kolofon",
+  privacy: "Privatliv",
+  sources: "Kilder og licenser",
+  privacySettings: "Privatlivsindstillinger",
+  advertisement: "Annonce",
+  backToApp: "Tilbage til beregneren",
 
   route: "Rute",
   origin: "Start",

@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const lt: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Kelionės išlaidų skaičiuoklė",
   subtitle:
     "Maršrutas, degalų pylimo sustojimai, degalų kainos ir kelių mokesčiai 27 ES šalyse, taip pat Šveicarijoje, Lichtenšteine ir Monake – jūsų pasirinkta valiuta.",
   language: "Kalba",
   footerDisclaimer: "Kainos yra orientacinės.",
   footerMapData: "Žemėlapio duomenys © {osm} bendraautoriai",
-  footerRouting: "Maršrutizavimas",
-  footerSearch: "Adresų paieška",
-  footerPricesTolls: "Kainos ir kelių mokesčiai",
+  legalNav: "Teisinė informacija",
+  imprint: "Rekvizitai",
+  privacy: "Privatumas",
+  sources: "Šaltiniai ir licencijos",
+  privacySettings: "Privatumo nustatymai",
+  advertisement: "Reklama",
+  backToApp: "Atgal į skaičiuoklę",
 
   route: "Maršrutas",
   origin: "Pradžia",

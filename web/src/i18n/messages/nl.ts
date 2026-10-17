@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const nl: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Reiskostencalculator",
   subtitle:
     "Route, tankstops, brandstofprijzen en tol voor de 27 EU-landen plus Zwitserland, Liechtenstein en Monaco – in de valuta van uw keuze.",
   language: "Taal",
   footerDisclaimer: "Prijzen zijn indicatief.",
   footerMapData: "Kaartgegevens © {osm}-bijdragers",
-  footerRouting: "Routeplanning",
-  footerSearch: "Adres zoeken",
-  footerPricesTolls: "Prijzen en tol",
+  legalNav: "Juridisch",
+  imprint: "Colofon",
+  privacy: "Privacy",
+  sources: "Bronnen en licenties",
+  privacySettings: "Privacy-instellingen",
+  advertisement: "Advertentie",
+  backToApp: "Terug naar de calculator",
 
   route: "Route",
   origin: "Vertrek",

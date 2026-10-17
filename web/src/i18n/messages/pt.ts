@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const pt: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Calculadora de custos de viagem",
   subtitle:
     "Percurso, paragens para abastecer, preços de combustível e portagens nos 27 países da UE, mais a Suíça, o Listenstaine e o Mónaco – na moeda à sua escolha.",
   language: "Idioma",
   footerDisclaimer: "Os preços são indicativos.",
   footerMapData: "Dados do mapa © contribuidores do {osm}",
-  footerRouting: "Cálculo de rotas",
-  footerSearch: "Pesquisa de moradas",
-  footerPricesTolls: "Preços e portagens",
+  legalNav: "Informação legal",
+  imprint: "Ficha técnica",
+  privacy: "Privacidade",
+  sources: "Fontes e licenças",
+  privacySettings: "Definições de privacidade",
+  advertisement: "Publicidade",
+  backToApp: "Voltar à calculadora",
 
   route: "Percurso",
   origin: "Partida",

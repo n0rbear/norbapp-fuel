@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const el: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Υπολογισμός κόστους ταξιδιού",
   subtitle:
     "Διαδρομή, στάσεις ανεφοδιασμού, τιμές καυσίμων και διόδια για τις 27 χώρες της ΕΕ, καθώς και για Ελβετία, Λιχτενστάιν και Μονακό – στο νόμισμα της επιλογής σας.",
   language: "Γλώσσα",
   footerDisclaimer: "Οι τιμές είναι ενδεικτικές.",
   footerMapData: "Δεδομένα χάρτη © συντελεστές του {osm}",
-  footerRouting: "Δρομολόγηση",
-  footerSearch: "Αναζήτηση διεύθυνσης",
-  footerPricesTolls: "Τιμές και διόδια",
+  legalNav: "Νομικές πληροφορίες",
+  imprint: "Στοιχεία ιστότοπου",
+  privacy: "Απόρρητο",
+  sources: "Πηγές και άδειες",
+  privacySettings: "Ρυθμίσεις απορρήτου",
+  advertisement: "Διαφήμιση",
+  backToApp: "Πίσω στον υπολογιστή",
 
   route: "Διαδρομή",
   origin: "Αφετηρία",

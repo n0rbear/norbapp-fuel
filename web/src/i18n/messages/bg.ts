@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const bg: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Калкулатор на разходите за пътуване",
   subtitle:
     "Маршрут, спирки за зареждане, цени на горивата и пътни такси за 27-те държави от ЕС, както и за Швейцария, Лихтенщайн и Монако – във валута по ваш избор.",
   language: "Език",
   footerDisclaimer: "Цените са ориентировъчни.",
   footerMapData: "Картографски данни © сътрудници на {osm}",
-  footerRouting: "Маршрутизация",
-  footerSearch: "Търсене на адрес",
-  footerPricesTolls: "Цени и пътни такси",
+  legalNav: "Правна информация",
+  imprint: "Импресум",
+  privacy: "Поверителност",
+  sources: "Източници и лицензи",
+  privacySettings: "Настройки за поверителност",
+  advertisement: "Реклама",
+  backToApp: "Обратно към калкулатора",
 
   route: "Маршрут",
   origin: "Начало",

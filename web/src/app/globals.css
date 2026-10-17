@@ -52,11 +52,6 @@ body {
   gap: 16px;
 }
 
-.topbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: -8px;
-}
 .language {
   display: inline-flex;
   align-items: center;
@@ -79,13 +74,6 @@ body {
   font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.2;
-}
-.brand {
-  color: var(--accent);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  font-size: 0.8rem;
 }
 
 .card {
@@ -435,9 +423,122 @@ input[aria-invalid="true"] {
   width: auto;
 }
 
-.footer {
-  text-align: center;
+
+/* Site header and footer (shared by all pages) */
+.siteHeader {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
 }
-.footer a {
+.siteHeaderInner,
+.siteFooterInner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 10px 16px;
+}
+.siteHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.siteBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.siteBrand img {
+  border-radius: 9px;
+}
+.siteBrand span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.siteBrand strong {
+  font-size: 1.1rem;
+}
+.siteBrand small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.siteFooter {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.siteFooterInner {
+  padding: 24px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.siteFooterBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+.siteFooterBrand img {
+  border-radius: 8px;
+}
+.siteFooterContact,
+.siteFooterLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.siteFooterContact a,
+.siteFooterLinks a,
+.linkButton,
+.siteFooter p a {
+  color: var(--accent-strong);
   text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.linkButton {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.siteFooterBuild {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* Legal pages */
+.legal h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.legal .card p {
+  color: var(--text);
+}
+.legal .card a,
+.backLink {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+.backLink {
+  align-self: flex-start;
+}
+
+/* Ad units: reserved height avoids layout shift when the ad loads */
+.adSlot {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.adLabel {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }

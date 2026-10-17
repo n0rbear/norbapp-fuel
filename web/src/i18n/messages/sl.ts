@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const sl: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Izračun stroškov poti",
   subtitle:
     "Pot, postanki za tankanje, cene goriva in cestnine za 27 držav EU ter Švico, Lihtenštajn in Monako – v valuti po vaši izbiri.",
   language: "Jezik",
   footerDisclaimer: "Cene so okvirne.",
   footerMapData: "Podatki zemljevida © sodelavci {osm}",
-  footerRouting: "Načrtovanje poti",
-  footerSearch: "Iskanje naslovov",
-  footerPricesTolls: "Cene in cestnine",
+  legalNav: "Pravne informacije",
+  imprint: "Kolofon",
+  privacy: "Zasebnost",
+  sources: "Viri in licence",
+  privacySettings: "Nastavitve zasebnosti",
+  advertisement: "Oglas",
+  backToApp: "Nazaj na kalkulator",
 
   route: "Pot",
   origin: "Začetek",

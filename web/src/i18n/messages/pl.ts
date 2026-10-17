@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const pl: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Kalkulator kosztów podróży",
   subtitle:
     "Trasa, postoje na tankowanie, ceny paliwa i opłaty drogowe w 27 krajach UE oraz w Szwajcarii, Liechtensteinie i Monako – w wybranej walucie.",
   language: "Język",
   footerDisclaimer: "Ceny są orientacyjne.",
   footerMapData: "Dane mapy © współtwórcy {osm}",
-  footerRouting: "Wyznaczanie trasy",
-  footerSearch: "Wyszukiwanie adresów",
-  footerPricesTolls: "Ceny i opłaty drogowe",
+  legalNav: "Informacje prawne",
+  imprint: "Impressum",
+  privacy: "Prywatność",
+  sources: "Źródła i licencje",
+  privacySettings: "Ustawienia prywatności",
+  advertisement: "Reklama",
+  backToApp: "Powrót do kalkulatora",
 
   route: "Trasa",
   origin: "Start",

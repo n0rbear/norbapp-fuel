@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const en: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Trip cost calculator",
   subtitle:
     "Route, refuelling stops, fuel prices and tolls for the 27 EU countries plus Switzerland, Liechtenstein and Monaco – in the currency of your choice.",
   language: "Language",
   footerDisclaimer: "Prices are indicative.",
   footerMapData: "Map data © {osm} contributors",
-  footerRouting: "Routing",
-  footerSearch: "Address search",
-  footerPricesTolls: "Prices and tolls",
+  legalNav: "Legal",
+  imprint: "Imprint",
+  privacy: "Privacy",
+  sources: "Sources and licences",
+  privacySettings: "Privacy settings",
+  advertisement: "Advertisement",
+  backToApp: "Back to the calculator",
 
   route: "Route",
   origin: "Start",

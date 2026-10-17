@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const it: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Calcolatore dei costi di viaggio",
   subtitle:
     "Percorso, soste per il rifornimento, prezzi dei carburanti e pedaggi per i 27 paesi UE più Svizzera, Liechtenstein e Monaco – nella valuta che preferisci.",
   language: "Lingua",
   footerDisclaimer: "I prezzi sono indicativi.",
   footerMapData: "Dati cartografici © contributori di {osm}",
-  footerRouting: "Percorso",
-  footerSearch: "Ricerca indirizzi",
-  footerPricesTolls: "Prezzi e pedaggi",
+  legalNav: "Note legali",
+  imprint: "Note legali",
+  privacy: "Privacy",
+  sources: "Fonti e licenze",
+  privacySettings: "Impostazioni privacy",
+  advertisement: "Pubblicità",
+  backToApp: "Torna al calcolatore",
 
   route: "Percorso",
   origin: "Partenza",

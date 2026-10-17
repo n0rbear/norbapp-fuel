@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const mt: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Kalkulatur tal-ispiża tal-vjaġġ",
   subtitle:
     "Rotta, waqfiet għall-fjuwil, prezzijiet tal-fjuwil u pedaġġi għas-27 pajjiż tal-UE flimkien mal-Iżvizzera, il-Liechtenstein u Monaco – fil-munita li tagħżel.",
   language: "Lingwa",
   footerDisclaimer: "Il-prezzijiet huma indikattivi.",
   footerMapData: "Data tal-mappa © kontributuri ta' {osm}",
-  footerRouting: "Ippjanar tar-rotta",
-  footerSearch: "Tfittxija tal-indirizz",
-  footerPricesTolls: "Prezzijiet u pedaġġi",
+  legalNav: "Informazzjoni legali",
+  imprint: "Impressum",
+  privacy: "Privatezza",
+  sources: "Sorsi u liċenzji",
+  privacySettings: "Settings tal-privatezza",
+  advertisement: "Reklam",
+  backToApp: "Lura għall-kalkulatur",
 
   route: "Rotta",
   origin: "Tluq",

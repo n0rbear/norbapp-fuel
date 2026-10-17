@@ -1,16 +1,20 @@
 import type { Messages } from "./hu";
 
 export const sv: Messages = {
-  brand: "NorbApp Fuel",
+  brand: "Fuel by NorbApp",
   title: "Reskostnadskalkylator",
   subtitle:
     "Rutt, tankstopp, bränslepriser och vägavgifter för EU:s 27 länder samt Schweiz, Liechtenstein och Monaco – i valfri valuta.",
   language: "Språk",
   footerDisclaimer: "Priserna är vägledande.",
   footerMapData: "Kartdata © {osm}-bidragsgivare",
-  footerRouting: "Ruttplanering",
-  footerSearch: "Adressökning",
-  footerPricesTolls: "Priser och vägavgifter",
+  legalNav: "Juridiskt",
+  imprint: "Om webbplatsen",
+  privacy: "Integritet",
+  sources: "Källor och licenser",
+  privacySettings: "Integritetsinställningar",
+  advertisement: "Annons",
+  backToApp: "Tillbaka till kalkylatorn",
 
   route: "Rutt",
   origin: "Start",

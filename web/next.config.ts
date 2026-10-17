@@ -9,6 +9,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Shown in the footer; Render sets these during the build.
+  env: {
+    NEXT_PUBLIC_BUILD_COMMIT: process.env.RENDER_GIT_COMMIT ?? "",
+    NEXT_PUBLIC_BUILD_BRANCH: process.env.RENDER_GIT_BRANCH ?? "",
+  },
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

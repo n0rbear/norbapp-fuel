@@ -1,15 +1,19 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
 import { I18nProvider } from "@/i18n/I18nProvider";
+import { ADS, ADS_ENABLED } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://fuel.norbapp.com"),
-  title: "NorbApp Fuel – útiköltség-kalkulátor",
+  title: "Fuel by NorbApp – útiköltség-kalkulátor",
   description:
     "Tervezd meg az út üzemanyag- és útdíjköltségét: útvonal, tankolási pontok, kútárak és útdíjak a 27 EU-országra és Svájcra, Liechtensteinre, Monacóra, választható pénznemben.",
-  applicationName: "NorbApp Fuel",
-  appleWebApp: { capable: true, title: "NorbApp Fuel", statusBarStyle: "default" },
+  applicationName: "Fuel by NorbApp",
+  appleWebApp: { capable: true, title: "Fuel", statusBarStyle: "default" },
   icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
@@ -24,8 +28,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="hu">
       <body>
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </I18nProvider>
         <ServiceWorker />
+        {ADS_ENABLED ? (
+          <Script
+            id="adsbygoogle"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADS.client}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        ) : null}
       </body>
     </html>
   );
