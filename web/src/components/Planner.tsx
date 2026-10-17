@@ -11,7 +11,7 @@ import {
   type PlanRequest,
   type PlanResponse,
 } from "@/lib/api-types";
-import { usePersistentState } from "@/hooks/usePersistentState";
+import { usePersistentFlag, usePersistentState } from "@/hooks/usePersistentState";
 import { msg, type AppMessage } from "@/i18n/message";
 import { useI18n } from "@/i18n/I18nProvider";
 import { parseDecimal } from "@/lib/pricing";
@@ -36,6 +36,20 @@ const VEHICLE_FIELDS: { key: keyof Vehicle; label: "consumption" | "tankSize" | 
   { key: "reservePct", label: "reserve", unit: "%" },
 ];
 
+const DEFAULT_FORM = toForm(DEFAULT_VEHICLE);
+
+/** The vehicle form as typed (strings), remembered as JSON. */
+const isVehicleJson = (v: string): v is string => {
+  try {
+    const parsed = JSON.parse(v) as Record<string, unknown>;
+    return VEHICLE_FIELDS.every(({ key }) => typeof parsed[key] === "string" && (parsed[key] as string).length <= 32);
+  } catch {
+    return false;
+  }
+};
+
+const isFuelType = (v: string): v is FuelType => FUEL_TYPES.some((f) => f.id === v);
+
 const isCountryList = (v: string): v is string => /^([A-Z]{2}(,[A-Z]{2})*)?$/.test(v);
 
 const isCurrency = (v: string): v is Currency => (CURRENCIES as readonly string[]).includes(v);
@@ -55,11 +69,17 @@ export function Planner() {
   const [locating, setLocating] = useState(false);
   const [destination, setDestination] = useState<PlaceValue>(emptyPlace);
   const [waypoints, setWaypoints] = useState<PlaceValue[]>([]);
-  const [roundTrip, setRoundTrip] = useState(false);
-  const [optimize, setOptimize] = useState(false);
-  const [fuelType, setFuelType] = useState<FuelType>("diesel");
-  const [vehicleForm, setVehicleForm] = useState<VehicleForm>(toForm(DEFAULT_VEHICLE));
-  const [fillAtStart, setFillAtStart] = useState(false);
+  // Trip and vehicle settings are remembered in this browser between visits.
+  const [roundTrip, setRoundTrip] = usePersistentFlag("fuel.roundTrip", false);
+  const [optimize, setOptimize] = usePersistentFlag("fuel.optimizeStops", false);
+  const [fuelType, setFuelType] = usePersistentState<FuelType>("fuel.fuelType", "diesel", isFuelType);
+  const [vehicleJson, setVehicleJson] = usePersistentState<string>("fuel.vehicle", JSON.stringify(DEFAULT_FORM), isVehicleJson);
+  const vehicleForm = useMemo(() => JSON.parse(vehicleJson) as VehicleForm, [vehicleJson]);
+  const setVehicleForm = (update: (f: VehicleForm) => VehicleForm) => {
+    const next = update(vehicleForm);
+    setVehicleJson(JSON.stringify(Object.fromEntries(Object.entries(next).map(([k, v]) => [k, v.slice(0, 32)]))));
+  };
+  const [fillAtStart, setFillAtStart] = usePersistentFlag("fuel.fillAtStart", false);
   const [currency, setCurrency] = usePersistentState<Currency>("fuel.currency", "HUF", isCurrency);
   const [euroClass, setEuroClass] = usePersistentState<EuroClass | "">("fuel.euroClass", "", isEuroClassOrUnset);
   // Countries where the user drives toll-free; remembered across visits.
