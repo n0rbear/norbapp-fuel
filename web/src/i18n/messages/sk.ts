@@ -46,7 +46,7 @@ export const sk: Messages = {
   currencyHint: "Výmenné kurzy: Európska centrálna banka.",
   calculate: "Vypočítať",
   planning: "Plánovanie…",
-  coldStartHint: "Prvá požiadavka môže trvať až minútu, kým sa cenová služba spustí.",
+  coldStartHint: "Prvá požiadavka môže trvať až dve minúty, kým sa cenová služba spustí.",
 
   geoUnsupported: "Váš prehliadač nepodporuje určovanie polohy.",
   geoDenied: "Prístup k polohe nie je povolený.",

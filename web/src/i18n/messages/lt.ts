@@ -46,7 +46,7 @@ export const lt: Messages = {
   currencyHint: "Valiutų kursai: Europos centrinis bankas.",
   calculate: "Skaičiuoti",
   planning: "Planuojama…",
-  coldStartHint: "Pirmoji užklausa gali užtrukti iki minutės, kol pasileidžia kainų paslauga.",
+  coldStartHint: "Pirmoji užklausa gali užtrukti iki dviejų minučių, kol paleidžiama kainų paslauga.",
 
   geoUnsupported: "Jūsų naršyklė nepalaiko vietos nustatymo.",
   geoDenied: "Prieiga prie vietos neleidžiama.",

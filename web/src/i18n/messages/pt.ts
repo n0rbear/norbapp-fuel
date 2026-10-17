@@ -46,7 +46,7 @@ export const pt: Messages = {
   currencyHint: "Taxas de câmbio: Banco Central Europeu.",
   calculate: "Calcular",
   planning: "A planear…",
-  coldStartHint: "O primeiro pedido pode demorar até um minuto enquanto o serviço de preços arranca.",
+  coldStartHint: "O primeiro pedido pode demorar até dois minutos enquanto o serviço de preços arranca.",
 
   geoUnsupported: "O seu navegador não suporta geolocalização.",
   geoDenied: "O acesso à localização não está autorizado.",

@@ -46,7 +46,7 @@ export const mt: Messages = {
   currencyHint: "Rati tal-kambju: il-Bank Ċentrali Ewropew.",
   calculate: "Ikkalkula",
   planning: "Qed jippjana…",
-  coldStartHint: "L-ewwel talba tista' tieħu sa minuta waqt li s-servizz tal-prezzijiet jinxtegħel.",
+  coldStartHint: "L-ewwel talba tista’ tieħu sa żewġ minuti sakemm is-servizz tal-prezzijiet jibda.",
 
   geoUnsupported: "Il-browser tiegħek ma jappoġġjax il-ġeolokalizzazzjoni.",
   geoDenied: "L-aċċess għall-post mhuwiex permess.",

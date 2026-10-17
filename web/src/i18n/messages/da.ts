@@ -46,7 +46,7 @@ export const da: Messages = {
   currencyHint: "Valutakurser: Den Europæiske Centralbank.",
   calculate: "Beregn",
   planning: "Planlægger…",
-  coldStartHint: "Den første forespørgsel kan tage op til et minut, mens pristjenesten starter op.",
+  coldStartHint: "Den første forespørgsel kan tage op til to minutter, mens pristjenesten starter.",
 
   geoUnsupported: "Din browser understøtter ikke geolokation.",
   geoDenied: "Adgang til placering er ikke tilladt.",

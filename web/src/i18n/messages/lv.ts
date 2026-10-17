@@ -46,7 +46,7 @@ export const lv: Messages = {
   currencyHint: "Valūtu kursi: Eiropas Centrālā banka.",
   calculate: "Aprēķināt",
   planning: "Plāno…",
-  coldStartHint: "Pirmais pieprasījums var aizņemt līdz minūtei, kamēr cenu pakalpojums tiek palaists.",
+  coldStartHint: "Pirmais pieprasījums var aizņemt līdz divām minūtēm, kamēr cenu pakalpojums startē.",
 
   geoUnsupported: "Jūsu pārlūkprogramma neatbalsta ģeolokāciju.",
   geoDenied: "Piekļuve atrašanās vietai nav atļauta.",

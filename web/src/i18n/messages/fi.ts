@@ -46,7 +46,7 @@ export const fi: Messages = {
   currencyHint: "Valuuttakurssit: Euroopan keskuspankki.",
   calculate: "Laske",
   planning: "Suunnitellaan…",
-  coldStartHint: "Ensimmäinen pyyntö voi kestää jopa minuutin, kun hintapalvelu käynnistyy.",
+  coldStartHint: "Ensimmäinen haku voi kestää jopa kaksi minuuttia, kun hintapalvelu käynnistyy.",
 
   geoUnsupported: "Selaimesi ei tue paikannusta.",
   geoDenied: "Sijainnin käyttöä ei ole sallittu.",

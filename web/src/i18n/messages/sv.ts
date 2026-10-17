@@ -46,7 +46,7 @@ export const sv: Messages = {
   currencyHint: "Växelkurser: Europeiska centralbanken.",
   calculate: "Beräkna",
   planning: "Planerar…",
-  coldStartHint: "Den första förfrågan kan ta upp till en minut medan pristjänsten startar.",
+  coldStartHint: "Den första förfrågan kan ta upp till två minuter medan pristjänsten startar.",
 
   geoUnsupported: "Din webbläsare stöder inte positionering.",
   geoDenied: "Åtkomst till positionen är inte tillåten.",

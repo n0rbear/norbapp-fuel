@@ -46,7 +46,7 @@ export const sl: Messages = {
   currencyHint: "Menjalni tečaji: Evropska centralna banka.",
   calculate: "Izračunaj",
   planning: "Načrtovanje…",
-  coldStartHint: "Prva zahteva lahko traja do minute, dokler se storitev cen ne zažene.",
+  coldStartHint: "Prva zahteva lahko traja do dve minuti, medtem ko se storitev cen zažene.",
 
   geoUnsupported: "Vaš brskalnik ne podpira geolokacije.",
   geoDenied: "Dostop do lokacije ni dovoljen.",

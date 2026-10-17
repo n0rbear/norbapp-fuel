@@ -46,7 +46,7 @@ export const en: Messages = {
   currencyHint: "Exchange rates: European Central Bank.",
   calculate: "Calculate",
   planning: "Planning…",
-  coldStartHint: "The first request can take up to a minute while the price service wakes up.",
+  coldStartHint: "The first request can take up to two minutes while the price service wakes up.",
 
   geoUnsupported: "Your browser does not support geolocation.",
   geoDenied: "Location access is not allowed.",

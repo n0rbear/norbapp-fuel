@@ -46,7 +46,7 @@ export const it: Messages = {
   currencyHint: "Tassi di cambio: Banca centrale europea.",
   calculate: "Calcola",
   planning: "Pianificazione…",
-  coldStartHint: "La prima richiesta può richiedere fino a un minuto mentre il servizio prezzi si avvia.",
+  coldStartHint: "La prima richiesta può richiedere fino a due minuti mentre il servizio prezzi si avvia.",
 
   geoUnsupported: "Il browser non supporta la geolocalizzazione.",
   geoDenied: "L’accesso alla posizione non è consentito.",

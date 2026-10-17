@@ -46,7 +46,7 @@ export const de: Messages = {
   currencyHint: "Wechselkurse: Europäische Zentralbank.",
   calculate: "Berechnen",
   planning: "Wird geplant…",
-  coldStartHint: "Die erste Anfrage kann bis zu einer Minute dauern, während der Preisdienst startet.",
+  coldStartHint: "Die erste Anfrage kann bis zu zwei Minuten dauern, während der Preisdienst startet.",
 
   geoUnsupported: "Ihr Browser unterstützt keine Standortbestimmung.",
   geoDenied: "Der Standortzugriff ist nicht erlaubt.",

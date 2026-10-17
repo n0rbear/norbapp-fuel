@@ -46,7 +46,7 @@ export const pl: Messages = {
   currencyHint: "Kursy walut: Europejski Bank Centralny.",
   calculate: "Oblicz",
   planning: "Planowanie…",
-  coldStartHint: "Pierwsze zapytanie może potrwać do minuty, zanim usługa cen się uruchomi.",
+  coldStartHint: "Pierwsze zapytanie może potrwać do dwóch minut, zanim usługa cen się uruchomi.",
 
   geoUnsupported: "Twoja przeglądarka nie obsługuje geolokalizacji.",
   geoDenied: "Brak zgody na dostęp do lokalizacji.",

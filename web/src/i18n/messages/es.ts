@@ -46,7 +46,7 @@ export const es: Messages = {
   currencyHint: "Tipos de cambio: Banco Central Europeo.",
   calculate: "Calcular",
   planning: "Calculando…",
-  coldStartHint: "La primera consulta puede tardar hasta un minuto mientras se activa el servicio de precios.",
+  coldStartHint: "La primera consulta puede tardar hasta dos minutos mientras se activa el servicio de precios.",
 
   geoUnsupported: "Tu navegador no admite la geolocalización.",
   geoDenied: "No se permite el acceso a la ubicación.",

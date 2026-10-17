@@ -46,7 +46,7 @@ export const hr: Messages = {
   currencyHint: "Tečajevi: Europska središnja banka.",
   calculate: "Izračunaj",
   planning: "Planiranje…",
-  coldStartHint: "Prvi zahtjev može potrajati do minute dok se usluga cijena ne pokrene.",
+  coldStartHint: "Prvi zahtjev može potrajati do dvije minute dok se usluga cijena pokrene.",
 
   geoUnsupported: "Vaš preglednik ne podržava geolokaciju.",
   geoDenied: "Pristup lokaciji nije dopušten.",

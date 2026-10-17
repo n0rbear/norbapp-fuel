@@ -46,7 +46,7 @@ export const cs: Messages = {
   currencyHint: "Směnné kurzy: Evropská centrální banka.",
   calculate: "Spočítat",
   planning: "Plánování…",
-  coldStartHint: "První dotaz může trvat až minutu, než se cenová služba spustí.",
+  coldStartHint: "První dotaz může trvat až dvě minuty, než se cenová služba spustí.",
 
   geoUnsupported: "Váš prohlížeč nepodporuje určování polohy.",
   geoDenied: "Přístup k poloze není povolen.",

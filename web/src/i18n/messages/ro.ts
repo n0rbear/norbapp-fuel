@@ -46,7 +46,7 @@ export const ro: Messages = {
   currencyHint: "Cursuri de schimb: Banca Centrală Europeană.",
   calculate: "Calculează",
   planning: "Se planifică…",
-  coldStartHint: "Prima cerere poate dura până la un minut, cât timp serviciul de prețuri pornește.",
+  coldStartHint: "Prima solicitare poate dura până la două minute, cât timp pornește serviciul de prețuri.",
 
   geoUnsupported: "Browserul nu acceptă geolocalizarea.",
   geoDenied: "Accesul la locație nu este permis.",

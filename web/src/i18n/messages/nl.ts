@@ -46,7 +46,7 @@ export const nl: Messages = {
   currencyHint: "Wisselkoersen: Europese Centrale Bank.",
   calculate: "Berekenen",
   planning: "Bezig met plannen…",
-  coldStartHint: "Het eerste verzoek kan tot een minuut duren terwijl de prijsdienst opstart.",
+  coldStartHint: "Het eerste verzoek kan tot twee minuten duren terwijl de prijsdienst opstart.",
 
   geoUnsupported: "Uw browser ondersteunt geen locatiebepaling.",
   geoDenied: "Toegang tot uw locatie is niet toegestaan.",

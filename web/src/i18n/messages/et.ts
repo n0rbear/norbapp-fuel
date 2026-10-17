@@ -46,7 +46,7 @@ export const et: Messages = {
   currencyHint: "Vahetuskursid: Euroopa Keskpank.",
   calculate: "Arvuta",
   planning: "Planeerimine…",
-  coldStartHint: "Esimene päring võib võtta kuni minuti, kuni hinnateenus käivitub.",
+  coldStartHint: "Esimene päring võib võtta kuni kaks minutit, kuni hinnateenus käivitub.",
 
   geoUnsupported: "Teie brauser ei toeta asukoha määramist.",
   geoDenied: "Juurdepääs asukohale pole lubatud.",

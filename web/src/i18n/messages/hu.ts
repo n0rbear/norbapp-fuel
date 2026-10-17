@@ -51,7 +51,7 @@ export const hu = {
   currencyHint: "Árfolyam: Európai Központi Bank.",
   calculate: "Kalkuláció",
   planning: "Tervezés…",
-  coldStartHint: "Az első kérés akár egy percig is eltarthat, amíg az árszolgáltatás felébred.",
+  coldStartHint: "Az első kérés akár két percig is eltarthat, amíg az árszolgáltatás felébred.",
 
   // Client-side errors
   geoUnsupported: "A böngésző nem támogatja a helymeghatározást.",
