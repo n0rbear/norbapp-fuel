@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { useI18n } from "@/i18n/I18nProvider";
 import { msg, type AppMessage } from "@/i18n/message";
 import type { MessageKey } from "@/i18n/messages/hu";
@@ -233,9 +234,12 @@ function tollLineLabel(line: TollLine, t: ReturnType<typeof useI18n>["t"], fmt: 
   return line.label;
 }
 
+const isDaysInput = (v: string): v is string => v.length <= 8;
+
 /** Loads the toll estimate for the route; re-fetches when days or euro class change. */
 function useTolls(data: PlanResponse, euroClass: EuroClass | null) {
-  const [days, setDays] = useState("1");
+  // Remembered as typed; validated below.
+  const [days, setDays] = usePersistentState<string>("fuel.tripDays", "1", isDaysInput);
   const [excluded, setExcluded] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState<{ key: string; result: TollEstimate | null; error: AppMessage | null } | null>(null);
 
@@ -354,7 +358,7 @@ function Tolls({
             inputMode="numeric"
             value={tolls.days}
             aria-invalid={!tolls.daysValid}
-            onChange={(e) => tolls.setDays(e.target.value)}
+            onChange={(e) => tolls.setDays(e.target.value.slice(0, 8))}
           />
           <span>{t("days")}</span>
         </div>

@@ -51,3 +51,12 @@ export function usePersistentState<T extends string>(
 
   return [value, set];
 }
+
+const isFlag = (v: string): v is "1" | "0" => v === "1" || v === "0";
+
+/** A remembered on/off setting (stored as "1" / "0"). */
+export function usePersistentFlag(key: string, fallback: boolean): [boolean, (value: boolean) => void] {
+  const [raw, setRaw] = usePersistentState<"1" | "0">(key, fallback ? "1" : "0", isFlag);
+  const set = useCallback((next: boolean) => setRaw(next ? "1" : "0"), [setRaw]);
+  return [raw === "1", set];
+}
