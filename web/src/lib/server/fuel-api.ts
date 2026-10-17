@@ -25,29 +25,43 @@ function url(path: string, params: Record<string, string | undefined> = {}): str
 let awakeUntil = 0;
 let waking: Promise<void> | null = null;
 
+/** One /health probe: true only for the API's own `{"status":"ok"}` answer. */
+async function healthy(timeoutMs: number): Promise<string | true> {
+  try {
+    const res = await fetch(url("/health"), { signal: AbortSignal.timeout(timeoutMs), cache: "no-store" });
+    if (!res.ok) return `HTTP ${res.status}`;
+    const body = (await res.json().catch(() => null)) as { status?: string } | null;
+    return body?.status === "ok" ? true : "unexpected body";
+  } catch (e) {
+    return e instanceof Error && e.name === "TimeoutError" ? "timeout" : "network error";
+  }
+}
+
 /**
  * Resolves once the FUEL-API answers /health. Concurrent callers share one
- * wake-up; while the instance boots, Render may answer with 5xx, so it polls
- * until WAKE_TIMEOUT_MS. Never rejects: the request that follows reports the error.
+ * wake-up; while the instance boots, Render may hold the request, answer with
+ * 5xx or with its own page, so it polls until WAKE_TIMEOUT_MS. Never rejects:
+ * the request that follows reports the error.
  */
 function awake(): Promise<void> {
   if (Date.now() < awakeUntil) return Promise.resolve();
   waking ??= (async () => {
-    const deadline = Date.now() + WAKE_TIMEOUT_MS;
+    const started = Date.now();
+    const deadline = started + WAKE_TIMEOUT_MS;
+    let last: string | true = "not tried";
+    let probes = 0;
     while (Date.now() < deadline) {
-      try {
-        const res = await fetch(url("/health"), {
-          signal: AbortSignal.timeout(Math.max(1_000, deadline - Date.now())),
-          cache: "no-store",
-        });
-        if (res.ok) {
-          awakeUntil = Date.now() + AWAKE_FOR_MS;
-          return;
-        }
-      } catch {
-        // timeout or connection error while booting: retry until the deadline
-      }
+      probes++;
+      last = await healthy(Math.min(60_000, Math.max(1_000, deadline - Date.now())));
+      if (last === true) break;
       await new Promise((r) => setTimeout(r, 2_000));
+    }
+    const seconds = Math.round((Date.now() - started) / 1000);
+    if (last === true) {
+      awakeUntil = Date.now() + AWAKE_FOR_MS;
+      if (seconds > 2) console.info(`fuel-api awake after ${seconds}s (${probes} probes)`);
+    } else {
+      console.warn(`fuel-api not awake after ${seconds}s (${probes} probes, last: ${last})`);
     }
   })().finally(() => {
     waking = null;
@@ -60,9 +74,18 @@ export function wakeUp(): void {
   void awake();
 }
 
+/** GET a FUEL-API endpoint once it is awake; a 5xx or network failure triggers one more wake-up and retry. */
 async function apiJson<T>(path: string, params: Record<string, string | undefined> = {}): Promise<T> {
   await awake();
-  return fetchJson<T>("fuel-api", url(path, params), {}, TIMEOUT_MS);
+  try {
+    return await fetchJson<T>("fuel-api", url(path, params), {}, TIMEOUT_MS);
+  } catch (e) {
+    if (!(e instanceof UpstreamError) || (e.status !== null && e.status < 500)) throw e;
+    console.warn(`fuel-api ${path} failed (${e.message}); waking and retrying once`);
+    awakeUntil = 0;
+    await awake();
+    return fetchJson<T>("fuel-api", url(path, params), {}, TIMEOUT_MS);
+  }
 }
 
 // --- cached reference data ---
