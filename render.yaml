@@ -53,6 +53,11 @@ services:
         value: https://norbapp-fuel-api-fra.onrender.com
       - key: TANKERKOENIG_API_KEY
         sync: false
+      # Community price reports: the shared NorbApp Postgres (schema "fuel").
+      - key: FUEL_DATABASE_URL
+        sync: false
+      - key: FUEL_HASH_SECRET
+        generateValue: true
       - key: REFRESH_TIME
         value: "06:00"
       - key: REFRESH_TZ

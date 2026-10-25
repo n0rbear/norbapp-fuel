@@ -9,6 +9,7 @@ const station = (id: string, price: number | null): Station => ({
   distanceKm: 1,
   price,
   isOpen: true,
+  location: null,
 });
 
 const point = (stations: Station[], kind: FuelPoint["kind"] = "stop"): FuelPoint => ({
@@ -91,5 +92,25 @@ describe("parseDecimal", () => {
     expect(parseDecimal("1,2,3")).toBeNull();
     expect(parseDecimal("-1")).toBeNull();
     expect(parseDecimal("abc")).toBeNull();
+  });
+});
+
+describe("resolvePrices with community stations", () => {
+  const base = { manualPrice: null, defaultPrice: 1.7 };
+  const c = (id: string, price: number, priceKind: "confirmed" | "learned" | "estimate") => ({ id, price, priceKind });
+
+  it("keeps the average when nothing has been confirmed nearby", () => {
+    const [p] = resolvePrices([estimated(1.75)], { ...base, selected: {}, community: { 0: [c("x", 1.75, "estimate")] } });
+    expect(p).toEqual({ price: 1.75, source: "estimate" });
+  });
+
+  it("uses the stations' prices once some are confirmed or learned", () => {
+    const community = { 0: [c("x", 1.6, "confirmed"), c("y", 1.7, "estimate"), c("z", 1.65, "learned")] };
+    expect(resolvePrices([estimated(1.75)], { ...base, selected: {}, community })[0]).toEqual({ price: 1.65, source: "community" });
+  });
+
+  it("uses a chosen station's price", () => {
+    const community = { 0: [c("x", 1.6, "confirmed"), c("y", 1.7, "estimate")] };
+    expect(resolvePrices([estimated(1.75)], { ...base, selected: { 0: "y" }, community })[0]).toEqual({ price: 1.7, source: "station" });
   });
 });

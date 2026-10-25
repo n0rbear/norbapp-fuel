@@ -133,6 +133,8 @@ type ApiStation = {
   city: string | null;
   distance_km: number | null;
   price: number | null;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 type PricesResponse = {
@@ -194,6 +196,7 @@ export async function pricesAt(
         distanceKm: s.distance_km,
         price: s.price !== null && s.price > 0 ? s.price : null,
         isOpen: null,
+        location: typeof s.lat === "number" && typeof s.lng === "number" ? { lat: s.lat, lng: s.lng } : null,
       }))
       .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
       .slice(0, MAX_STATIONS);
@@ -221,6 +224,34 @@ export async function pricesAt(
     },
     rate: estimate.exchange_rate.rate,
   };
+}
+
+/**
+ * The average (mainstream brand) price in EUR – the baseline community prices
+ * are measured against. Null when the country has no estimate.
+ */
+export async function baselineEur(country: string, fuel: FuelType, location: "city" | "highway"): Promise<number | null> {
+  return cached(`baseline:${country}:${fuel}:${location}`, 3600_000, async () => {
+    const { data } = await fetchPrices({ country, brand_tier: "mainstream", location, currency: "EUR" }, fuel);
+    return data.estimates?.[0]?.price ?? null;
+  });
+}
+
+/** EUR → currency rate (1 for EUR). */
+export async function eurRate(currency: Currency): Promise<number> {
+  if (currency === "EUR") return 1;
+  const { currencies: list } = await currencies();
+  const rate = list.find((c) => c.code === currency)?.rate;
+  if (!rate) throw new UpstreamError("fuel-api", null, "missing rate");
+  return rate;
+}
+
+/** Countries whose prices are estimates from the average (no official station data). */
+export async function estimateCountries(): Promise<Set<string>> {
+  return cached("estimateCountries", 6 * 3600_000, async () => {
+    const data = await apiJson<CountriesResponse>("/api/countries");
+    return new Set(data.countries.filter((c) => c.mode === "estimate").map((c) => c.code));
+  });
 }
 
 // --- tolls ---

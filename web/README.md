@@ -81,6 +81,9 @@ npm run build
 | `OSRM_URL` | no | OSRM base URL incl. profile path. Default: `https://routing.openstreetmap.de/routed-car` |
 | `PHOTON_URL` | no | Photon base URL. Default: `https://photon.komoot.io` |
 | `VALHALLA_URL` | no | Valhalla base URL for toll-free routing. Default: `https://valhalla1.openstreetmap.de` |
+| `FUEL_DATABASE_URL` | no | Postgres for community price reports (tables in schema `fuel`, created on first use). Without it stations are listed with estimates but reporting is off. |
+| `FUEL_HASH_SECRET` | no | Key for the anonymous IP hash of price reports. Default: derived from `FUEL_DATABASE_URL`. |
+| `OVERPASS_URLS` | no | Comma-separated Overpass endpoints for fuel station locations (tried in order). |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | no | AdSense publisher ID (`ca-pub-…`). Build-time. When set: the AdSense script loads, ad slots appear, `/ads.txt` is served, the privacy notice shows its advertising section and the footer gets a "Privacy settings" link. |
 | `NEXT_PUBLIC_ADSENSE_SLOT_TOP`, `NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM` | no | Ad unit IDs for the slot under the title and the one under the planner. |
 
@@ -91,6 +94,18 @@ The OSM defaults are free public instances with fair-use policies (identifying U
 Before setting `NEXT_PUBLIC_ADSENSE_CLIENT`, turn on the GDPR consent message in AdSense (Privacy & messaging → European regulations). That is Google's certified CMP; the AdSense script shows it to visitors in the EEA, the UK and Switzerland before personalised ads, and the footer's "Privacy settings" link reopens it. The `NEXT_PUBLIC_*` variables are read at build time, so redeploy after changing them.
 
 Legal pages: `/impressum`, `/privacy`, `/sources` (texts in `src/i18n/legal.ts`, in hu/de/en; other languages show English).
+
+## Community prices
+
+In countries with only an average price (no official station data), each fuel point lists the stations around it from OpenStreetMap (Overpass, loaded after the plan via `/api/community/stations`). Users can report a station's price anonymously (`/api/community/report`) or confirm / correct a pending report. Rules (`src/lib/community.ts`, tested):
+
+- A price is confirmed when at least two devices on two different connections report prices within €0.02 within 12 hours. Each device counts once. The device is identified by a random id in localStorage, the connection by a keyed hash of the IP.
+- Reports more than 25 % away from the average, or more than 12 % away from what confirmed stations nearby suggest, are rejected.
+- A confirmed price is shown as "the price at that time" for 48 h. Afterwards, for up to 30 days, the station's offset from the average is applied to today's average.
+- Stations without data of their own are nudged by confirmed neighbours within 10 km (inverse-distance weighted, shrunk towards the average).
+- Where some stations around a stop are confirmed or learned, the stop's cost uses the median of their prices; a chosen station's price wins.
+
+Raw reports are deleted after 90 days. Every station (official ones too) has a Navigation menu (Google Maps, Apple Maps, Waze, `geo:` on Android).
 
 ## One service: web + FUEL-API
 

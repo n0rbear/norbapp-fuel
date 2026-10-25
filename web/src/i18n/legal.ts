@@ -26,7 +26,7 @@ const SOURCES_EN: LegalPage = {
     {
       title: "Fuel prices",
       body: [
-        "Station prices: Germany – Tankerkönig / MTS-K (CC BY 4.0); Austria – E-Control Spritpreisrechner; Spain, France, Italy, Portugal and Slovenia – the official open price data of those countries.",
+        "Fuel station locations in average-price countries: OpenStreetMap (Overpass API). User-reported prices: Fuel by NorbApp users. Station prices: Germany – Tankerkönig / MTS-K (CC BY 4.0); Austria – E-Control Spritpreisrechner; Spain, France, Italy, Portugal and Slovenia – the official open price data of those countries.",
         "Country averages and estimates: European Commission Weekly Oil Bulletin. Switzerland: TCS fuel price radar as anchor, moved daily with the neighbouring countries. Exchange rates: European Central Bank.",
         "All prices are indicative; the price at the pump is what counts.",
       ],
@@ -95,7 +95,13 @@ const EN: LegalTexts = {
       {
         title: "Settings in your browser",
         body: [
-          "Your settings (language, vehicle data, currency, emission class, toll-avoidance choices) are stored in your browser's local storage so they are there next time. They never leave your device. A service worker keeps a copy of the page so it opens offline. You can delete both at any time in your browser settings.",
+          "Your settings (language, fuel and vehicle data, currency, emission class, toll-avoidance choices, the random device identifier) are stored in your browser's local storage so they are there next time. They never leave your device, except the device identifier when you send a price report. A service worker keeps a copy of the page so it opens offline. You can delete both at any time in your browser settings.",
+        ],
+      },
+      {
+        title: "Price reports",
+        body: [
+          "Where only an average price exists, you can report the price at a station. We store the station, the fuel, the price, the time, a random device identifier created in your browser (no account, no name) and a keyed hash of your IP address, so that one person cannot confirm their own report. The IP address itself is not stored. Raw reports are deleted after 90 days; confirmed prices are kept without the identifiers. Legal basis: Art. 6(1)(f) GDPR (reliable prices for all users).",
         ],
       },
       {
@@ -169,7 +175,13 @@ const DE: LegalTexts = {
       {
         title: "Einstellungen im Browser",
         body: [
-          "Deine Einstellungen (Sprache, Fahrzeugdaten, Währung, Abgasnorm, Mautvermeidung) werden im lokalen Speicher deines Browsers abgelegt, damit sie beim nächsten Mal da sind. Sie verlassen dein Gerät nicht. Ein Service Worker hält eine Kopie der Seite, damit sie offline startet. Beides kannst du jederzeit in den Browsereinstellungen löschen.",
+          "Deine Einstellungen (Sprache, Kraftstoff- und Fahrzeugdaten, Währung, Abgasnorm, Mautvermeidung, die zufällige Gerätekennung) werden im lokalen Speicher deines Browsers abgelegt, damit sie beim nächsten Mal da sind. Sie verlassen dein Gerät nicht – außer der Gerätekennung, wenn du einen Preis meldest. Ein Service Worker hält eine Kopie der Seite, damit sie offline startet. Beides kannst du jederzeit in den Browsereinstellungen löschen.",
+        ],
+      },
+      {
+        title: "Preismeldungen",
+        body: [
+          "Wo es nur einen Durchschnittspreis gibt, kannst du den Preis an einer Tankstelle melden. Gespeichert werden Tankstelle, Kraftstoff, Preis, Zeitpunkt, eine zufällige Gerätekennung aus deinem Browser (kein Konto, kein Name) und ein verschlüsselter Hashwert deiner IP-Adresse, damit niemand seine eigene Meldung bestätigen kann. Die IP-Adresse selbst wird nicht gespeichert. Einzelmeldungen werden nach 90 Tagen gelöscht; bestätigte Preise bleiben ohne Kennungen erhalten. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (verlässliche Preise für alle Nutzer).",
         ],
       },
       {
@@ -203,7 +215,7 @@ const DE: LegalTexts = {
       {
         title: "Kraftstoffpreise",
         body: [
-          "Tankstellenpreise: Deutschland – Tankerkönig / MTS-K (CC BY 4.0); Österreich – E-Control Spritpreisrechner; Spanien, Frankreich, Italien, Portugal und Slowenien – die offiziellen offenen Preisdaten dieser Länder.",
+          "Tankstellenstandorte in Ländern mit Durchschnittspreisen: OpenStreetMap (Overpass API). Von Nutzern gemeldete Preise: Nutzer von Fuel by NorbApp. Tankstellenpreise: Deutschland – Tankerkönig / MTS-K (CC BY 4.0); Österreich – E-Control Spritpreisrechner; Spanien, Frankreich, Italien, Portugal und Slowenien – die offiziellen offenen Preisdaten dieser Länder.",
           "Landesdurchschnitte und Schätzungen: Weekly Oil Bulletin der Europäischen Kommission. Schweiz: TCS-Benzinpreis-Radar als Anker, täglich mit den Nachbarländern fortgeschrieben. Wechselkurse: Europäische Zentralbank.",
           "Alle Preise sind Richtwerte; maßgeblich ist der Preis an der Zapfsäule.",
         ],
@@ -273,7 +285,13 @@ const HU: LegalTexts = {
       {
         title: "Beállítások a böngészőben",
         body: [
-          "A beállításaidat (nyelv, járműadatok, pénznem, Euro-besorolás, útdíjkerülés) a böngésződ helyi tárolója őrzi, hogy legközelebb is meglegyenek. Nem hagyják el az eszközödet. Egy service worker tárolja az oldal másolatát, hogy offline is elinduljon. Mindkettőt bármikor törölheted a böngésző beállításaiban.",
+          "A beállításaidat (nyelv, üzemanyag- és járműadatok, pénznem, Euro-besorolás, útdíjkerülés, a véletlen eszközazonosító) a böngésződ helyi tárolója őrzi, hogy legközelebb is meglegyenek. Nem hagyják el az eszközödet, kivéve az eszközazonosítót, ha árat jelzel. Egy service worker tárolja az oldal másolatát, hogy offline is elinduljon. Mindkettőt bármikor törölheted a böngésző beállításaiban.",
+        ],
+      },
+      {
+        title: "Ár-visszajelzések",
+        body: [
+          "Ahol csak átlagár érhető el, jelezheted egy kút árát. Ilyenkor a kutat, az üzemanyagot, az árat, az időpontot, egy a böngésződben létrehozott véletlen eszközazonosítót (nincs fiók, nincs név) és az IP-címed kulcsolt hash-ét tároljuk, hogy senki ne erősíthesse meg a saját jelzését. Magát az IP-címet nem tároljuk. Az egyes jelzéseket 90 nap után töröljük, a megerősített árak azonosítók nélkül maradnak meg. Jogalap: GDPR 6. cikk (1) f) pont (megbízható árak minden felhasználónak).",
         ],
       },
       {
@@ -307,7 +325,7 @@ const HU: LegalTexts = {
       {
         title: "Üzemanyagárak",
         body: [
-          "Kútárak: Németország – Tankerkönig / MTS-K (CC BY 4.0); Ausztria – E-Control Spritpreisrechner; Spanyolország, Franciaország, Olaszország, Portugália és Szlovénia – az adott ország hivatalos, nyílt áradatai.",
+          "A kutak helye az átlagáras országokban: OpenStreetMap (Overpass API). Felhasználói árak: a Fuel by NorbApp felhasználói. Kútárak: Németország – Tankerkönig / MTS-K (CC BY 4.0); Ausztria – E-Control Spritpreisrechner; Spanyolország, Franciaország, Olaszország, Portugália és Szlovénia – az adott ország hivatalos, nyílt áradatai.",
           "Országos átlagok és becslések: az Európai Bizottság Weekly Oil Bulletinje. Svájc: a TCS árradarja mint kiindulópont, naponta a szomszédos országokkal együtt mozgatva. Árfolyamok: Európai Központi Bank.",
           "Minden ár tájékoztató jellegű; a kútnál kiírt ár az irányadó.",
         ],
