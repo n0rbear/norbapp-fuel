@@ -826,3 +826,138 @@ input[aria-invalid="true"] {
   color: var(--muted);
   border: 1px solid var(--border);
 }
+
+/* Station cards with a navigation menu */
+.station-card {
+  flex: 0 0 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.station-card .station {
+  flex: 1 1 auto;
+  width: 100%;
+}
+.navMenu {
+  position: relative;
+  font-size: 0.85rem;
+}
+.navMenu summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--accent-strong);
+  font-weight: 600;
+  padding: 4px 2px;
+}
+.navMenu summary::-webkit-details-marker {
+  display: none;
+}
+.navMenuList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.navMenuList a {
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+.navMenuList a:hover {
+  background: var(--surface-2);
+}
+
+/* Community prices (average-price countries) */
+.community {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.community-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.community-station {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.community-station.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.community-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.price-kind {
+  color: var(--muted);
+}
+.price-kind.confirmed {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+.community-pending {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+.community-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.community-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+.community-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.community-form input {
+  width: 120px;
+}
+.community-feedback {
+  color: var(--accent-strong);
+}
+.small-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: 1px solid var(--accent);
+}
+.small-btn.secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+.small-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

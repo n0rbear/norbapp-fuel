@@ -8,6 +8,11 @@ export type PriceOptions = {
   defaultPrice: number;
   /** Selected station id per fuel point index. */
   selected: Record<number, string | undefined>;
+  /**
+   * Stations with user-reported / learned prices per fuel point index
+   * (average-price countries only; loaded after the plan).
+   */
+  community?: Record<number, { id: string; price: number; priceKind: "confirmed" | "learned" | "estimate" }[] | undefined>;
 };
 
 function median(values: number[]): number {
@@ -36,6 +41,14 @@ export function resolvePrices(points: FuelPoint[], options: PriceOptions): Price
 
     const selected = stations.find((s) => s.id === options.selected[i]);
     if (selected?.price != null) return { price: selected.price, source: "station" };
+
+    const community = options.community?.[i] ?? [];
+    const chosen = community.find((s) => s.id === options.selected[i]);
+    if (chosen) return { price: chosen.price, source: "station" };
+    // Where users confirmed prices around the stop, their (learned) prices beat the plain average.
+    if (community.some((s) => s.priceKind !== "estimate")) {
+      return { price: median(community.map((s) => s.price)), source: "community" };
+    }
 
     const cheapest = stations.find((s) => s.price != null);
     if (cheapest?.price != null) return { price: cheapest.price, source: "cheapest" };

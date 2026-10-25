@@ -89,7 +89,7 @@ export function planRefuels(totalKm: number, vehicle: Vehicle, fillAtStart = fal
   return { totalKm, totalLitres: totalKm * perKm, startLitres, stops };
 }
 
-export type PriceSource = "manual" | "station" | "cheapest" | "average" | "estimate" | "default";
+export type PriceSource = "manual" | "station" | "cheapest" | "average" | "estimate" | "default" | "community";
 
 export type PricedPoint = { price: number; source: PriceSource };
 

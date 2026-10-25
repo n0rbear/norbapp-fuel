@@ -47,7 +47,36 @@ export type Station = {
   /** In the request currency, per litre. */
   price: number | null;
   isOpen: boolean | null;
+  location: LatLng | null;
 };
+
+/** A station from OpenStreetMap where only an average price exists; users can report its price. */
+export type CommunityStation = {
+  /** "osm:node/123" or "osm:way/456" */
+  id: string;
+  name: string;
+  address: string;
+  distanceKm: number;
+  location: LatLng;
+  /** In the request currency, per litre. */
+  price: number;
+  priceKind: "confirmed" | "learned" | "estimate";
+  /** ISO time of the last confirmed price (confirmed/learned). */
+  confirmedAt: string | null;
+  reporters: number;
+  /** Latest report not yet confirmed by others, in the request currency. */
+  pending: { price: number; count: number } | null;
+};
+
+/** GET /api/community/stations */
+export type CommunityStationsResponse = {
+  stations: CommunityStation[];
+  /** Whether price reports can be sent (storage configured). */
+  reportable: boolean;
+};
+
+/** POST /api/community/report result */
+export type ReportResult = { status: "pending" | "confirmed" | "implausible" };
 
 export type PointPrices =
   | { mode: "official"; source: string; stations: Station[]; estimate: null; e5InsteadOfE10: boolean }

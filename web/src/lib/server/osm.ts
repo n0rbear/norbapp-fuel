@@ -231,3 +231,74 @@ export async function routeAvoidingTolls(points: { point: LatLng; offMotorway: b
     hasToll: trip.summary.has_toll === true,
   };
 }
+
+// --- Overpass (fuel stations from OpenStreetMap) ---
+
+// Public Overpass instances, tried in order (they are often busy).
+const OVERPASS_URLS = (
+  process.env.OVERPASS_URLS ||
+  "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+)
+  .split(",")
+  .map((u) => u.trim())
+  .filter(Boolean);
+
+export type OsmStation = { id: string; name: string; address: string; location: LatLng };
+
+type OverpassResponse = {
+  elements?: {
+    type: "node" | "way" | "relation";
+    id: number;
+    lat?: number;
+    lon?: number;
+    center?: { lat: number; lon: number };
+    tags?: Record<string, string>;
+  }[];
+};
+
+const stationCache = new Map<string, { at: number; stations: OsmStation[] }>();
+const STATION_CACHE_MS = 24 * 3600_000;
+
+/** Fuel stations (amenity=fuel) around a point; cached for a day per ~1 km cell. */
+export async function fuelStationsNear(point: LatLng, radiusKm: number): Promise<OsmStation[]> {
+  const key = `${point.lat.toFixed(2)},${point.lng.toFixed(2)},${radiusKm}`;
+  const hit = stationCache.get(key);
+  if (hit && Date.now() - hit.at < STATION_CACHE_MS) return hit.stations;
+
+  const query = `[out:json][timeout:10];nwr(around:${Math.round(radiusKm * 1000)},${point.lat.toFixed(5)},${point.lng.toFixed(5)})[amenity=fuel];out center tags 40;`;
+  let data: OverpassResponse | null = null;
+  for (const url of OVERPASS_URLS) {
+    try {
+      data = await fetchJson<OverpassResponse>(
+        "overpass",
+        url,
+        {
+          method: "POST",
+          headers: { ...HEADERS, "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ data: query }).toString(),
+        },
+        15_000,
+      );
+      break;
+    } catch {
+      // try the next instance
+    }
+  }
+  if (!data) throw new UpstreamError("overpass", null, "all instances failed");
+  const stations: OsmStation[] = [];
+  for (const el of data.elements ?? []) {
+    const lat = el.lat ?? el.center?.lat;
+    const lng = el.lon ?? el.center?.lon;
+    if (lat === undefined || lng === undefined || el.type === "relation") continue;
+    const tags = el.tags ?? {};
+    // Skip stations that sell no fuel for cars (e.g. LPG- or truck-only) when tagged so.
+    if (tags["fuel:diesel"] === "no" && tags["fuel:octane_95"] === "no") continue;
+    const name = tags.brand || tags.name || tags.operator || "⛽";
+    const street = [tags["addr:street"], tags["addr:housenumber"]].filter(Boolean).join(" ");
+    const address = [street, tags["addr:city"]].filter(Boolean).join(", ");
+    stations.push({ id: `osm:${el.type}/${el.id}`, name, address, location: { lat, lng } });
+  }
+  if (stationCache.size > 5_000) stationCache.clear();
+  stationCache.set(key, { at: Date.now(), stations });
+  return stations;
+}

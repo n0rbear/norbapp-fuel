@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { useI18n } from "@/i18n/I18nProvider";
 import { msg, type AppMessage } from "@/i18n/message";
 import type { MessageKey } from "@/i18n/messages/hu";
-import { EURO_CLASSES, euroClassLabel, type ApiError, type EuroClass, type PlanRequest, type PlanResponse, type TollEstimate } from "@/lib/api-types";
+import { EURO_CLASSES, euroClassLabel, type ApiError, type CommunityStation, type EuroClass, type PlanRequest, type PlanResponse, type TollEstimate } from "@/lib/api-types";
 import { toInputDecimal } from "@/lib/format";
 import { parseDecimal, resolvePrices } from "@/lib/pricing";
 import { computeFuelCost, type PriceSource } from "@/lib/trip";
+import { CommunityStations } from "./CommunityStations";
+import { NavMenu } from "./NavMenu";
 
 const SOURCE_LABEL: Record<PriceSource, MessageKey> = {
   manual: "sourceManual",
@@ -17,6 +19,7 @@ const SOURCE_LABEL: Record<PriceSource, MessageKey> = {
   average: "sourceAverage",
   estimate: "sourceEstimate",
   default: "sourceDefault",
+  community: "sourceCommunity",
 };
 
 /** Default fallback price (EUR/l) where no price data exists, converted to the chosen currency. */
@@ -43,6 +46,13 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
   const { t, tm, fmt } = useI18n();
   const currency = data.currency;
   const [selected, setSelected] = useState<Record<number, string | undefined>>({});
+  // Stations with user-reported prices per fuel point (average-price countries), loaded after the plan.
+  const [community, setCommunity] = useState<Record<number, CommunityStation[] | undefined>>({});
+  const onCommunityLoaded = useCallback(
+    (i: number) => (stations: CommunityStation[]) => setCommunity((c) => ({ ...c, [i]: stations })),
+    [],
+  );
+  const loaders = useMemo(() => data.points.map((_, i) => onCommunityLoaded(i)), [data.points, onCommunityLoaded]);
   const [manualPrice, setManualPrice] = useState("");
   const [defaultPrice, setDefaultPrice] = useState(() =>
     toInputDecimal(FALLBACK_EUR * (data.rate ?? 1), currency === "HUF" ? 0 : 2),
@@ -58,9 +68,10 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
       manualPrice: manualInvalid ? null : manual,
       defaultPrice: fallbackInvalid ? 0 : fallback!,
       selected,
+      community,
     });
     return computeFuelCost(data.plan, request.vehicle.consumption, prices);
-  }, [data, request.vehicle.consumption, manual, manualInvalid, fallback, fallbackInvalid, selected]);
+  }, [data, request.vehicle.consumption, manual, manualInvalid, fallback, fallbackInvalid, selected, community]);
 
   const tolls = useTolls(data, euroClass);
   const tollCost = tolls.result?.status === "ok" ? tolls.includedTotal : 0;
@@ -166,29 +177,44 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
                 </p>
               )}
               {prices.mode === "none" && <p className="muted small">{tm(prices.reason)}</p>}
+              {prices.mode === "estimate" && point.country && (
+                <CommunityStations
+                  country={point.country}
+                  location={point.location}
+                  where={prices.estimate.location}
+                  fuel={request.fuelType}
+                  currency={currency}
+                  selectable={point.kind === "stop"}
+                  selectedId={selected[i]}
+                  onSelect={(id) => setSelected((sel) => ({ ...sel, [i]: id }))}
+                  onLoaded={loaders[i]}
+                />
+              )}
               {point.kind === "stop" && prices.stations.length > 0 && (
                 <div className="stations" role="radiogroup" aria-label={t("chooseStation")}>
                   {prices.stations.map((s) => {
                     const isOn = selected[i] === s.id;
                     return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={isOn}
-                        className={`station${isOn ? " on" : ""}`}
-                        disabled={s.price === null}
-                        onClick={() => setSelected((sel) => ({ ...sel, [i]: isOn ? undefined : s.id }))}
-                      >
-                        <span className="station-name">{s.name}</span>
-                        <span className="station-price">
-                          {s.price !== null ? fmt.pricePerLitre(s.price, currency) : t("noPrice")}
-                        </span>
-                        <span className="muted small">
-                          {s.address}
-                          {s.distanceKm !== null && ` · ${fmt.km(s.distanceKm)}`}
-                        </span>
-                      </button>
+                      <div key={s.id} className="station-card">
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={isOn}
+                          className={`station${isOn ? " on" : ""}`}
+                          disabled={s.price === null}
+                          onClick={() => setSelected((sel) => ({ ...sel, [i]: isOn ? undefined : s.id }))}
+                        >
+                          <span className="station-name">{s.name}</span>
+                          <span className="station-price">
+                            {s.price !== null ? fmt.pricePerLitre(s.price, currency) : t("noPrice")}
+                          </span>
+                          <span className="muted small">
+                            {s.address}
+                            {s.distanceKm !== null && ` · ${fmt.km(s.distanceKm)}`}
+                          </span>
+                        </button>
+                        {s.location && <NavMenu location={s.location} name={s.name} />}
+                      </div>
                     );
                   })}
                 </div>
