@@ -83,7 +83,7 @@ npm run build
 | `VALHALLA_URL` | no | Valhalla base URL for toll-free routing. Default: `https://valhalla1.openstreetmap.de` |
 | `FUEL_DATABASE_URL` | no | Postgres for community price reports (tables in schema `fuel`, created on first use). Without it stations are listed with estimates but reporting is off. |
 | `FUEL_HASH_SECRET` | no | Key for the anonymous IP hash of price reports. Default: derived from `FUEL_DATABASE_URL`. |
-| `OVERPASS_URLS` | no | Comma-separated Overpass endpoints for fuel station locations (tried in order). |
+| `OVERPASS_URLS` | no | Comma-separated Overpass endpoints for fuel station locations (queried in parallel, first answer wins). |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | no | AdSense publisher ID (`ca-pub-…`). Build-time. When set: the AdSense script loads, ad slots appear, `/ads.txt` is served, the privacy notice shows its advertising section and the footer gets a "Privacy settings" link. |
 | `NEXT_PUBLIC_ADSENSE_SLOT_TOP`, `NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM` | no | Ad unit IDs for the slot under the title and the one under the planner. |
 
