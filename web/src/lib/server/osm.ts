@@ -1,5 +1,5 @@
 import "server-only";
-import { iso1A2Code } from "@rapideditor/country-coder";
+import { feature, iso1A2Code } from "@rapideditor/country-coder";
 import type { PlaceInput, PlaceSuggestion } from "../api-types";
 import { decodePolyline, type LatLng } from "../geo";
 import { msg } from "../../i18n/message";
@@ -245,7 +245,7 @@ const OVERPASS_URLS = (
 
 export type OsmStation = { id: string; name: string; address: string; location: LatLng };
 
-type OverpassResponse = {
+export type OverpassResponse = {
   elements?: {
     type: "node" | "way" | "relation";
     id: number;
@@ -256,35 +256,100 @@ type OverpassResponse = {
   }[];
 };
 
-const stationCache = new Map<string, { at: number; stations: OsmStation[] }>();
-const STATION_CACHE_MS = 24 * 3600_000;
-
-/** Fuel stations (amenity=fuel) around a point; cached for a day per ~1 km cell. */
-export async function fuelStationsNear(point: LatLng, radiusKm: number): Promise<OsmStation[]> {
-  const key = `${point.lat.toFixed(2)},${point.lng.toFixed(2)},${radiusKm}`;
-  const hit = stationCache.get(key);
-  if (hit && Date.now() - hit.at < STATION_CACHE_MS) return hit.stations;
-
-  // Tag filter first: "nwr(around)[amenity=fuel]" scans everything nearby and times out.
-  const query = `[out:json][timeout:20];nwr[amenity=fuel](around:${Math.round(radiusKm * 1000)},${point.lat.toFixed(5)},${point.lng.toFixed(5)});out center tags 40;`;
-  // Ask all instances at once and take the first answer (they are often busy).
+/** Runs an Overpass query on all instances at once; the first answer wins. */
+export async function overpass(query: string, timeoutMs: number): Promise<OverpassResponse> {
   const body = new URLSearchParams({ data: query }).toString();
-  let data: OverpassResponse | null = null;
   try {
-    data = await Promise.any(
+    return await Promise.any(
       OVERPASS_URLS.map((url) =>
         fetchJson<OverpassResponse>(
           "overpass",
           url,
           { method: "POST", headers: { ...HEADERS, "Content-Type": "application/x-www-form-urlencoded" }, body },
-          25_000,
+          timeoutMs,
         ),
       ),
     );
-  } catch {
-    data = null;
+  } catch (e) {
+    const reasons = e instanceof AggregateError ? e.errors.map((x) => (x instanceof Error ? x.message : String(x))) : [];
+    throw new UpstreamError("overpass", null, `all instances failed (${reasons.join("; ")})`);
   }
-  if (!data) throw new UpstreamError("overpass", null, "all instances failed");
+}
+
+/** Bounding box [south, west, north, east] of a country (European part), from the offline border data. */
+export function countryBbox(country: string): [number, number, number, number] | null {
+  let s = 90, w = 180, n = -90, e = -180;
+  const visit = (c: unknown): void => {
+    if (Array.isArray(c) && typeof c[0] === "number") {
+      const [lng, lat] = c as [number, number];
+      // Europe only (e.g. leaves out overseas territories).
+      if (lat < 34 || lat > 72 || lng < -25 || lng > 45) return;
+      s = Math.min(s, lat); n = Math.max(n, lat); w = Math.min(w, lng); e = Math.max(e, lng);
+    } else if (Array.isArray(c)) c.forEach(visit);
+  };
+  // Some countries (NL, DK, FI) are aggregates whose parts carry the geometry.
+  const collect = (id: string, depth: number): void => {
+    const f = feature(id);
+    if (!f || depth > 3) return;
+    if (f.geometry) visit((f.geometry as { coordinates: unknown }).coordinates);
+    for (const m of (f.properties as { members?: string[] }).members ?? []) collect(m, depth + 1);
+  };
+  collect(country, 0);
+  return s <= n ? [s, w, n, e] : null;
+}
+
+const TILE_DEG = 0.5;
+
+/** Tiles (s, w, n, e) covering a country, leaving out tiles that show no part of it. */
+export function countryTiles(country: string): [number, number, number, number][] {
+  const box = countryBbox(country);
+  if (!box) return [];
+  const [s0, w0, n0, e0] = box;
+  const tiles: [number, number, number, number][] = [];
+  for (let s = Math.floor(s0 / TILE_DEG) * TILE_DEG; s < n0; s += TILE_DEG) {
+    for (let w = Math.floor(w0 / TILE_DEG) * TILE_DEG; w < e0; w += TILE_DEG) {
+      const n = s + TILE_DEG, e = w + TILE_DEG;
+      let hit = false;
+      for (let i = 0; i <= 4 && !hit; i++) {
+        for (let j = 0; j <= 4 && !hit; j++) {
+          hit = countryAt({ lat: s + (TILE_DEG * i) / 4, lng: w + (TILE_DEG * j) / 4 }) === country;
+        }
+      }
+      // Tiny countries (Liechtenstein, Monaco) can slip between the sample points.
+      const tiny = (n0 - s0) * (e0 - w0) < 0.25 && s < n0 && n > s0 && w < e0 && e > w0;
+      if (hit || tiny) tiles.push([s, w, n, e]);
+    }
+  }
+  return tiles;
+}
+
+/** All car fuel stations of a country, tile by tile; null when a tile kept failing. */
+export async function countryStations(country: string, log: (line: string) => void): Promise<OsmStation[] | null> {
+  const tiles = countryTiles(country);
+  const found = new Map<string, OsmStation>();
+  for (const [s, w, n, e] of tiles) {
+    const query = `[out:json][timeout:60];nwr[amenity=fuel](${s.toFixed(2)},${w.toFixed(2)},${n.toFixed(2)},${e.toFixed(2)});out center tags;`;
+    let ok = false;
+    for (let attempt = 0; attempt < 5 && !ok; attempt++) {
+      try {
+        for (const st of parseStations(await overpass(query, 75_000))) {
+          if (countryAt(st.location) === country) found.set(st.id, st);
+        }
+        ok = true;
+      } catch (err) {
+        log(`tile ${s},${w} attempt ${attempt + 1}: ${err instanceof Error ? err.message : err}`);
+        await new Promise((r) => setTimeout(r, 15_000 * 2 ** attempt));
+      }
+    }
+    if (!ok) return null;
+    // Be polite to the public instances.
+    await new Promise((r) => setTimeout(r, 1_500));
+  }
+  return [...found.values()];
+}
+
+/** Car fuel stations from an Overpass answer. */
+export function parseStations(data: OverpassResponse): OsmStation[] {
   const stations: OsmStation[] = [];
   for (const el of data.elements ?? []) {
     const lat = el.lat ?? el.center?.lat;
@@ -298,6 +363,20 @@ export async function fuelStationsNear(point: LatLng, radiusKm: number): Promise
     const address = [street, tags["addr:city"]].filter(Boolean).join(", ");
     stations.push({ id: `osm:${el.type}/${el.id}`, name, address, location: { lat, lng } });
   }
+  return stations;
+}
+
+const stationCache = new Map<string, { at: number; stations: OsmStation[] }>();
+const STATION_CACHE_MS = 24 * 3600_000;
+
+/** Fuel stations (amenity=fuel) around a point, live from Overpass; cached for a day per ~1 km cell. */
+export async function fuelStationsNear(point: LatLng, radiusKm: number): Promise<OsmStation[]> {
+  const key = `${point.lat.toFixed(2)},${point.lng.toFixed(2)},${radiusKm}`;
+  const hit = stationCache.get(key);
+  if (hit && Date.now() - hit.at < STATION_CACHE_MS) return hit.stations;
+  // Tag filter first: "nwr(around)[amenity=fuel]" scans everything nearby and times out.
+  const query = `[out:json][timeout:20];nwr[amenity=fuel](around:${Math.round(radiusKm * 1000)},${point.lat.toFixed(5)},${point.lng.toFixed(5)});out center tags 40;`;
+  const stations = parseStations(await overpass(query, 25_000));
   if (stationCache.size > 5_000) stationCache.clear();
   stationCache.set(key, { at: Date.now(), stations });
   return stations;

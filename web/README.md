@@ -97,7 +97,7 @@ Legal pages: `/impressum`, `/privacy`, `/sources` (texts in `src/i18n/legal.ts`,
 
 ## Community prices
 
-In countries with only an average price (no official station data), each fuel point lists the stations around it from OpenStreetMap (Overpass, loaded after the plan via `/api/community/stations`). Users can report a station's price anonymously (`/api/community/report`) or confirm / correct a pending report. Rules (`src/lib/community.ts`, tested):
+In countries with only an average price (no official station data), each fuel point lists the stations around it from OpenStreetMap (imported per country into `fuel.stations` tile by tile in the background, refreshed monthly; live Overpass only until a country is imported; loaded after the plan via `/api/community/stations`). Users can report a station's price anonymously (`/api/community/report`) or confirm / correct a pending report. Rules (`src/lib/community.ts`, tested):
 
 - A price is confirmed when at least two devices on two different connections report prices within €0.02 within 12 hours. Each device counts once. The device is identified by a random id in localStorage, the connection by a keyed hash of the IP.
 - Reports more than 25 % away from the average, or more than 12 % away from what confirmed stations nearby suggest, are rejected.

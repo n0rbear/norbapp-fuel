@@ -3,8 +3,8 @@ import type { CommunityStation, Currency } from "../api-types";
 import type { LatLng } from "../geo";
 import { haversineKm } from "../geo";
 import type { FuelType } from "../trip";
-import { communityEnabled, lookupStations } from "./community-db";
-import { baselineEur, eurRate } from "./fuel-api";
+import { communityEnabled, lookupStations, scheduleImports, stationsFromDb } from "./community-db";
+import { baselineEur, estimateCountries, eurRate } from "./fuel-api";
 import { fuelStationsNear } from "./osm";
 
 const RADIUS_KM = 6;
@@ -18,10 +18,18 @@ export async function communityStations(
   currency: Currency,
   where: "city" | "highway",
 ): Promise<{ stations: CommunityStation[]; reportable: boolean }> {
-  const [osm, baseline, rate] = await Promise.all([fuelStationsNear(point, RADIUS_KM), baselineEur(country, fuel, where), eurRate(currency)]);
+  // Imported copy first (fast, reliable); live Overpass until the country is imported.
+  void estimateCountries().then((cs) => scheduleImports([country, ...[...cs].filter((c) => c !== country).sort()]), () => {});
+  const fromDb = await stationsFromDb(country, point, RADIUS_KM).catch(() => null);
+  const [osm, baseline, rate] = await Promise.all([
+    fromDb ?? fuelStationsNear(point, RADIUS_KM),
+    baselineEur(country, fuel, where),
+    eurRate(currency),
+  ]);
   if (baseline === null) return { stations: [], reportable: false };
   const nearest = osm
     .map((s) => ({ ...s, distanceKm: haversineKm(point, s.location) }))
+    .filter((s) => s.distanceKm <= RADIUS_KM)
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, MAX_STATIONS);
   const known = await lookupStations(fuel, point, nearest, baseline);
