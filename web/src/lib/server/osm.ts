@@ -237,7 +237,7 @@ export async function routeAvoidingTolls(points: { point: LatLng; offMotorway: b
 // Public Overpass instances, queried in parallel.
 const OVERPASS_URLS = (
   process.env.OVERPASS_URLS ||
-  "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+  "https://overpass.openstreetmap.fr/api/interpreter,https://overpass-api.de/api/interpreter,https://overpass.private.coffee/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 )
   .split(",")
   .map((u) => u.trim())
