@@ -234,7 +234,7 @@ export async function routeAvoidingTolls(points: { point: LatLng; offMotorway: b
 
 // --- Overpass (fuel stations from OpenStreetMap) ---
 
-// Public Overpass instances, tried in order (they are often busy).
+// Public Overpass instances, queried in parallel.
 const OVERPASS_URLS = (
   process.env.OVERPASS_URLS ||
   "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter"
@@ -265,24 +265,24 @@ export async function fuelStationsNear(point: LatLng, radiusKm: number): Promise
   const hit = stationCache.get(key);
   if (hit && Date.now() - hit.at < STATION_CACHE_MS) return hit.stations;
 
-  const query = `[out:json][timeout:10];nwr(around:${Math.round(radiusKm * 1000)},${point.lat.toFixed(5)},${point.lng.toFixed(5)})[amenity=fuel];out center tags 40;`;
+  // Tag filter first: "nwr(around)[amenity=fuel]" scans everything nearby and times out.
+  const query = `[out:json][timeout:20];nwr[amenity=fuel](around:${Math.round(radiusKm * 1000)},${point.lat.toFixed(5)},${point.lng.toFixed(5)});out center tags 40;`;
+  // Ask all instances at once and take the first answer (they are often busy).
+  const body = new URLSearchParams({ data: query }).toString();
   let data: OverpassResponse | null = null;
-  for (const url of OVERPASS_URLS) {
-    try {
-      data = await fetchJson<OverpassResponse>(
-        "overpass",
-        url,
-        {
-          method: "POST",
-          headers: { ...HEADERS, "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ data: query }).toString(),
-        },
-        15_000,
-      );
-      break;
-    } catch {
-      // try the next instance
-    }
+  try {
+    data = await Promise.any(
+      OVERPASS_URLS.map((url) =>
+        fetchJson<OverpassResponse>(
+          "overpass",
+          url,
+          { method: "POST", headers: { ...HEADERS, "Content-Type": "application/x-www-form-urlencoded" }, body },
+          25_000,
+        ),
+      ),
+    );
+  } catch {
+    data = null;
   }
   if (!data) throw new UpstreamError("overpass", null, "all instances failed");
   const stations: OsmStation[] = [];
