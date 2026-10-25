@@ -15,6 +15,7 @@ import {
   type StationPrice,
 } from "../community";
 import { haversineKm as distanceKm, type LatLng } from "../geo";
+import { countryStations, type OsmStation } from "./osm";
 
 // Community price reports live in the shared NorbApp Postgres, in their own
 // "fuel" schema. Without FUEL_DATABASE_URL the feature is read-only (estimates).
@@ -72,7 +73,22 @@ function ensureSchema(): Promise<void> {
          confirmed_at timestamptz NOT NULL,
          PRIMARY KEY (station_id, fuel)
        );
-       CREATE INDEX IF NOT EXISTS station_prices_area ON fuel.station_prices (fuel, lat, lng);`,
+       CREATE INDEX IF NOT EXISTS station_prices_area ON fuel.station_prices (fuel, lat, lng);
+       CREATE TABLE IF NOT EXISTS fuel.stations (
+         id text PRIMARY KEY,
+         country text NOT NULL,
+         name text NOT NULL,
+         address text NOT NULL,
+         lat double precision NOT NULL,
+         lng double precision NOT NULL
+       );
+       CREATE INDEX IF NOT EXISTS stations_area ON fuel.stations (lat, lng);
+       CREATE TABLE IF NOT EXISTS fuel.station_imports (
+         country text PRIMARY KEY,
+         started_at timestamptz,
+         imported_at timestamptz,
+         stations integer NOT NULL DEFAULT 0
+       );`,
     )
     .then(() => undefined)
     .catch((e) => {
@@ -238,4 +254,99 @@ export async function addReport(r: NewReport): Promise<"pending" | "confirmed" |
   } finally {
     client.release();
   }
+}
+
+// --- Fuel station locations (OpenStreetMap, imported per country) ---
+
+const IMPORT_EVERY_MS = 30 * 86_400_000;
+const IMPORT_RETRY_MS = 30 * 60_000;
+
+/**
+ * Stations near a point from the imported copy, or null when the country has
+ * not been imported yet (the caller then asks Overpass live).
+ */
+export async function stationsFromDb(country: string, point: LatLng, radiusKm: number): Promise<OsmStation[] | null> {
+  if (!communityEnabled) return null;
+  await ensureSchema();
+  const done = await db().query("SELECT 1 FROM fuel.station_imports WHERE country = $1 AND imported_at IS NOT NULL", [country]);
+  if (done.rowCount === 0) return null;
+  const dLat = radiusKm / 111;
+  const dLng = radiusKm / (111 * Math.max(0.2, Math.cos((point.lat * Math.PI) / 180)));
+  const { rows } = await db().query<{ id: string; name: string; address: string; lat: number; lng: number }>(
+    `SELECT id, name, address, lat, lng FROM fuel.stations
+      WHERE lat BETWEEN $1 AND $2 AND lng BETWEEN $3 AND $4`,
+    [point.lat - dLat, point.lat + dLat, point.lng - dLng, point.lng + dLng],
+  );
+  return rows.map((r) => ({ id: r.id, name: r.name, address: r.address, location: { lat: r.lat, lng: r.lng } }));
+}
+
+/** Downloads all fuel stations of a country from Overpass into fuel.stations. */
+export async function importCountry(country: string): Promise<number> {
+  await ensureSchema();
+  // Claim the import (one at a time per country, retried after 30 min if it died).
+  const claim = await db().query(
+    `INSERT INTO fuel.station_imports (country, started_at) VALUES ($1, now())
+     ON CONFLICT (country) DO UPDATE SET started_at = now()
+       WHERE fuel.station_imports.started_at IS NULL
+          -- an earlier attempt died or failed: retry after a while
+          OR ((fuel.station_imports.imported_at IS NULL OR fuel.station_imports.imported_at < fuel.station_imports.started_at)
+              AND fuel.station_imports.started_at < now() - make_interval(secs => $2))
+          -- done, but stale: refresh
+          OR (fuel.station_imports.imported_at >= fuel.station_imports.started_at
+              AND fuel.station_imports.imported_at < now() - make_interval(secs => $3))
+     RETURNING country`,
+    [country, IMPORT_RETRY_MS / 1000, IMPORT_EVERY_MS / 1000],
+  );
+  if (claim.rowCount === 0) return -1;
+  const stations = await countryStations(country, (line) => console.warn(`fuel station import ${country}: ${line}`));
+  if (!stations || stations.length === 0) throw new Error(stations ? "no stations found" : "some tiles kept failing");
+  const client = await db().connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM fuel.stations WHERE country = $1", [country]);
+    for (let i = 0; i < stations.length; i += 500) {
+      const chunk = stations.slice(i, i + 500);
+      const values: unknown[] = [];
+      const rows = chunk.map((st, j) => {
+        values.push(st.id, country, st.name.slice(0, 120), st.address.slice(0, 200), st.location.lat, st.location.lng);
+        const b = j * 6;
+        return `($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6})`;
+      });
+      await client.query(
+        `INSERT INTO fuel.stations (id, country, name, address, lat, lng) VALUES ${rows.join(", ")}
+         ON CONFLICT (id) DO UPDATE SET country = EXCLUDED.country, name = EXCLUDED.name, address = EXCLUDED.address,
+           lat = EXCLUDED.lat, lng = EXCLUDED.lng`,
+        values,
+      );
+    }
+    await client.query("UPDATE fuel.station_imports SET imported_at = now(), stations = $2 WHERE country = $1", [country, stations.length]);
+    await client.query("COMMIT");
+    return stations.length;
+  } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+let importsRunning = false;
+
+/** Imports (or refreshes) the given countries one after another in the background. */
+export function scheduleImports(countries: string[]): void {
+  if (!communityEnabled || importsRunning) return;
+  importsRunning = true;
+  void (async () => {
+    for (const country of countries) {
+      try {
+        const n = await importCountry(country);
+        if (n >= 0) console.info(`fuel stations imported: ${country} ${n}`);
+      } catch (e) {
+        console.warn(`fuel station import failed: ${country} (${e instanceof Error ? e.message : e})`);
+      }
+      await new Promise((r) => setTimeout(r, 5_000));
+    }
+  })().finally(() => {
+    importsRunning = false;
+  });
 }
