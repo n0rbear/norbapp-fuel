@@ -25,7 +25,16 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [stored, setStored] = usePersistentState<Locale | "">("fuel.locale", "", (v): v is Locale | "" => v === "" || isLocale(v));
   // Browser preference is only known on the client; the server renders Hungarian.
   const browser = useSyncExternalStore(noop, () => detectLocale(navigator.languages ?? [navigator.language]), () => null);
-  const locale: Locale = stored || browser || DEFAULT_LOCALE;
+  // A shared link like /?lang=de opens in that language (until the visitor picks one).
+  const fromUrl = useSyncExternalStore(
+    noop,
+    () => {
+      const v = new URLSearchParams(window.location.search).get("lang");
+      return v && isLocale(v) ? v : null;
+    },
+    () => null,
+  );
+  const locale: Locale = stored || fromUrl || browser || DEFAULT_LOCALE;
 
   const [loaded, setLoaded] = useState<{ locale: Locale; messages: Messages }>({ locale: "hu", messages: hu });
   useEffect(() => {

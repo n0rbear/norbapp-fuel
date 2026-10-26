@@ -17,11 +17,17 @@ export function Analytics() {
     } catch {
       referrer = undefined;
     }
+    // Campaign links, e.g. ?utm_source=facebook&utm_medium=paid&utm_campaign=hazautazas
+    const params = new URLSearchParams(window.location.search);
     sendEvent("pageview", {
       path: pathname,
       locale,
       standalone: window.matchMedia("(display-mode: standalone)").matches,
       referrer,
+      utm_source: params.get("utm_source") ?? undefined,
+      utm_medium: params.get("utm_medium") ?? undefined,
+      utm_campaign: params.get("utm_campaign") ?? undefined,
+      utm_content: params.get("utm_content") ?? undefined,
     });
     // Once per page, not on language changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps

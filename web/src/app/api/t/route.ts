@@ -14,6 +14,10 @@ const FIELDS: Record<string, "string" | "boolean"> = {
   from: "string",
   to: "string",
   mode: "string",
+  utm_source: "string",
+  utm_medium: "string",
+  utm_campaign: "string",
+  utm_content: "string",
 };
 
 export async function POST(request: Request) {
