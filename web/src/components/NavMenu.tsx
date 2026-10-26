@@ -18,7 +18,8 @@ export function NavMenu({ location, name }: { location: LatLng; name: string }) 
   const label = encodeURIComponent(name);
   const links = [
     { name: "Google Maps", href: `https://www.google.com/maps/dir/?api=1&destination=${ll}` },
-    { name: "Apple Maps", href: `https://maps.apple.com/?daddr=${ll}&q=${label}` },
+    // Coordinates only: with a name (q=) Apple Maps on macOS searches for it and may route to a same-named place elsewhere.
+    { name: "Apple Maps", href: `https://maps.apple.com/?daddr=${ll}&dirflg=d` },
     { name: "Waze", href: `https://waze.com/ul?ll=${ll}&navigate=yes` },
     // Android hands geo: links to any installed map app.
     ...(android ? [{ name: t("otherMapApp"), href: `geo:${ll}?q=${ll}(${label})` }] : []),
