@@ -99,6 +99,12 @@ const EN: LegalTexts = {
         ],
       },
       {
+        title: "Anonymous usage statistics",
+        body: [
+          "To see which features are used and to fix problems, the app records anonymous usage events: for example a page view (page, language, installed app or browser, the referring website), a calculation (countries of the route, distance, fuel type, currency, options used, number of stops) or a click on a navigation app. Device type, operating system and browser are derived from the browser identification, which itself is not stored. No cookies are used, and no IP addresses or typed addresses are stored. Unique visitors are counted with a code that changes every day (a keyed hash of IP address, browser and date), so a visitor cannot be followed from one day to the next. The events are deleted after 13 months. Legal basis: Art. 6(1)(f) GDPR (improving and running the service).",
+        ],
+      },
+      {
         title: "Price reports",
         body: [
           "Where only an average price exists, you can report the price at a station. We store the station, the fuel, the price, the time, a random device identifier created in your browser (no account, no name) and a keyed hash of your IP address, so that one person cannot confirm their own report. The IP address itself is not stored. Raw reports are deleted after 90 days; confirmed prices are kept without the identifiers. Legal basis: Art. 6(1)(f) GDPR (reliable prices for all users).",
@@ -176,6 +182,12 @@ const DE: LegalTexts = {
         title: "Einstellungen im Browser",
         body: [
           "Deine Einstellungen (Sprache, Kraftstoff- und Fahrzeugdaten, Währung, Abgasnorm, Mautvermeidung, die zufällige Gerätekennung) werden im lokalen Speicher deines Browsers abgelegt, damit sie beim nächsten Mal da sind. Sie verlassen dein Gerät nicht – außer der Gerätekennung, wenn du einen Preis meldest. Ein Service Worker hält eine Kopie der Seite, damit sie offline startet. Beides kannst du jederzeit in den Browsereinstellungen löschen.",
+        ],
+      },
+      {
+        title: "Anonyme Nutzungsstatistik",
+        body: [
+          "Um zu sehen, welche Funktionen genutzt werden, und um Fehler zu beheben, erfasst die App anonyme Nutzungsereignisse: zum Beispiel einen Seitenaufruf (Seite, Sprache, installierte App oder Browser, verweisende Website), eine Berechnung (Länder der Route, Entfernung, Kraftstoff, Währung, genutzte Optionen, Zahl der Tankstopps) oder einen Klick auf eine Navigations-App. Gerätetyp, Betriebssystem und Browser werden aus der Browserkennung abgeleitet, die selbst nicht gespeichert wird. Es werden keine Cookies verwendet und keine IP-Adressen oder eingegebenen Adressen gespeichert. Eindeutige Besucher werden über einen täglich wechselnden Code gezählt (ein verschlüsselter Hashwert aus IP-Adresse, Browser und Datum), sodass ein Besucher nicht über mehrere Tage verfolgt werden kann. Die Ereignisse werden nach 13 Monaten gelöscht. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Betrieb und Verbesserung des Dienstes).",
         ],
       },
       {
@@ -286,6 +298,12 @@ const HU: LegalTexts = {
         title: "Beállítások a böngészőben",
         body: [
           "A beállításaidat (nyelv, üzemanyag- és járműadatok, pénznem, Euro-besorolás, útdíjkerülés, a véletlen eszközazonosító) a böngésződ helyi tárolója őrzi, hogy legközelebb is meglegyenek. Nem hagyják el az eszközödet, kivéve az eszközazonosítót, ha árat jelzel. Egy service worker tárolja az oldal másolatát, hogy offline is elinduljon. Mindkettőt bármikor törölheted a böngésző beállításaiban.",
+        ],
+      },
+      {
+        title: "Névtelen használati statisztika",
+        body: [
+          "Hogy lássuk, mely funkciókat használják, és hogy javíthassuk a hibákat, az alkalmazás névtelen használati eseményeket rögzít: például oldalmegtekintést (oldal, nyelv, telepített app vagy böngésző, a hivatkozó weboldal), kalkulációt (az útvonal országai, a táv, az üzemanyag, a pénznem, a használt beállítások, a tankolások száma) vagy kattintást egy navigációs appra. Az eszköz típusát, az operációs rendszert és a böngészőt a böngésző azonosítójából állapítjuk meg, magát az azonosítót nem tároljuk. Nem használunk sütit, és nem tárolunk IP-címet vagy beírt címet. Az egyedi látogatókat egy naponta változó kóddal számoljuk (az IP-cím, a böngésző és a dátum kulcsolt hash-e), így egy látogató napról napra nem követhető. Az eseményeket 13 hónap után töröljük. Jogalap: GDPR 6. cikk (1) f) pont (a szolgáltatás működtetése és fejlesztése).",
         ],
       },
       {

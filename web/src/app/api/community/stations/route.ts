@@ -1,4 +1,5 @@
 import { CURRENCIES, type Currency } from "@/lib/api-types";
+import { track } from "@/lib/server/analytics";
 import { communityStations } from "@/lib/server/community";
 import { estimateCountries } from "@/lib/server/fuel-api";
 import { clientKey, RateLimiter } from "@/lib/server/rate-limit";
@@ -24,7 +25,14 @@ export async function GET(request: Request) {
     if (!(await estimateCountries()).has(country)) {
       return Response.json({ stations: [], reportable: false }, { headers: { "Cache-Control": "no-store" } });
     }
+    const started = Date.now();
     const result = await communityStations(country, { lat, lng }, fuel, currency, where);
+    track(request, "stations", {
+      country,
+      found: result.stations.length,
+      confirmed: result.stations.filter((st) => st.priceKind !== "estimate").length,
+      ms: Date.now() - started,
+    });
     return Response.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return handleError("community-stations", e);

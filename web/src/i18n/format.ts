@@ -19,8 +19,8 @@ export function makeFormatters(locale: Locale, t: Translate) {
   } catch {
     regions = null;
   }
-  const moneyDigits = (c: Currency) => (c === "HUF" ? 0 : 2);
-  const money = (v: number, c: Currency, digits = moneyDigits(c)) =>
+  const moneyDigits = (c: Currency | string) => (c === "HUF" ? 0 : 2);
+  const money = (v: number, c: Currency | string, digits = moneyDigits(c)) =>
     new Intl.NumberFormat(locale, {
       style: "currency",
       currency: c,
@@ -32,7 +32,7 @@ export function makeFormatters(locale: Locale, t: Translate) {
   return {
     money: (v: number, c: Currency) => money(v, c),
     /** Unit prices: 3 decimals in EUR (1.789 €/l), 2 otherwise (FUEL-API rounding). */
-    pricePerLitre: (v: number, c: Currency) => `${money(v, c, c === "EUR" ? 3 : 2)}/l`,
+    pricePerLitre: (v: number, c: Currency | string) => `${money(v, c, c === "EUR" ? 3 : 2)}/l`,
     km: (v: number) => `${number(1).format(v)} km`,
     litres: (v: number) => `${number(1).format(v)} l`,
     decimal: (v: number, digits: number) => number(digits).format(v),
@@ -49,7 +49,7 @@ export function makeFormatters(locale: Locale, t: Translate) {
         return code;
       }
     },
-    currencySymbol: (c: Currency) =>
+    currencySymbol: (c: Currency | string) =>
       new Intl.NumberFormat(locale, { style: "currency", currency: c, currencyDisplay: "narrowSymbol" })
         .formatToParts(0)
         .find((p) => p.type === "currency")?.value ?? c,

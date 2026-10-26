@@ -21,7 +21,7 @@ import pricing_matrix as pm
 from api_clients import MAX_RADIUS_KM, OFFICIAL_CLIENTS, ApiNotConfiguredError, OfficialApiError
 import tolls as tl
 from base_price_updater import updater
-from fx import EU_CURRENCIES, fx
+from fx import CONVERSION_CURRENCIES, EU_CURRENCIES, fx
 from pricing_matrix import BrandTier, Fuel, Location
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -216,6 +216,12 @@ async def list_currencies() -> dict[str, Any]:
             {"code": code, "name_hu": name, "rate": fx.rate(code),
              "countries": sorted(c.code for c in pm.COUNTRIES.values() if c.local_currency == code)}
             for code, name in EU_CURRENCIES.items()
+        ],
+        # Local currencies outside the EU (e.g. CHF): for showing local prices only.
+        "conversion": [
+            {"code": code, "name_hu": name, "rate": fx.rate(code),
+             "countries": sorted(c.code for c in pm.COUNTRIES.values() if c.local_currency == code)}
+            for code, name in CONVERSION_CURRENCIES.items()
         ],
     }
 

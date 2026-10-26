@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
-import type { CommunityStation, CommunityStationsResponse, Currency, ReportResult } from "@/lib/api-types";
+import type { CommunityStation, CommunityStationsResponse, Currency, LocalCurrency, ReportResult } from "@/lib/api-types";
 import type { LatLng } from "@/lib/geo";
 import { parseDecimal } from "@/lib/pricing";
 import type { FuelType } from "@/lib/trip";
@@ -30,6 +30,10 @@ type Props = {
   where: "city" | "highway";
   fuel: FuelType;
   currency: Currency;
+  /** The country's own currency; reports are entered in it. */
+  local: LocalCurrency | null;
+  /** EUR → display currency rate. */
+  displayRate: number | null;
   /** Stops can pick a station; the start point only shows them. */
   selectable: boolean;
   selectedId: string | undefined;
@@ -39,7 +43,7 @@ type Props = {
 
 type Feedback = { id: string; key: "reportThanks" | "reportConfirmedNow" | "reportImplausible" | "reportFailed" | "tooManyRequests" };
 
-export function CommunityStations({ country, location, where, fuel, currency, selectable, selectedId, onSelect, onLoaded }: Props) {
+export function CommunityStations({ country, location, where, fuel, currency, local, displayRate, selectable, selectedId, onSelect, onLoaded }: Props) {
   const { t, fmt, locale } = useI18n();
   const [data, setData] = useState<CommunityStationsResponse | null>(null);
   const [form, setForm] = useState<{ id: string; value: string } | null>(null);
@@ -77,6 +81,15 @@ export function CommunityStations({ country, location, where, fuel, currency, se
 
   if (!data || data.stations.length === 0) return null;
 
+  // Prices are shown in the display currency plus the country's own; reports are entered in the latter.
+  const reportCurrency = local && displayRate ? local.currency : currency;
+  const toReport = (displayPrice: number) => (local && displayRate ? (displayPrice / displayRate) * local.rate : displayPrice);
+  const show = (displayPrice: number) => {
+    const main = fmt.pricePerLitre(displayPrice, currency);
+    if (!local || !displayRate || local.currency === currency) return main;
+    return `${main} (${fmt.pricePerLitre(toReport(displayPrice), local.currency)})`;
+  };
+
   const time = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
 
   const send = async (station: CommunityStation, price: number) => {
@@ -89,7 +102,7 @@ export function CommunityStations({ country, location, where, fuel, currency, se
           stationId: station.id,
           country,
           fuel,
-          currency,
+          currency: reportCurrency,
           where,
           price,
           lat: station.location.lat,
@@ -133,7 +146,7 @@ export function CommunityStations({ country, location, where, fuel, currency, se
             <li key={s.id} className={`community-station${isOn ? " on" : ""}`}>
               <div className="community-head">
                 <span className="station-name">{s.name}</span>
-                <span className="station-price">{fmt.pricePerLitre(s.price, currency)}</span>
+                <span className="station-price">{show(s.price)}</span>
               </div>
               <span className="muted small">
                 {[s.address, fmt.km(s.distanceKm)].filter(Boolean).join(" · ")}
@@ -148,9 +161,9 @@ export function CommunityStations({ country, location, where, fuel, currency, se
 
               {s.pending && data.reportable && (
                 <div className="community-pending small">
-                  <span>{t("reportedByOthers", { price: fmt.pricePerLitre(s.pending.price, currency) })}</span>
+                  <span>{t("reportedByOthers", { price: show(s.pending.price) })}</span>
                   <span className="community-actions">
-                    <button type="button" className="secondary small-btn" disabled={sending} onClick={() => send(s, s.pending!.price)}>
+                    <button type="button" className="secondary small-btn" disabled={sending} onClick={() => send(s, Math.round(toReport(s.pending!.price) * 1000) / 1000)}>
                       {t("confirmPrice")}
                     </button>
                     <button type="button" className="secondary small-btn" onClick={() => setForm({ id: s.id, value: "" })}>
@@ -169,7 +182,7 @@ export function CommunityStations({ country, location, where, fuel, currency, se
                   }}
                 >
                   <label>
-                    <span className="small">{t("yourPrice", { currency: fmt.currencySymbol(currency) })}</span>
+                    <span className="small">{t("yourPrice", { currency: fmt.currencySymbol(reportCurrency) })}</span>
                     <input
                       inputMode="decimal"
                       autoFocus

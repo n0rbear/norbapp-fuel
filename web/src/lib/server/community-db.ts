@@ -28,7 +28,7 @@ export const communityEnabled = DATABASE_URL !== "";
 let pool: Pool | null = null;
 let schemaReady: Promise<void> | null = null;
 
-function db(): Pool {
+export function db(): Pool {
   if (!pool) {
     // Render's internal hostnames have no dots and no TLS; external ones need TLS.
     const host = new URL(DATABASE_URL).hostname;
@@ -43,7 +43,7 @@ function db(): Pool {
   return pool;
 }
 
-function ensureSchema(): Promise<void> {
+export function ensureSchema(): Promise<void> {
   schemaReady ??= db()
     .query(
       `CREATE SCHEMA IF NOT EXISTS fuel;
@@ -83,6 +83,15 @@ function ensureSchema(): Promise<void> {
          lng double precision NOT NULL
        );
        CREATE INDEX IF NOT EXISTS stations_area ON fuel.stations (lat, lng);
+       CREATE TABLE IF NOT EXISTS fuel.events (
+         id bigserial PRIMARY KEY,
+         at timestamptz NOT NULL DEFAULT now(),
+         type text NOT NULL,
+         visitor text NOT NULL,
+         data jsonb NOT NULL DEFAULT '{}'::jsonb
+       );
+       CREATE INDEX IF NOT EXISTS events_at ON fuel.events (at);
+       CREATE INDEX IF NOT EXISTS events_type_at ON fuel.events (type, at);
        CREATE TABLE IF NOT EXISTS fuel.station_imports (
          country text PRIMARY KEY,
          started_at timestamptz,

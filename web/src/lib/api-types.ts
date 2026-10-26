@@ -68,6 +68,8 @@ export type CommunityStation = {
   pending: { price: number; count: number } | null;
 };
 
+export type LocalCurrency = { currency: string; rate: number };
+
 /** GET /api/community/stations */
 export type CommunityStationsResponse = {
   stations: CommunityStation[];
@@ -115,6 +117,8 @@ export type PlanResponse = {
   /** Approximate motorway km per country (from road refs), for distance-based tolls. */
   motorwayKm: Record<string, number>;
   points: FuelPoint[];
+  /** Each route country's own currency and its EUR → currency rate (for showing local prices). */
+  local: Record<string, LocalCurrency>;
   /** Simplified route geometry for display. */
   path: LatLng[];
   warnings: AppMessage[];

@@ -4,7 +4,7 @@ import { msg, type AppMessage } from "../../i18n/message";
 import { RoutePath, type LatLng } from "../geo";
 import { motorwayKmByCountry } from "../motorway";
 import { planRefuels } from "../trip";
-import { pricesAt, supportedCountries } from "./fuel-api";
+import { localCurrencies, pricesAt, supportedCountries } from "./fuel-api";
 import { applyTollAvoidance } from "./avoid-tolls";
 import { computeRoute, countryAt } from "./osm";
 
@@ -108,6 +108,9 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
     warnings.push(msg("noTollDataFor", { countries: outside.join(",") }));
   }
 
+  const routeCountries = [...new Set([...countries, ...fuelCountries.filter((c): c is string => !!c)])];
+  const local = supported ? await localCurrencies(routeCountries).catch(() => ({})) : {};
+
   return {
     distanceKm,
     durationSec: route.durationSec,
@@ -120,6 +123,7 @@ export async function buildPlan(req: PlanRequest): Promise<PlanResponse> {
     avoidedTollCountries: avoided,
     motorwayKm,
     points,
+    local,
     path: simplify(path.points, PATH_MAX_POINTS),
     warnings,
   };
