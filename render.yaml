@@ -58,6 +58,11 @@ services:
         sync: false
       - key: FUEL_HASH_SECRET
         generateValue: true
+      # Login for the /stat usage statistics page (Basic Auth).
+      - key: STATS_USER
+        sync: false
+      - key: STATS_PASSWORD
+        sync: false
       - key: REFRESH_TIME
         value: "06:00"
       - key: REFRESH_TZ

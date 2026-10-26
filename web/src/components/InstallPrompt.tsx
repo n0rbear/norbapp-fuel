@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
+import { sendEvent } from "@/lib/beacon";
 
 // Chromium's install event (not in the TS DOM types).
 type BeforeInstallPromptEvent = Event & {
@@ -47,12 +48,20 @@ export function InstallPrompt() {
     const onPrompt = (e: Event) => {
       e.preventDefault();
       setInstallEvent(e as BeforeInstallPromptEvent);
-      timer = setTimeout(() => setMode("native"), SHOW_AFTER_MS);
+      timer = setTimeout(() => {
+        setMode("native");
+        sendEvent("install_shown", { mode: "native" });
+      }, SHOW_AFTER_MS);
     };
     const onInstalled = () => setMode(null);
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
-    if (isIos()) timer = setTimeout(() => setMode("ios"), SHOW_AFTER_MS);
+    if (isIos()) {
+      timer = setTimeout(() => {
+        setMode("ios");
+        sendEvent("install_shown", { mode: "ios" });
+      }, SHOW_AFTER_MS);
+    }
     return () => {
       clearTimeout(timer);
       window.removeEventListener("beforeinstallprompt", onPrompt);
@@ -63,6 +72,7 @@ export function InstallPrompt() {
   if (!mode) return null;
 
   const dismiss = () => {
+    sendEvent("install_dismissed", { mode: mode ?? undefined });
     try {
       window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
     } catch {
@@ -76,7 +86,10 @@ export function InstallPrompt() {
     await installEvent.prompt();
     const { outcome } = await installEvent.userChoice;
     if (outcome === "dismissed") dismiss();
-    else setMode(null);
+    else {
+      sendEvent("install_accepted", { mode: "native" });
+      setMode(null);
+    }
     setInstallEvent(null);
   };
 

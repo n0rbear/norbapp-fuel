@@ -84,6 +84,7 @@ npm run build
 | `FUEL_DATABASE_URL` | no | Postgres for community price reports (tables in schema `fuel`, created on first use). Without it stations are listed with estimates but reporting is off. |
 | `FUEL_HASH_SECRET` | no | Key for the anonymous IP hash of price reports. Default: derived from `FUEL_DATABASE_URL`. |
 | `OVERPASS_URLS` | no | Comma-separated Overpass endpoints for fuel station locations (queried in parallel, first answer wins). |
+| `STATS_USER`, `STATS_PASSWORD` | no | Login for `/stat` (usage statistics, Basic Auth). Without them `/stat` is a 404. |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | no | AdSense publisher ID (`ca-pub-…`). Build-time. When set: the AdSense script loads, ad slots appear, `/ads.txt` is served, the privacy notice shows its advertising section and the footer gets a "Privacy settings" link. |
 | `NEXT_PUBLIC_ADSENSE_SLOT_TOP`, `NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM` | no | Ad unit IDs for the slot under the title and the one under the planner. |
 
@@ -94,6 +95,10 @@ The OSM defaults are free public instances with fair-use policies (identifying U
 Before setting `NEXT_PUBLIC_ADSENSE_CLIENT`, turn on the GDPR consent message in AdSense (Privacy & messaging → European regulations). That is Google's certified CMP; the AdSense script shows it to visitors in the EEA, the UK and Switzerland before personalised ads, and the footer's "Privacy settings" link reopens it. The `NEXT_PUBLIC_*` variables are read at build time, so redeploy after changing them.
 
 Legal pages: `/impressum`, `/privacy`, `/sources` (texts in `src/i18n/legal.ts`, in hu/de/en; other languages show English).
+
+## Usage statistics (`/stat`)
+
+Anonymous events go to `fuel.events` (needs `FUEL_DATABASE_URL`). The server records calculations, plan errors, toll and station lookups and price reports; the browser sends page views, install-prompt results, navigation-app clicks and language changes to `/api/t`. No cookies, IPs or typed addresses are stored. A daily-changing keyed hash counts unique visitors per day. Bots are skipped, and events are deleted after 400 days. `/stat?days=1|7|30|90|365` renders the report; it is not linked from the app and is marked `noindex`.
 
 ## Community prices
 

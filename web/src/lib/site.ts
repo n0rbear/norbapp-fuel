@@ -26,3 +26,6 @@ export const ADS = {
   },
 };
 export const ADS_ENABLED = /^ca-pub-\d+$/.test(ADS.client);
+
+/** The "your ad could be here" house banners (side banners and mobile strip); hidden for now. */
+export const SHOW_HOUSE_ADS = false;

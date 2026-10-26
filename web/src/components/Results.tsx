@@ -73,6 +73,14 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
     return computeFuelCost(data.plan, request.vehicle.consumption, prices);
   }, [data, request.vehicle.consumption, manual, manualInvalid, fallback, fallbackInvalid, selected, community]);
 
+  /** "1,749 €/l (699,90 Ft/l)": the price plus the same in the country's own currency, when that differs. */
+  const priceWithLocal = (price: number, country: string | null) => {
+    const main = fmt.pricePerLitre(price, currency);
+    const local = country ? data.local?.[country] : undefined;
+    if (!local || local.currency === currency || !data.rate) return main;
+    return `${main} (${fmt.pricePerLitre((price / data.rate) * local.rate, local.currency)})`;
+  };
+
   const tolls = useTolls(data, euroClass);
   const tollCost = tolls.result?.status === "ok" ? tolls.includedTotal : 0;
 
@@ -158,7 +166,7 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
               <div className="point-meta">
                 {stop && <span>{t("toFill", { litres: fmt.litres(stop.litres) })}</span>}
                 <span>
-                  {fmt.pricePerLitre(segment.price, currency)}{" "}
+                  {priceWithLocal(segment.price, point.country)}{" "}
                   <span className="badge">{t(SOURCE_LABEL[segment.source])}</span>
                 </span>
               </div>
@@ -171,8 +179,8 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
                 <p className="muted small">
                   {t("estimateRange", {
                     where: t(prices.estimate.location === "highway" ? "whereHighway" : "whereCity"),
-                    low: fmt.pricePerLitre(prices.estimate.low, currency),
-                    high: fmt.pricePerLitre(prices.estimate.high, currency),
+                    low: priceWithLocal(prices.estimate.low, point.country),
+                    high: priceWithLocal(prices.estimate.high, point.country),
                   })}
                 </p>
               )}
@@ -184,6 +192,8 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
                   where={prices.estimate.location}
                   fuel={request.fuelType}
                   currency={currency}
+                  local={data.local?.[point.country] ?? null}
+                  displayRate={data.rate}
                   selectable={point.kind === "stop"}
                   selectedId={selected[i]}
                   onSelect={(id) => setSelected((sel) => ({ ...sel, [i]: id }))}
@@ -206,7 +216,7 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
                         >
                           <span className="station-name">{s.name}</span>
                           <span className="station-price">
-                            {s.price !== null ? fmt.pricePerLitre(s.price, currency) : t("noPrice")}
+                            {s.price !== null ? priceWithLocal(s.price, point.country) : t("noPrice")}
                           </span>
                           <span className="muted small">
                             {s.address}

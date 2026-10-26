@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Analytics } from "@/components/Analytics";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BannerStrip, SideBanner } from "@/components/SideBanner";
 import { I18nProvider } from "@/i18n/I18nProvider";
-import { ADS, ADS_ENABLED } from "@/lib/site";
+import { ADS, ADS_ENABLED, SHOW_HOUSE_ADS } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,13 +34,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <I18nProvider>
           <SiteHeader />
           <div className="withSideBanners">
-            <SideBanner side="left" />
+            {SHOW_HOUSE_ADS && <SideBanner side="left" />}
             <div className="mainColumn">{children}</div>
-            <SideBanner side="right" />
+            {SHOW_HOUSE_ADS && <SideBanner side="right" />}
           </div>
-          <BannerStrip />
+          {SHOW_HOUSE_ADS && <BannerStrip />}
           <SiteFooter />
           <InstallPrompt />
+          <Analytics />
         </I18nProvider>
         <ServiceWorker />
         {ADS_ENABLED ? (

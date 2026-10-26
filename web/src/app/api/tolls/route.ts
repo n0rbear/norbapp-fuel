@@ -1,3 +1,4 @@
+import { track } from "@/lib/server/analytics";
 import { estimateTolls } from "@/lib/server/fuel-api";
 import { clientKey, RateLimiter } from "@/lib/server/rate-limit";
 import { handleError, jsonError } from "@/lib/server/respond";
@@ -11,7 +12,9 @@ export async function GET(request: Request) {
   if (!limiter.take(clientKey(request))) return jsonError("tooManyRequests", 429);
 
   try {
-    return Response.json(await estimateTolls(parsed.value), { headers: { "Cache-Control": "no-store" } });
+    const result = await estimateTolls(parsed.value);
+    track(request, "tolls", { countries: parsed.value.countries, days: parsed.value.days, euroClass: parsed.value.euroClass ?? null });
+    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return handleError("tolls", e);
   }

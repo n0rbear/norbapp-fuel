@@ -273,3 +273,10 @@ def test_chf_is_not_a_display_currency(client):
     assert client.get("/api/prices", params={"country": "CH", "currency": "CHF"}).status_code == 422
     codes = [c["code"] for c in client.get("/api/currencies").json()["currencies"]]
     assert "CHF" not in codes
+
+
+def test_chf_rate_is_listed_for_local_prices(client):
+    conversion = client.get("/api/currencies").json()["conversion"]
+    chf = next(c for c in conversion if c["code"] == "CHF")
+    assert chf["rate"] > 0
+    assert chf["countries"] == ["CH", "LI"]

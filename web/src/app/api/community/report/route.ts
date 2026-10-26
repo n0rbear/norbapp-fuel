@@ -1,4 +1,5 @@
 import { CURRENCIES, type Currency } from "@/lib/api-types";
+import { track } from "@/lib/server/analytics";
 import { addReport, communityEnabled, hashIp } from "@/lib/server/community-db";
 import { baselineEur, estimateCountries, eurRate } from "@/lib/server/fuel-api";
 import { clientKey, RateLimiter } from "@/lib/server/rate-limit";
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   const stationId = String(body.stationId ?? "");
   const country = String(body.country ?? "");
   const fuel = body.fuel as FuelType;
-  const currency = body.currency as Currency;
+  const currency = String(body.currency ?? "");
   const deviceId = String(body.deviceId ?? "");
   const where = body.where === "highway" ? "highway" : "city";
   const price = Number(body.price);
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     !/^osm:(node|way)\/\d{1,15}$/.test(stationId) ||
     !/^[A-Z]{2}$/.test(country) ||
     !FUEL_TYPES.some((f) => f.id === fuel) ||
-    !CURRENCIES.includes(currency) ||
+    !(CURRENCIES.includes(currency as Currency) || currency === "CHF") ||
     !/^[0-9a-f-]{16,64}$/i.test(deviceId) ||
     !Number.isFinite(price) ||
     price <= 0 ||
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       deviceId: deviceId.toLowerCase(),
       ipHash: hashIp(ip),
     });
+    track(request, "report", { country, fuel, status, currency });
     return Response.json({ status }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return handleError("community-report", e);

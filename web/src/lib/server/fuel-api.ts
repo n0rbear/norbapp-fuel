@@ -1,5 +1,5 @@
 import "server-only";
-import type { Currency, CurrencyInfo, PointPrices, TollEstimate } from "../api-types";
+import type { Currency, CurrencyInfo, LocalCurrency, PointPrices, TollEstimate } from "../api-types";
 import type { LatLng } from "../geo";
 import type { FuelType } from "../trip";
 import { msg } from "../../i18n/message";
@@ -101,7 +101,7 @@ async function cached<T>(key: string, ttlMs: number, load: () => Promise<T>): Pr
   return value;
 }
 
-type CountriesResponse = { countries: { code: string; mode: "official" | "estimate" }[] };
+type CountriesResponse = { countries: { code: string; mode: "official" | "estimate"; local_currency?: string }[] };
 
 /** EU country codes the FUEL-API knows (non-EU countries get a 404 there). */
 export function supportedCountries(): Promise<Set<string>> {
@@ -111,14 +111,20 @@ export function supportedCountries(): Promise<Set<string>> {
   });
 }
 
-type CurrenciesResponse = { as_of: string; currencies: { code: Currency; name_hu: string; rate: number }[] };
+type CurrenciesResponse = {
+  as_of: string;
+  currencies: { code: Currency; name_hu: string; rate: number }[];
+  /** Non-EU local currencies (CHF), for local prices only. */
+  conversion?: { code: string; rate: number }[];
+};
 
-export function currencies(): Promise<{ asOf: string; currencies: CurrencyInfo[] }> {
+export function currencies(): Promise<{ asOf: string; currencies: CurrencyInfo[]; rates: Map<string, number> }> {
   return cached("currencies", 3600_000, async () => {
     const data = await apiJson<CurrenciesResponse>("/api/currencies");
     return {
       asOf: data.as_of,
       currencies: data.currencies.map((c) => ({ code: c.code, name: c.name_hu, rate: c.rate })),
+      rates: new Map<string, number>([...data.currencies, ...(data.conversion ?? [])].map((c) => [c.code, c.rate])),
     };
   });
 }
@@ -237,13 +243,30 @@ export async function baselineEur(country: string, fuel: FuelType, location: "ci
   });
 }
 
-/** EUR → currency rate (1 for EUR). */
-export async function eurRate(currency: Currency): Promise<number> {
+/** EUR → currency rate (1 for EUR); also local-only currencies such as CHF. */
+export async function eurRate(currency: Currency | string): Promise<number> {
   if (currency === "EUR") return 1;
-  const { currencies: list } = await currencies();
-  const rate = list.find((c) => c.code === currency)?.rate;
+  const rate = (await currencies()).rates.get(currency);
   if (!rate) throw new UpstreamError("fuel-api", null, "missing rate");
   return rate;
+}
+
+/** Each country's own currency and EUR → currency rate. */
+export async function localCurrencies(countries: string[]): Promise<Record<string, LocalCurrency>> {
+  const [list, { rates }] = await Promise.all([
+    cached("countryCurrencies", 6 * 3600_000, async () => {
+      const data = await apiJson<CountriesResponse>("/api/countries");
+      return new Map(data.countries.map((c) => [c.code, c.local_currency ?? "EUR"]));
+    }),
+    currencies(),
+  ]);
+  const result: Record<string, LocalCurrency> = {};
+  for (const country of countries) {
+    const currency = list.get(country);
+    const rate = currency === "EUR" ? 1 : currency ? rates.get(currency) : undefined;
+    if (currency && rate) result[country] = { currency, rate };
+  }
+  return result;
 }
 
 /** Countries whose prices are estimates from the average (no official station data). */
