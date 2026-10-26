@@ -106,3 +106,59 @@ Változat B:
 - **Hungarians abroad (hazajárók):** location DE, AT, CH, NL, BE; language Hungarian; age 25–60. Use the hu texts.
 - **Holiday drivers (summer):** location HU, DE, AT, PL, CZ; interests road trip, camping, caravan, Croatia, Italy. Use the language of the country.
 - **Budget:** start with 3–5 €/day per ad set for a week, 2 images or texts each; keep what has the best conversion on `/stat`.
+
+## Facebook page (one page, three languages)
+
+Images in `docs/facebook/`: `profile-720.png` (profile picture, shown as a circle) and
+`cover-1640x624.png` (cover; the text sits in the centre so it survives the mobile crop).
+
+| Field | Value |
+| --- | --- |
+| Page name | Fuel by NorbApp |
+| Category | App page (Alkalmazásoldal) – second: Travel & transportation |
+| Username | @fuelbynorbapp (if taken: @fuel.norbapp) |
+| Website | https://fuel.norbapp.com/?utm_source=facebook&utm_medium=page&utm_campaign=profile |
+| Button | "Use app" (Alkalmazás használata) → same link |
+| E-mail | norbert@norbapp.com |
+
+**Bio (max. 101 characters)** – pick one, the page has a single bio:
+
+- hu: `Mennyibe kerül az út? Tankolás, matrica, útdíj – 27 EU-ország + Svájc. Ingyenes.`
+- de: `Was kostet die Fahrt? Tanken, Vignette, Maut – 27 EU-Länder + Schweiz. Kostenlos.`
+- en: `What will the trip cost? Fuel, vignettes, tolls – 27 EU countries + CH. Free.`
+- trilingual (fits): `🇭🇺 Útiköltség · 🇩🇪 Reisekosten · 🇬🇧 Trip cost – fuel, vignettes, tolls. Free.`
+
+**Long description (Details / About):**
+
+> 🇭🇺 A Fuel by NorbApp kiszámolja, mennyibe kerül az autós út Európában: útvonal, tankolási pontok
+> (Németországban, Ausztriában, Spanyolországban, Franciaországban, Olaszországban, Portugáliában és
+> Szlovéniában konkrét kútárakkal), matricák és útdíjak, a választott pénznemben. Ahol csak átlagár van,
+> a felhasználók névtelenül jelezhetik a kutak árát. Ingyenes, regisztráció nélkül, 24 nyelven.
+>
+> 🇩🇪 Fuel by NorbApp berechnet, was eine Autofahrt durch Europa kostet: Route, Tankstopps (mit echten
+> Tankstellenpreisen in DE, AT, ES, FR, IT, PT, SI), Vignetten und Maut – in der Währung deiner Wahl.
+> Kostenlos, ohne Anmeldung, in 24 Sprachen.
+>
+> 🇬🇧 Fuel by NorbApp works out what a drive across Europe costs: route, fuel stops (with live station
+> prices in DE, AT, ES, FR, IT, PT, SI), vignettes and tolls – in your currency. Free, no sign-up,
+> in 24 languages.
+>
+> 👉 fuel.norbapp.com
+
+**Posting in several languages:** in the post composer on the page choose
+"Write post in multiple languages" (Bejegyzés írása több nyelven) and add hu, de and en versions –
+everyone sees the version in their own Facebook language. If the option is missing, post the
+trilingual text below.
+
+**First post – pin it (Kitűzés):**
+
+> 🚗 Mennyibe kerül az út? / Was kostet die Fahrt? / What will the trip cost?
+>
+> 🇭🇺 Add meg, honnan hová mész: a Fuel megmutatja, hol érdemes tankolni, mennyi a matrica és az útdíj,
+> és mennyibe kerül az egész út. Ingyenes, regisztráció nélkül.
+> 🇩🇪 Route eingeben: Fuel zeigt, wo du günstig tankst, was Vignetten und Maut kosten und was die ganze
+> Fahrt kostet. Kostenlos, ohne Anmeldung.
+> 🇬🇧 Enter your route: Fuel shows where to fill up, what vignettes and tolls cost and the total for
+> the trip. Free, no sign-up.
+>
+> 👉 https://fuel.norbapp.com/?utm_source=facebook&utm_medium=page&utm_campaign=launch&utm_content=pinned
