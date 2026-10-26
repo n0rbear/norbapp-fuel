@@ -168,6 +168,25 @@ export async function GET(request: Request) {
     top("install_shown", "data->>'mode'", days),
   ]);
 
+  // Campaigns: visitors who arrived through a tagged link, and how many of them calculated a trip.
+  const campaigns = await q(
+    `WITH arrivals AS (
+       SELECT DISTINCT visitor,
+              coalesce(data->>'utm_source', '–') AS source,
+              coalesce(data->>'utm_medium', '–') AS medium,
+              coalesce(data->>'utm_campaign', '–') AS campaign,
+              coalesce(data->>'utm_content', '–') AS content
+         FROM fuel.events
+        WHERE type = 'pageview' AND data ? 'utm_source' AND ${W})
+     SELECT a.source, a.medium, a.campaign, a.content,
+            count(DISTINCT a.visitor) AS visitors,
+            count(DISTINCT p.visitor) AS planners
+       FROM arrivals a
+       LEFT JOIN fuel.events p ON p.visitor = a.visitor AND p.type = 'plan' AND p.at > now() - make_interval(days => $1)
+      GROUP BY 1, 2, 3, 4 ORDER BY visitors DESC LIMIT 30`,
+    P,
+  );
+
   const kmBuckets = await q(
     `SELECT CASE WHEN km < 100 THEN '0–99 km' WHEN km < 300 THEN '100–299 km' WHEN km < 600 THEN '300–599 km'
                  WHEN km < 1000 THEN '600–999 km' ELSE '1000+ km' END AS label, count(*) AS n, min(km) AS o
@@ -228,6 +247,17 @@ ${card("Navigáció-kattintás", num(s.nav_clicks))}
 ${card("Telepítési ajánlat", num(s.install_shown), `${num(s.install_accepted)} telepítés · ${num(s.install_dismissed)} elutasítás`)}
 ${card("Nyelvváltás", num(s.language_changes))}
 </div>
+
+<h2>Kampányok (UTM)</h2><section>${
+  campaigns.length === 0
+    ? `<p class="muted">Még nem jött látogató kampánylinkről (pl. <code>?utm_source=facebook&amp;utm_campaign=…</code>).</p>`
+    : `<table><tr><th>Forrás</th><th>Típus</th><th>Kampány</th><th>Hirdetés/poszt</th><th style="text-align:right">Látogató</th><th style="text-align:right">Kalkulált</th><th style="text-align:right">Konverzió</th></tr>${campaigns
+        .map(
+          (c) =>
+            `<tr><td>${esc(c.source)}</td><td>${esc(c.medium)}</td><td>${esc(c.campaign)}</td><td>${esc(c.content)}</td><td style="text-align:right">${num(c.visitors)}</td><td style="text-align:right">${num(c.planners)}</td><td style="text-align:right">${pct(c.planners, c.visitors)}</td></tr>`,
+        )
+        .join("")}</table>`
+}</section>
 
 <h2>Napi bontás</h2><section><p class="legend muted"><span style="background:var(--ac)"></span>látogató<span style="background:var(--ac2)"></span>kalkuláció</p>
 <table class="daily"><tr><th>Nap</th><th></th><th>Látogató</th><th>Oldal</th><th>Kalkuláció</th><th>Ár-jelzés</th></tr>
