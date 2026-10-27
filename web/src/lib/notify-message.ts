@@ -186,3 +186,21 @@ export function parseHubEvent(body: unknown):
     },
   };
 }
+
+/** The part of a MaxMind GeoLite City answer the notifications use. */
+export type GeoLiteCity = {
+  city?: { names?: Record<string, string> };
+  subdivisions?: Array<{ names?: Record<string, string> }>;
+  country?: { iso_code?: string };
+};
+
+const regionNames = new Intl.DisplayNames(["hu"], { type: "region" });
+
+/** "Budapest, Magyarország" from a GeoLite City answer (city in English, country in Hungarian). */
+export function formatCity(r: GeoLiteCity): string | null {
+  const code = r.country?.iso_code;
+  const country = code && /^[A-Z]{2}$/.test(code) ? (regionNames.of(code) ?? code) : null;
+  const city = r.city?.names?.en ?? r.subdivisions?.[0]?.names?.en ?? null;
+  return [city, country].filter(Boolean).join(", ") || null;
+}
+

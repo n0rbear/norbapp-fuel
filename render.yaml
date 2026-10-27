@@ -69,6 +69,11 @@ services:
         sync: false
       - key: NOTIFY_HUB_TOKEN
         sync: false
+      # Visitor city in notifications (MaxMind GeoLite web service, free account).
+      - key: MAXMIND_ACCOUNT_ID
+        sync: false
+      - key: MAXMIND_LICENSE_KEY
+        sync: false
       - key: REFRESH_TIME
         value: "06:00"
       - key: REFRESH_TZ

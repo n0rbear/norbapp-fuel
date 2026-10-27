@@ -12,7 +12,7 @@ import {
   type Switch,
   withPlace,
 } from "@/lib/notify-message";
-import { countryOf } from "./geo";
+import { placeOf } from "./geo";
 import { communityEnabled, db } from "./community-db";
 import { RateLimiter } from "./rate-limit";
 
@@ -165,8 +165,8 @@ export async function sendNotification(e: { site: string; siteLabel: string; eve
       on = e.on;
     }
     if (!on || !withinBudget(`${e.site}/${e.event}`)) return false;
-    // The visitor's country (from the IP, looked up in memory; the IP is not kept).
-    const message = withPlace(e.notice.message, e.ip ? countryOf(e.ip) : null);
+    // The visitor's city and country (from the IP; the IP is not kept).
+    const message = withPlace(e.notice.message, e.ip ? await placeOf(e.ip) : null);
     await post({ ...e.notice, message, title: `${e.siteLabel} · ${e.notice.title}` });
     return true;
   } catch (err) {
