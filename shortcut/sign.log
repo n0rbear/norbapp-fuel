@@ -1,3 +1,3 @@
-+ timeout 300 shortcuts sign --mode anyone --input shortcut/unsigned.shortcut --output 'shortcut/NorbApp ertesitesek.shortcut'
-/Users/runner/work/_temp/1ae6aa2c-23a1-4913-8cf1-77128de2feb7.sh: line 5: timeout: command not found
-exit=127
++ perl -e 'alarm 300; exec @ARGV' shortcuts sign --mode anyone --input shortcut/unsigned.shortcut --output 'shortcut/NorbApp ertesitesek.shortcut'
+Error: In order to do this, you must be signed into iCloud.
+exit=1
