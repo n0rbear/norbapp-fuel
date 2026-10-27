@@ -17,7 +17,7 @@ jobs:
           sw_vers
           python3 shortcut/build_shortcut.py shortcut/unsigned.shortcut
           plutil -lint shortcut/unsigned.shortcut
-          ( timeout 300 shortcuts sign --mode anyone --input shortcut/unsigned.shortcut --output "shortcut/NorbApp ertesitesek.shortcut" ) > shortcut/sign.log 2>&1 || echo "exit=$?" >> shortcut/sign.log
+          ( perl -e 'alarm 300; exec @ARGV' shortcuts sign --mode anyone --input shortcut/unsigned.shortcut --output "shortcut/NorbApp ertesitesek.shortcut" ) > shortcut/sign.log 2>&1 || echo "exit=$?" >> shortcut/sign.log
           cat shortcut/sign.log
           ls -la shortcut
       - name: Commit result
