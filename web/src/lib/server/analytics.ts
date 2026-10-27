@@ -58,7 +58,7 @@ export function track(request: Request, type: string, data: EventData = {}): voi
   const ua = classifyUserAgent(request.headers.get("user-agent") ?? "");
   if (ua.bot) return;
   const payload = { ...data, device: ua.device, os: ua.os, browser: ua.browser };
-  notify(type, payload);
+  notify(type, payload, clientKey(request));
   if (!communityEnabled) return;
   const visitor = visitorCode(request);
   void ensureSchema()

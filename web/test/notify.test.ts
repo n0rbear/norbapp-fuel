@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allowed, comparable, fuelNotice, parseCatalog, parseHubEvent, resolveSwitch, sortSwitches, switchDisplay, type Switch } from "@/lib/notify-message";
+import { allowed, comparable, fuelNotice, parseCatalog, parseHubEvent, resolveSwitch, sortSwitches, switchDisplay, withPlace, type Switch } from "@/lib/notify-message";
 
 describe("fuelNotice", () => {
   it("describes a calculation", () => {
@@ -95,5 +95,20 @@ describe("parseCatalog", () => {
 describe("comparable", () => {
   it("keeps only the words", () => {
     expect(comparable("⬜️ Keto Mentor · Visszajelzés (hiba vagy ötlet)")).toBe("keto mentor · visszajelzés (hiba vagy ötlet)");
+  });
+});
+
+describe("withPlace", () => {
+  it("adds the country as the last line", () => {
+    expect(withPlace("week · telefon", "Magyarország")).toBe("week · telefon\n📍 Magyarország");
+    expect(withPlace("week · telefon", null)).toBe("week · telefon");
+  });
+
+  it("keeps the visitor IP out of the notice", () => {
+    const r = parseHubEvent({ site: "keto", event: "pageview", message: "m", ip: "84.2.44.1" });
+    expect(r.ok && r.value.ip).toBe("84.2.44.1");
+    expect(r.ok && JSON.stringify(r.value.notice)).not.toContain("84.2.44.1");
+    const bad = parseHubEvent({ site: "keto", event: "pageview", message: "m", ip: "<script>" });
+    expect(bad.ok && bad.value.ip).toBeUndefined();
   });
 });

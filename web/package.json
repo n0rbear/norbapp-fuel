@@ -11,7 +11,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ip-location-db/dbip-country-mmdb": "^2.3.2026060120",
     "@rapideditor/country-coder": "^5.6.1",
+    "mmdb-lib": "^3.0.3",
     "next": "16.4.2",
     "pg": "^8.23.1",
     "react": "19.3.0",
