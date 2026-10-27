@@ -16,7 +16,7 @@ function db(): ReturnType<typeof openReader> | null {
     try {
       // Built at run time so the bundler leaves the binary file alone.
       const parts = ["node_modules", "@ip-location-db", "dbip-country-mmdb", "dbip-country.mmdb"];
-      const file = join(process.cwd(), ...parts);
+      const file = join(/*turbopackIgnore: true*/ process.cwd(), ...parts);
       reader = openReader(readFileSync(file));
     } catch (e) {
       console.warn(`geo: country database unavailable (${e instanceof Error ? e.message : e})`);
