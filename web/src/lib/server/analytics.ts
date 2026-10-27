@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { communityEnabled, db, ensureSchema } from "./community-db";
+import { notify } from "./notify";
 import { clientKey } from "./rate-limit";
 
 // Anonymous usage statistics for /stat. No cookies, no IP addresses, no
@@ -54,10 +55,11 @@ export function classifyUserAgent(ua: string): { device: string; os: string; bro
 
 /** Records an event in the background; never throws and never delays the response. */
 export function track(request: Request, type: string, data: EventData = {}): void {
-  if (!communityEnabled) return;
   const ua = classifyUserAgent(request.headers.get("user-agent") ?? "");
   if (ua.bot) return;
   const payload = { ...data, device: ua.device, os: ua.os, browser: ua.browser };
+  notify(type, payload);
+  if (!communityEnabled) return;
   const visitor = visitorCode(request);
   void ensureSchema()
     .then(() => db().query("INSERT INTO fuel.events (type, visitor, data) VALUES ($1, $2, $3)", [type, visitor, JSON.stringify(payload)]))

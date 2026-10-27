@@ -63,6 +63,9 @@ services:
         sync: false
       - key: STATS_PASSWORD
         sync: false
+      # Push notification per usage event (ntfy topic URL, see web/README.md).
+      - key: NTFY_URL
+        sync: false
       - key: REFRESH_TIME
         value: "06:00"
       - key: REFRESH_TZ

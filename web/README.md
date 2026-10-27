@@ -85,6 +85,7 @@ npm run build
 | `FUEL_HASH_SECRET` | no | Key for the anonymous IP hash of price reports. Default: derived from `FUEL_DATABASE_URL`. |
 | `OVERPASS_URLS` | no | Comma-separated Overpass endpoints for fuel station locations (queried in parallel, first answer wins). |
 | `STATS_USER`, `STATS_PASSWORD` | no | Login for `/stat` (usage statistics, Basic Auth). Without them `/stat` is a 404. |
+| `NTFY_URL` | no | Push notification per usage event via [ntfy](https://ntfy.sh), e.g. `https://ntfy.sh/<secret-topic>` (subscribe to the topic in the ntfy app). `NOTIFY_EVENTS` picks the types (default `plan,plan_error,report,install_accepted`); `NTFY_TOKEN` for a protected topic. At most ~30 per hour. |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | no | AdSense publisher ID (`ca-pub-…`). Build-time. When set: the AdSense script loads, ad slots appear, `/ads.txt` is served, the privacy notice shows its advertising section and the footer gets a "Privacy settings" link. |
 | `NEXT_PUBLIC_ADSENSE_SLOT_TOP`, `NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM` | no | Ad unit IDs for the slot under the title and the one under the planner. |
 
