@@ -10,7 +10,9 @@ import {
   type CatalogEntry,
   type Notice,
   type Switch,
+  withPlace,
 } from "@/lib/notify-message";
+import { countryOf } from "./geo";
 import { communityEnabled, db } from "./community-db";
 import { RateLimiter } from "./rate-limit";
 
@@ -152,7 +154,7 @@ function post(notice: Notice): Promise<void> {
 export const hubEnabled = () => NTFY_URL !== "";
 
 /** Sends one notification if its switch is on. Resolves to whether it went out; never throws. */
-export async function sendNotification(e: { site: string; siteLabel: string; event: string; label: string; on: boolean; notice: Notice }): Promise<boolean> {
+export async function sendNotification(e: { site: string; siteLabel: string; event: string; label: string; on: boolean; notice: Notice; ip?: string }): Promise<boolean> {
   if (!hubEnabled()) return false;
   try {
     let on: boolean;
@@ -163,7 +165,9 @@ export async function sendNotification(e: { site: string; siteLabel: string; eve
       on = e.on;
     }
     if (!on || !withinBudget(`${e.site}/${e.event}`)) return false;
-    await post({ ...e.notice, title: `${e.siteLabel} · ${e.notice.title}` });
+    // The visitor's country (from the IP, looked up in memory; the IP is not kept).
+    const message = withPlace(e.notice.message, e.ip ? countryOf(e.ip) : null);
+    await post({ ...e.notice, message, title: `${e.siteLabel} · ${e.notice.title}` });
     return true;
   } catch (err) {
     console.warn(`notify: ${err instanceof Error ? err.message : err}`);
@@ -191,7 +195,7 @@ export async function confirmSwitchChange(changed: string[]): Promise<boolean> {
 }
 
 /** Fuel's own usage events (called from analytics.track). */
-export function notify(type: string, data: Record<string, unknown>): void {
+export function notify(type: string, data: Record<string, unknown>, ip?: string): void {
   if (!hubEnabled()) return;
   const known = FUEL_EVENTS[type];
   void sendNotification({
@@ -201,6 +205,7 @@ export function notify(type: string, data: Record<string, unknown>): void {
     label: known?.label ?? type,
     on: known?.on ?? false,
     notice: { ...fuelNotice(type, data), click: "https://fuel.norbapp.com/stat?days=1" },
+    ip,
   });
 }
 

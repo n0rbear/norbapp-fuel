@@ -123,6 +123,12 @@ export function comparable(text: string): string {
 }
 
 const SITE_RE = /^[a-z0-9-]{1,30}$/;
+const IP_RE = /^[0-9a-fA-F:.]{3,45}$/;
+
+/** The message with the visitor's country as its last line ("📍 Magyarország"). */
+export function withPlace(message: string, place: string | null | undefined): string {
+  return place ? `${message}\n📍 ${place}` : message;
+}
 const EVENT_RE = /^[a-z0-9_.:-]{1,60}$/;
 
 export type CatalogEntry = { event: string; label: string; on: boolean };
@@ -151,7 +157,7 @@ export function parseCatalog(body: unknown):
 
 /** Validates an event posted by another NorbApp site to /api/notify. */
 export function parseHubEvent(body: unknown):
-  | { ok: true; value: { site: string; siteLabel: string; event: string; label: string; on: boolean; notice: Notice } }
+  | { ok: true; value: { site: string; siteLabel: string; event: string; label: string; on: boolean; notice: Notice; ip?: string } }
   | { ok: false; error: string } {
   if (!body || typeof body !== "object") return { ok: false, error: "body" };
   const b = body as Record<string, unknown>;
@@ -164,6 +170,8 @@ export function parseHubEvent(body: unknown):
   if (!message) return { ok: false, error: "message" };
   const label = str(b.label, 80) ?? event;
   const click = str(b.click, 300);
+  // The visitor's IP, only to look up the country for the message; never stored.
+  const ip = typeof b.ip === "string" && IP_RE.test(b.ip.trim()) ? b.ip.trim() : undefined;
   const tags = Array.isArray(b.tags) ? b.tags.filter((t): t is string => typeof t === "string").slice(0, 5).map((t) => t.slice(0, 40)) : undefined;
   return {
     ok: true,
@@ -174,6 +182,7 @@ export function parseHubEvent(body: unknown):
       label,
       on: b.default !== false,
       notice: { title: str(b.title, 120) ?? label, message, tags, click: click && /^https:\/\//.test(click) ? click : undefined },
+      ...(ip ? { ip } : {}),
     },
   };
 }
