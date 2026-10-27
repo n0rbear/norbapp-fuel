@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@rapideditor/country-coder": "^5.6.1",
+    "geoip-country": "^5.0.202610240156",
     "next": "16.4.2",
     "pg": "^8.23.1",
     "react": "19.3.0",
