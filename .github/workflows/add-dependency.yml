@@ -1,0 +1,32 @@
+name: Add dependency (temporary)
+on:
+  push:
+    branches: [notify-country]
+    paths: [".github/workflows/add-dependency.yml"]
+permissions:
+  contents: write
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install geoip-country@latest --save --no-audit --no-fund
+      - name: Inspect the package
+        run: |
+          cat node_modules/geoip-country/package.json | head -40
+          ls -la node_modules/geoip-country node_modules/geoip-country/data | head -30
+          ls node_modules/geoip-country/*.d.ts 2>/dev/null || echo "no d.ts"
+          node -e 'const g=require("geoip-country"); console.log(JSON.stringify([g.lookup("84.2.44.1"), g.lookup("2a02:ab88::1"), g.lookup("8.8.8.8")]))'
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "web: add geoip-country [skip ci]"
+          git push
