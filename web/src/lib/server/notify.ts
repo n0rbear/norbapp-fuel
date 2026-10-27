@@ -25,7 +25,11 @@ import { RateLimiter } from "./rate-limit";
 const NTFY_URL = process.env.NTFY_URL || "";
 const NTFY_TOKEN = process.env.NTFY_TOKEN || "";
 const CACHE_MS = 15_000;
-const limiter = new RateLimiter(60, 1); // at most ~60 notifications per hour
+// Each event type has its own hourly budget (~30), so a burst of page views
+// cannot crowd out a sign-up or a payment; all together at most ~150 an hour.
+const perEvent = new RateLimiter(30, 0.5);
+const overall = new RateLimiter(150, 2.5);
+const withinBudget = (key: string) => perEvent.take(key) && overall.take("all");
 
 let schemaReady: Promise<void> | null = null;
 let cache: { at: number; rows: Map<string, Switch> } | null = null;
@@ -53,6 +57,7 @@ function ensureNotifySchema(): Promise<void> {
         Object.entries(FUEL_EVENTS).map(([event, e]) => ({ event, label: e.label, on: e.on })),
       ),
     )
+    .then(() => oneTimeChanges())
     .catch((e) => {
       schemaReady = null;
       throw e;
@@ -71,6 +76,27 @@ async function switches(): Promise<Map<string, Switch>> {
   }
   cache = { at: Date.now(), rows: map };
   return map;
+}
+
+/**
+ * Switch changes the owner asked for that must run exactly once (they would
+ * otherwise undo the owner's later choices on every restart).
+ */
+const ONE_TIME: Array<{ id: string; sql: string }> = [
+  {
+    // 2026-10-27: owner wants page views and logins on every site, switchable later.
+    id: "2026-10-27-pageviews-logins-on",
+    sql: `UPDATE notify.switches SET enabled = true, updated_at = now()
+           WHERE (site, event) IN (('fuel', 'pageview'), ('keto', 'login'), ('keto', 'pageview'), ('spiribook', 'user.login'), ('spiribook', 'page.view'))`,
+  },
+];
+
+async function oneTimeChanges(): Promise<void> {
+  await db().query("CREATE TABLE IF NOT EXISTS notify.applied (id text PRIMARY KEY, at timestamptz NOT NULL DEFAULT now())");
+  for (const change of ONE_TIME) {
+    const { rowCount } = await db().query("INSERT INTO notify.applied (id) VALUES ($1) ON CONFLICT DO NOTHING", [change.id]);
+    if (rowCount) await db().query(change.sql);
+  }
 }
 
 /** Adds missing event types (and the site's own switch) without touching existing switches. */
@@ -136,7 +162,7 @@ export async function sendNotification(e: { site: string; siteLabel: string; eve
       console.warn(`notify: switches unavailable (${err instanceof Error ? err.message : err}), using default`);
       on = e.on;
     }
-    if (!on || !limiter.take("ntfy")) return false;
+    if (!on || !withinBudget(`${e.site}/${e.event}`)) return false;
     await post({ ...e.notice, title: `${e.siteLabel} · ${e.notice.title}` });
     return true;
   } catch (err) {
@@ -150,7 +176,7 @@ export async function sendNotification(e: { site: string; siteLabel: string; eve
  * muted (the owner asked for it), but still within the hourly cap.
  */
 export async function confirmSwitchChange(changed: string[]): Promise<boolean> {
-  if (!hubEnabled() || changed.length === 0 || !limiter.take("ntfy")) return false;
+  if (!hubEnabled() || changed.length === 0 || !withinBudget("owner/switch")) return false;
   try {
     await post({
       title: "NorbApp · Értesítések módosítva",

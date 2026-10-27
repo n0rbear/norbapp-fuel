@@ -17,7 +17,7 @@ export const FUEL_EVENTS: Record<string, { label: string; on: boolean }> = {
   stations: { label: "Kútlista-lekérdezés", on: false },
   nav: { label: "Navigáció-kattintás", on: false },
   language: { label: "Nyelvváltás", on: false },
-  pageview: { label: "Oldalmegtekintés", on: false },
+  pageview: { label: "Oldalmegtekintés", on: true },
 };
 
 const DEVICE: Record<string, string> = { mobile: "telefon", tablet: "tablet", desktop: "számítógép" };
