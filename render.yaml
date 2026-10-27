@@ -63,8 +63,11 @@ services:
         sync: false
       - key: STATS_PASSWORD
         sync: false
-      # Push notification per usage event (ntfy topic URL, see web/README.md).
+      # NorbApp notification hub (ntfy topic URL and the token of the other
+      # sites, see web/README.md).
       - key: NTFY_URL
+        sync: false
+      - key: NOTIFY_HUB_TOKEN
         sync: false
       - key: REFRESH_TIME
         value: "06:00"

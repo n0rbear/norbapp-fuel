@@ -85,7 +85,8 @@ npm run build
 | `FUEL_HASH_SECRET` | no | Key for the anonymous IP hash of price reports. Default: derived from `FUEL_DATABASE_URL`. |
 | `OVERPASS_URLS` | no | Comma-separated Overpass endpoints for fuel station locations (queried in parallel, first answer wins). |
 | `STATS_USER`, `STATS_PASSWORD` | no | Login for `/stat` (usage statistics, Basic Auth). Without them `/stat` is a 404. |
-| `NTFY_URL` | no | Push notification per usage event via [ntfy](https://ntfy.sh), e.g. `https://ntfy.sh/<secret-topic>` (subscribe to the topic in the ntfy app). `NOTIFY_EVENTS` picks the types (default `plan,plan_error,report,install_accepted`); `NTFY_TOKEN` for a protected topic. At most ~30 per hour. |
+| `NTFY_URL` | no | NorbApp notification hub: push notifications via [ntfy](https://ntfy.sh), e.g. `https://ntfy.sh/<secret-topic>` (subscribe to the topic in the ntfy app). `NTFY_TOKEN` for a protected topic. See "Notifications" below. |
+| `NOTIFY_HUB_TOKEN` | no | Bearer token the other NorbApp sites use for `POST /api/notify`. Without it the endpoint is a 404. |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | no | AdSense publisher ID (`ca-pub-…`). Build-time. When set: the AdSense script loads, ad slots appear, `/ads.txt` is served, the privacy notice shows its advertising section and the footer gets a "Privacy settings" link. |
 | `NEXT_PUBLIC_ADSENSE_SLOT_TOP`, `NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM` | no | Ad unit IDs for the slot under the title and the one under the planner. |
 
@@ -96,6 +97,10 @@ The OSM defaults are free public instances with fair-use policies (identifying U
 Before setting `NEXT_PUBLIC_ADSENSE_CLIENT`, turn on the GDPR consent message in AdSense (Privacy & messaging → European regulations). That is Google's certified CMP; the AdSense script shows it to visitors in the EEA, the UK and Switzerland before personalised ads, and the footer's "Privacy settings" link reopens it. The `NEXT_PUBLIC_*` variables are read at build time, so redeploy after changing them.
 
 Legal pages: `/impressum`, `/privacy`, `/sources` (texts in `src/i18n/legal.ts`, in hu/de/en; other languages show English).
+
+## Notifications (NorbApp hub)
+
+This service is the notification hub for all NorbApp sites. Fuel's own usage events and events the other sites post to `POST /api/notify` (`Authorization: Bearer $NOTIFY_HUB_TOKEN`, body `{ site, siteLabel, event, label, default, title?, message, tags?, click? }`) go to the ntfy topic in `NTFY_URL` when their switch is on. Switches live in the shared Postgres, table `notify.switches`: an event type appears there the first time it happens, on or off as `default` (Fuel: `FUEL_EVENTS` in `src/lib/notify-message.ts`) proposes; the row `*/*` mutes everything. The owner changes them from an iPhone shortcut through `/api/notify/settings` (Basic Auth with the `/stat` login): `GET` lists them (`menu` maps the shown text to the key for "Choose from List"), `POST { keys }` flips the given ones (`{ key, enabled }` sets one). At most ~60 notifications per hour go out; without the database every event follows its default.
 
 ## Usage statistics (`/stat`)
 

@@ -1,9 +1,24 @@
-// Text of the push notification sent for a usage event (see lib/server/notify.ts).
-// Returns null for event types that should not notify.
+// Notification texts and the switch list of the NorbApp notification hub
+// (lib/server/notify.ts). Pure functions, tested in test/notify.test.ts.
 
 type Data = Record<string, unknown>;
 
-export const DEFAULT_NOTIFY_EVENTS = ["plan", "plan_error", "report", "install_accepted"];
+export type Notice = { title: string; message: string; tags?: string[]; click?: string };
+
+/** Fuel's usage events: switch label and whether it is on until changed. */
+export const FUEL_EVENTS: Record<string, { label: string; on: boolean }> = {
+  plan: { label: "Új kalkuláció", on: true },
+  plan_error: { label: "Hibás kalkuláció", on: true },
+  report: { label: "Ár-jelzés", on: true },
+  install_accepted: { label: "App telepítés", on: true },
+  install_dismissed: { label: "Telepítés elutasítva", on: false },
+  install_shown: { label: "Telepítési ajánlat megjelent", on: false },
+  tolls: { label: "Útdíj-lekérdezés", on: false },
+  stations: { label: "Kútlista-lekérdezés", on: false },
+  nav: { label: "Navigáció-kattintás", on: false },
+  language: { label: "Nyelvváltás", on: false },
+  pageview: { label: "Oldalmegtekintés", on: false },
+};
 
 const DEVICE: Record<string, string> = { mobile: "telefon", tablet: "tablet", desktop: "számítógép" };
 const STATUS: Record<string, string> = { pending: "függőben", confirmed: "megerősítve", implausible: "elutasítva" };
@@ -12,7 +27,9 @@ const device = (d: Data) => [DEVICE[String(d.device)] ?? d.device, d.os].filter(
 const lines = (...l: unknown[]) => l.filter(Boolean).join("\n");
 const km = (v: unknown) => `${Number(v ?? 0).toLocaleString("hu-HU")} km`;
 
-export function notifyMessage(type: string, d: Data): { title: string; message: string; tags: string[] } | null {
+/** Text for a Fuel usage event. */
+export function fuelNotice(type: string, d: Data): Notice {
+  const label = FUEL_EVENTS[type]?.label ?? type;
   switch (type) {
     case "plan": {
       const route = Array.isArray(d.countries) && d.countries.length > 0 ? d.countries.join(" → ") : `${d.from ?? "?"} → ${d.to ?? "?"}`;
@@ -23,19 +40,81 @@ export function notifyMessage(type: string, d: Data): { title: string; message: 
         d.roundTrip ? "oda-vissza" : null,
         Number(d.waypoints) > 0 ? `${d.waypoints} köztes megálló` : null,
       ].filter(Boolean);
-      return { title: "Új kalkuláció", message: lines(route, extra.join(" · "), device(d)), tags: ["fuelpump"] };
+      return { title: label, message: lines(route, extra.join(" · "), device(d)), tags: ["fuelpump"] };
     }
     case "plan_error":
-      return { title: "Hibás kalkuláció", message: lines(`Hibakód: ${d.code ?? "ismeretlen"}`, device(d)), tags: ["warning"] };
+      return { title: label, message: lines(`Hibakód: ${d.code ?? "ismeretlen"}`, device(d)), tags: ["warning"] };
     case "report":
-      return {
-        title: "Ár-jelzés",
-        message: lines(`${d.country ?? "?"} · ${d.fuel ?? "?"} · ${STATUS[String(d.status)] ?? d.status}`, device(d)),
-        tags: ["moneybag"],
-      };
+      return { title: label, message: lines(`${d.country ?? "?"} · ${d.fuel ?? "?"} · ${STATUS[String(d.status)] ?? d.status}`, device(d)), tags: ["moneybag"] };
     case "install_accepted":
-      return { title: "Telepítették az appot", message: device(d) || "–", tags: ["tada"] };
+      return { title: label, message: device(d) || "–", tags: ["tada"] };
+    case "pageview":
+      return { title: label, message: lines(d.path, device(d)) || "–" };
+    case "tolls":
+      return { title: label, message: lines(Array.isArray(d.countries) ? d.countries.join(", ") : null, device(d)) || "–" };
+    case "stations":
+    case "nav":
+    case "language":
+      return { title: label, message: lines(d.country ?? d.app ?? d.to, device(d)) || "–" };
     default:
-      return null;
+      return { title: label, message: device(d) || "–" };
   }
+}
+
+/** One row of the switch list. site "*" is the master switch. */
+export type Switch = { site: string; siteLabel: string; event: string; label: string; enabled: boolean };
+
+export const MASTER = { site: "*", event: "*" };
+export const switchKey = (s: { site: string; event: string }) => `${s.site}/${s.event}`;
+
+/** What the iPhone shortcut shows in its list. */
+export function switchDisplay(s: Switch): string {
+  if (s.site === MASTER.site) return s.enabled ? "🔔 Minden értesítés BE (koppints a némításhoz)" : "🔕 Minden értesítés NÉMÍTVA (koppints a bekapcsoláshoz)";
+  return `${s.enabled ? "✅" : "⬜️"} ${s.siteLabel} · ${s.label}`;
+}
+
+/** Master first, then by site and with switched-on events before the rest. */
+export function sortSwitches(list: Switch[]): Switch[] {
+  return [...list].sort((a, b) => {
+    if (a.site === MASTER.site) return -1;
+    if (b.site === MASTER.site) return 1;
+    return a.siteLabel.localeCompare(b.siteLabel, "hu") || Number(b.enabled) - Number(a.enabled) || a.label.localeCompare(b.label, "hu");
+  });
+}
+
+/** Whether a notification goes out: master on and the event's switch on. */
+export function allowed(switches: Map<string, boolean>, site: string, event: string): boolean {
+  return switches.get(switchKey(MASTER)) !== false && switches.get(switchKey({ site, event })) === true;
+}
+
+const SITE_RE = /^[a-z0-9-]{1,30}$/;
+const EVENT_RE = /^[a-z0-9_.:-]{1,60}$/;
+
+/** Validates an event posted by another NorbApp site to /api/notify. */
+export function parseHubEvent(body: unknown):
+  | { ok: true; value: { site: string; siteLabel: string; event: string; label: string; on: boolean; notice: Notice } }
+  | { ok: false; error: string } {
+  if (!body || typeof body !== "object") return { ok: false, error: "body" };
+  const b = body as Record<string, unknown>;
+  const str = (v: unknown, max: number) => (typeof v === "string" && v.trim() !== "" ? v.trim().slice(0, max) : null);
+  const site = str(b.site, 30);
+  const event = str(b.event, 60);
+  if (!site || !SITE_RE.test(site) || site === MASTER.site) return { ok: false, error: "site" };
+  if (!event || !EVENT_RE.test(event)) return { ok: false, error: "event" };
+  const message = str(b.message, 1000);
+  if (!message) return { ok: false, error: "message" };
+  const label = str(b.label, 80) ?? event;
+  const click = str(b.click, 300);
+  const tags = Array.isArray(b.tags) ? b.tags.filter((t): t is string => typeof t === "string").slice(0, 5).map((t) => t.slice(0, 40)) : undefined;
+  return {
+    ok: true,
+    value: {
+      site,
+      siteLabel: str(b.siteLabel, 40) ?? site,
+      event,
+      label,
+      on: b.default !== false,
+      notice: { title: str(b.title, 120) ?? label, message, tags, click: click && /^https:\/\//.test(click) ? click : undefined },
+    },
+  };
 }
