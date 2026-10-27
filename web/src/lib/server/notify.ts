@@ -62,6 +62,8 @@ async function switches(): Promise<Map<string, Switch>> {
   return map;
 }
 
+const enabledMap = (map: Map<string, Switch>) => new Map<string, boolean>([...map].map(([k, s]): [string, boolean] => [k, s.enabled]));
+
 /** Adds an event type the first time it is seen; its switch then decides. */
 async function isOn(site: string, siteLabel: string, event: string, label: string, on: boolean): Promise<boolean> {
   if (!communityEnabled) return on;
@@ -74,9 +76,9 @@ async function isOn(site: string, siteLabel: string, event: string, label: strin
       [site, event, siteLabel, label, on],
     );
     cache = null;
-    return allowed(await switches(), site, event);
+    return allowed(enabledMap(await switches()), site, event);
   }
-  return allowed(new Map([...map].map(([k, s]) => [k, s.enabled])), site, event);
+  return allowed(enabledMap(map), site, event);
 }
 
 function post(notice: Notice): Promise<void> {
