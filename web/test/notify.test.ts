@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allowed, comparable, fuelNotice, parseCatalog, parseHubEvent, resolveSwitch, sortSwitches, switchDisplay, withPlace, type Switch } from "@/lib/notify-message";
+import { allowed, comparable, formatCity, fuelNotice, parseCatalog, parseHubEvent, resolveSwitch, sortSwitches, switchDisplay, withPlace, type Switch } from "@/lib/notify-message";
 
 describe("fuelNotice", () => {
   it("describes a calculation", () => {
@@ -112,3 +112,13 @@ describe("withPlace", () => {
     expect(bad.ok && bad.value.ip).toBeUndefined();
   });
 });
+
+describe("formatCity", () => {
+  it("city in English, country in Hungarian, region or country when there is no city", () => {
+    expect(formatCity({ city: { names: { en: "Budapest" } }, country: { iso_code: "HU" } })).toBe("Budapest, Magyarország");
+    expect(formatCity({ subdivisions: [{ names: { en: "Bavaria" } }], country: { iso_code: "DE" } })).toBe("Bavaria, Németország");
+    expect(formatCity({ country: { iso_code: "AT" } })).toBe("Ausztria");
+    expect(formatCity({})).toBeNull();
+  });
+});
+
