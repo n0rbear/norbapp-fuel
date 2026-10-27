@@ -32,7 +32,7 @@ export function countryOf(ip: string): string | null {
   const address = ip.trim().replace(/^::ffff:/i, "");
   if (!address || PRIVATE.test(address)) return null;
   try {
-    const code = (db()?.get(address) as CountryRecord | null | undefined)?.country_code;
+    const code = (db()?.get(address) as unknown as CountryRecord | null | undefined)?.country_code;
     if (!code || !/^[A-Z]{2}$/.test(code)) return null;
     return names.of(code) ?? code;
   } catch {
