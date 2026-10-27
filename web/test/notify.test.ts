@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allowed, fuelNotice, parseHubEvent, sortSwitches, switchDisplay, type Switch } from "@/lib/notify-message";
+import { allowed, fuelNotice, parseCatalog, parseHubEvent, resolveSwitch, sortSwitches, switchDisplay, type Switch } from "@/lib/notify-message";
 
 describe("fuelNotice", () => {
   it("describes a calculation", () => {
@@ -30,12 +30,33 @@ describe("switches", () => {
     expect(allowed(map, "fuel", "plan")).toBe(false);
   });
 
-  it("lists the master first, then by site with switched-on events first", () => {
-    const list = sortSwitches([sw("spiribook", "b", false, "Spiribook", "B"), sw("fuel", "a", false, "Fuel", "A"), sw("*", "*", true), sw("fuel", "z", true, "Fuel", "Z")]);
-    expect(list.map((s) => `${s.site}/${s.event}`)).toEqual(["*/*", "fuel/z", "fuel/a", "spiribook/b"]);
-    expect(switchDisplay(list[0])).toContain("BE");
-    expect(switchDisplay(list[1])).toBe("✅ Fuel · Z");
-    expect(switchDisplay(list[2])).toBe("⬜️ Fuel · A");
+  it("a site's own switch mutes all its events", () => {
+    const map = new Map([["*/*", true], ["keto/*", false], ["keto/signup", true], ["fuel/plan", true]]);
+    expect(allowed(map, "keto", "signup")).toBe(false);
+    expect(allowed(map, "fuel", "plan")).toBe(true);
+  });
+
+  it("lists the master first, then per site its own switch, switched-on events, the rest", () => {
+    const list = sortSwitches([
+      sw("spiribook", "b", false, "Spiribook", "B"),
+      sw("fuel", "a", false, "Fuel", "A"),
+      sw("*", "*", true),
+      sw("fuel", "z", true, "Fuel", "Z"),
+      sw("fuel", "*", true, "Fuel", "Az oldal összes értesítése"),
+    ]);
+    expect(list.map((s) => `${s.site}/${s.event}`)).toEqual(["*/*", "fuel/*", "fuel/z", "fuel/a", "spiribook/b"]);
+    expect(switchDisplay(list[0])).toBe("🔔 MINDEN ÉRTESÍTÉS BE");
+    expect(switchDisplay(list[1])).toBe("🔔 FUEL – az oldal összes értesítése");
+    expect(switchDisplay(list[2])).toBe("✅ Fuel · Z");
+    expect(switchDisplay(list[3])).toBe("⬜️ Fuel · A");
+  });
+
+  it("finds a switch by its shown line or its key", () => {
+    const list = [sw("fuel", "plan", true, "Fuel", "Új kalkuláció"), sw("*", "*", false)];
+    expect(resolveSwitch(list, "✅ Fuel · Új kalkuláció")).toBe("fuel/plan");
+    expect(resolveSwitch(list, "fuel/plan")).toBe("fuel/plan");
+    expect(resolveSwitch(list, "🔕 MINDEN ÉRTESÍTÉS NÉMÍTVA")).toBe("*/*");
+    expect(resolveSwitch(list, "valami")).toBeNull();
   });
 });
 
@@ -56,5 +77,14 @@ describe("parseHubEvent", () => {
     expect(parseHubEvent({ site: "keto", event: "a b", message: "m" }).ok).toBe(false);
     expect(parseHubEvent({ site: "keto", event: "x", message: " " }).ok).toBe(false);
     expect(parseHubEvent(null).ok).toBe(false);
+  });
+});
+
+describe("parseCatalog", () => {
+  it("keeps valid event types with their labels and defaults", () => {
+    const r = parseCatalog({ site: "keto", siteLabel: "Keto Mentor", events: [{ event: "signup", label: "Új regisztráció", default: true }, { event: "login", label: "Bejelentkezés" }, { event: "bad event" }, null] });
+    expect(r).toEqual({ ok: true, value: { site: "keto", siteLabel: "Keto Mentor", events: [{ event: "signup", label: "Új regisztráció", on: true }, { event: "login", label: "Bejelentkezés", on: false }] } });
+    expect(parseCatalog({ site: "*", events: [] }).ok).toBe(false);
+    expect(parseCatalog({ site: "keto" }).ok).toBe(false);
   });
 });

@@ -61,34 +61,77 @@ export function fuelNotice(type: string, d: Data): Notice {
   }
 }
 
-/** One row of the switch list. site "*" is the master switch. */
+// One row of the switch list. Key "*/*" mutes everything, "<site>/*" a whole site.
 export type Switch = { site: string; siteLabel: string; event: string; label: string; enabled: boolean };
 
 export const MASTER = { site: "*", event: "*" };
+export const ALL = "*";
 export const switchKey = (s: { site: string; event: string }) => `${s.site}/${s.event}`;
 
 /** What the iPhone shortcut shows in its list. */
 export function switchDisplay(s: Switch): string {
-  if (s.site === MASTER.site) return s.enabled ? "🔔 Minden értesítés BE (koppints a némításhoz)" : "🔕 Minden értesítés NÉMÍTVA (koppints a bekapcsoláshoz)";
+  if (s.site === MASTER.site) return s.enabled ? "🔔 MINDEN ÉRTESÍTÉS BE" : "🔕 MINDEN ÉRTESÍTÉS NÉMÍTVA";
+  if (s.event === ALL) return `${s.enabled ? "🔔" : "🔕"} ${s.siteLabel.toUpperCase()} – az oldal összes értesítése`;
   return `${s.enabled ? "✅" : "⬜️"} ${s.siteLabel} · ${s.label}`;
 }
 
-/** Master first, then by site and with switched-on events before the rest. */
+/** Master first; per site its own switch first, then switched-on events, then the rest. */
 export function sortSwitches(list: Switch[]): Switch[] {
   return [...list].sort((a, b) => {
     if (a.site === MASTER.site) return -1;
     if (b.site === MASTER.site) return 1;
-    return a.siteLabel.localeCompare(b.siteLabel, "hu") || Number(b.enabled) - Number(a.enabled) || a.label.localeCompare(b.label, "hu");
+    return (
+      a.siteLabel.localeCompare(b.siteLabel, "hu") ||
+      Number(b.event === ALL) - Number(a.event === ALL) ||
+      Number(b.enabled) - Number(a.enabled) ||
+      a.label.localeCompare(b.label, "hu")
+    );
   });
 }
 
-/** Whether a notification goes out: master on and the event's switch on. */
+/** Whether a notification goes out: master, the site's switch and the event's switch all on. */
 export function allowed(switches: Map<string, boolean>, site: string, event: string): boolean {
-  return switches.get(switchKey(MASTER)) !== false && switches.get(switchKey({ site, event })) === true;
+  return (
+    switches.get(switchKey(MASTER)) !== false &&
+    switches.get(switchKey({ site, event: ALL })) !== false &&
+    switches.get(switchKey({ site, event })) === true
+  );
+}
+
+/** The switch a shortcut picked: its shown text or its key. */
+export function resolveSwitch(list: Switch[], picked: string): string | null {
+  const text = picked.trim();
+  const byDisplay = list.find((s) => switchDisplay(s) === text);
+  if (byDisplay) return switchKey(byDisplay);
+  return list.some((s) => switchKey(s) === text) ? text : null;
 }
 
 const SITE_RE = /^[a-z0-9-]{1,30}$/;
 const EVENT_RE = /^[a-z0-9_.:-]{1,60}$/;
+
+export type CatalogEntry = { event: string; label: string; on: boolean };
+
+/** Validates a site's list of event types (POST /api/notify/register). */
+export function parseCatalog(body: unknown):
+  | { ok: true; value: { site: string; siteLabel: string; events: CatalogEntry[] } }
+  | { ok: false; error: string } {
+  if (!body || typeof body !== "object") return { ok: false, error: "body" };
+  const b = body as Record<string, unknown>;
+  const site = typeof b.site === "string" ? b.site.trim() : "";
+  if (!SITE_RE.test(site)) return { ok: false, error: "site" };
+  if (!Array.isArray(b.events)) return { ok: false, error: "events" };
+  const events: CatalogEntry[] = [];
+  for (const e of b.events.slice(0, 300)) {
+    if (!e || typeof e !== "object") continue;
+    const r = e as Record<string, unknown>;
+    const event = typeof r.event === "string" ? r.event.trim() : "";
+    if (!EVENT_RE.test(event)) continue;
+    const label = typeof r.label === "string" && r.label.trim() ? r.label.trim().slice(0, 80) : event;
+    events.push({ event, label, on: r.default === true });
+  }
+  const siteLabel = typeof b.siteLabel === "string" && b.siteLabel.trim() ? b.siteLabel.trim().slice(0, 40) : site;
+  return { ok: true, value: { site, siteLabel, events } };
+}
 
 /** Validates an event posted by another NorbApp site to /api/notify. */
 export function parseHubEvent(body: unknown):

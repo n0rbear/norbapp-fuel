@@ -1,10 +1,13 @@
 import "server-only";
 import {
+  ALL,
   allowed,
   FUEL_EVENTS,
   fuelNotice,
+  resolveSwitch,
   sortSwitches,
   switchKey,
+  type CatalogEntry,
   type Notice,
   type Switch,
 } from "@/lib/notify-message";
@@ -14,9 +17,11 @@ import { RateLimiter } from "./rate-limit";
 // NorbApp notification hub. Fuel's own usage events and events posted by the
 // other NorbApp sites (/api/notify) go out as ntfy push notifications
 // (NTFY_URL = https://ntfy.sh/<secret-topic>) when their switch is on.
-// Switches live in the shared Postgres (schema "notify"): every event type
-// appears there the first time it happens, on or off as its sender proposes,
-// and the owner flips them from the iPhone shortcut (/api/notify/settings).
+// Switches live in the shared Postgres (schema "notify"): each site registers
+// all its event types at startup (/api/notify/register; Fuel's own below),
+// unknown ones are added the first time they happen, on or off as the sender
+// proposes, and the owner flips them from the iPhone shortcut
+// (/api/notify/settings). "*/*" mutes everything, "<site>/*" one site.
 const NTFY_URL = process.env.NTFY_URL || "";
 const NTFY_TOKEN = process.env.NTFY_TOKEN || "";
 const CACHE_MS = 15_000;
@@ -41,7 +46,13 @@ function ensureNotifySchema(): Promise<void> {
        INSERT INTO notify.switches (site, event, site_label, label, enabled)
        VALUES ('*', '*', 'Mind', 'Minden értesítés', true) ON CONFLICT DO NOTHING;`,
     )
-    .then(() => undefined)
+    .then(() =>
+      upsertCatalog(
+        "fuel",
+        "Fuel",
+        Object.entries(FUEL_EVENTS).map(([event, e]) => ({ event, label: e.label, on: e.on })),
+      ),
+    )
     .catch((e) => {
       schemaReady = null;
       throw e;
@@ -62,6 +73,30 @@ async function switches(): Promise<Map<string, Switch>> {
   return map;
 }
 
+/** Adds missing event types (and the site's own switch) without touching existing switches. */
+async function upsertCatalog(site: string, siteLabel: string, events: CatalogEntry[]): Promise<void> {
+  const rows: CatalogEntry[] = [{ event: ALL, label: "Az oldal összes értesítése", on: true }, ...events];
+  const params: unknown[] = [];
+  const values = rows.map((e, i) => {
+    params.push(site, e.event, siteLabel, e.label, e.on);
+    const o = i * 5;
+    return `($${o + 1}, $${o + 2}, $${o + 3}, $${o + 4}, $${o + 5})`;
+  });
+  await db().query(
+    `INSERT INTO notify.switches (site, event, site_label, label, enabled) VALUES ${values.join(", ")}
+     ON CONFLICT (site, event) DO UPDATE SET site_label = EXCLUDED.site_label, label = EXCLUDED.label`,
+    params,
+  );
+  cache = null;
+}
+
+/** A site's full list of event types, so every switch exists before its first event. */
+export async function registerCatalog(site: string, siteLabel: string, events: CatalogEntry[]): Promise<number> {
+  await ensureNotifySchema();
+  await upsertCatalog(site, siteLabel, events);
+  return events.length;
+}
+
 const enabledMap = (map: Map<string, Switch>) => new Map<string, boolean>([...map].map(([k, s]): [string, boolean] => [k, s.enabled]));
 
 /** Adds an event type the first time it is seen; its switch then decides. */
@@ -70,12 +105,7 @@ async function isOn(site: string, siteLabel: string, event: string, label: strin
   const map = await switches();
   const key = switchKey({ site, event });
   if (!map.has(key)) {
-    await db().query(
-      `INSERT INTO notify.switches (site, event, site_label, label, enabled) VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (site, event) DO UPDATE SET site_label = EXCLUDED.site_label, label = EXCLUDED.label`,
-      [site, event, siteLabel, label, on],
-    );
-    cache = null;
+    await upsertCatalog(site, siteLabel, [{ event, label, on }]);
     return allowed(enabledMap(await switches()), site, event);
   }
   return allowed(enabledMap(map), site, event);
@@ -134,8 +164,10 @@ export async function listSwitches(): Promise<Switch[]> {
   return sortSwitches([...(await switches()).values()]);
 }
 
-/** Sets a switch, or flips it when enabled is omitted. Null when the key is unknown. */
-export async function setSwitch(key: string, enabled?: boolean): Promise<Switch | null> {
+/** Sets a switch, or flips it when enabled is omitted. Takes its key or its shown text; null when unknown. */
+export async function setSwitch(picked: string, enabled?: boolean): Promise<Switch | null> {
+  const key = resolveSwitch([...(await switches()).values()], picked);
+  if (!key) return null;
   const slash = key.indexOf("/");
   if (slash < 1) return null;
   const site = key.slice(0, slash);
