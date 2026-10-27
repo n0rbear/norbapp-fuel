@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import { switchDisplay, switchKey, type Switch } from "@/lib/notify-message";
 import { isOwner, loginRequired, ownerLoginConfigured } from "@/lib/server/basic-auth";
 import { communityEnabled } from "@/lib/server/community-db";
-import { listSwitches, setSwitch } from "@/lib/server/notify";
+import { confirmSwitchChange, listSwitches, setSwitch } from "@/lib/server/notify";
 
 // Notification switches for the owner's iPhone shortcut (Basic Auth with the
 // /stat login):
@@ -10,7 +10,8 @@ import { listSwitches, setSwitch } from "@/lib/server/notify";
 //        (lines keeps the order: everything, then per site its own switch first)
 //   POST { keys: […] } flips those switches; each is a key ("fuel/plan") or a
 //        shown line, as a list or one per line. { key, enabled } sets one.
-//        Answers { changed: [display…], lines, menu, items }.
+//        Answers { changed: [display…], lines, menu, items } and sends a push
+//        confirmation listing the changed switches (even when all is muted).
 const NO_STORE = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" };
 const view = (s: Switch) => ({ key: switchKey(s), display: switchDisplay(s), ...s });
 const payload = (list: Switch[]) => ({ lines: list.map(switchDisplay), menu: Object.fromEntries(list.map((s) => [switchDisplay(s), switchKey(s)])), items: list.map(view) });
@@ -48,5 +49,7 @@ export async function POST(request: Request) {
     const s = await setSwitch(key, enabled);
     if (s) changed.push(switchDisplay(s));
   }
+  // Push confirmation to the owner's phone that the change went through.
+  await confirmSwitchChange(changed);
   return Response.json({ changed, ...payload(await listSwitches()) }, { headers: NO_STORE });
 }

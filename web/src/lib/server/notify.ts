@@ -145,6 +145,25 @@ export async function sendNotification(e: { site: string; siteLabel: string; eve
   }
 }
 
+/**
+ * Confirms the owner's own switch change. Goes out even when everything is
+ * muted (the owner asked for it), but still within the hourly cap.
+ */
+export async function confirmSwitchChange(changed: string[]): Promise<boolean> {
+  if (!hubEnabled() || changed.length === 0 || !limiter.take("ntfy")) return false;
+  try {
+    await post({
+      title: "NorbApp · Értesítések módosítva",
+      message: changed.join("\n"),
+      tags: ["gear"],
+    });
+    return true;
+  } catch (err) {
+    console.warn(`notify: ${err instanceof Error ? err.message : err}`);
+    return false;
+  }
+}
+
 /** Fuel's own usage events (called from analytics.track). */
 export function notify(type: string, data: Record<string, unknown>): void {
   if (!hubEnabled()) return;
