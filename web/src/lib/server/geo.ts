@@ -1,6 +1,6 @@
 import "server-only";
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { join } from "node:path";
 import { Reader } from "mmdb-lib";
 
 // Visitor country for the owner's notifications: IP → country from the DB-IP
@@ -14,7 +14,9 @@ let reader: ReturnType<typeof openReader> | null | undefined;
 function db(): ReturnType<typeof openReader> | null {
   if (reader === undefined) {
     try {
-      const file = createRequire(import.meta.url).resolve("@ip-location-db/dbip-country-mmdb/dbip-country.mmdb");
+      // Built at run time so the bundler leaves the binary file alone.
+      const parts = ["node_modules", "@ip-location-db", "dbip-country-mmdb", "dbip-country.mmdb"];
+      const file = join(process.cwd(), ...parts);
       reader = openReader(readFileSync(file));
     } catch (e) {
       console.warn(`geo: country database unavailable (${e instanceof Error ? e.message : e})`);

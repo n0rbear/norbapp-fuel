@@ -17,8 +17,6 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
-  // The visitor-country database is read from its package folder at runtime.
-  serverExternalPackages: ["@ip-location-db/dbip-country-mmdb", "mmdb-lib"],
   turbopack: {
     rules: {
       "*.css": {
