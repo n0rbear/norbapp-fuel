@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allowed, fuelNotice, parseCatalog, parseHubEvent, resolveSwitch, sortSwitches, switchDisplay, type Switch } from "@/lib/notify-message";
+import { allowed, comparable, fuelNotice, parseCatalog, parseHubEvent, resolveSwitch, sortSwitches, switchDisplay, type Switch } from "@/lib/notify-message";
 
 describe("fuelNotice", () => {
   it("describes a calculation", () => {
@@ -57,6 +57,9 @@ describe("switches", () => {
     expect(resolveSwitch(list, "fuel/plan")).toBe("fuel/plan");
     expect(resolveSwitch(list, "🔕 MINDEN ÉRTESÍTÉS NÉMÍTVA")).toBe("*/*");
     expect(resolveSwitch(list, "valami")).toBeNull();
+    // other emoji variant, decomposed accents, extra spaces
+    expect(resolveSwitch(list, "☑️  Fuel · U\u0301j kalkuláció ")).toBe("fuel/plan");
+    expect(resolveSwitch(list, "🔔 Minden értesítés be")).toBe("*/*");
   });
 });
 
@@ -86,5 +89,11 @@ describe("parseCatalog", () => {
     expect(r).toEqual({ ok: true, value: { site: "keto", siteLabel: "Keto Mentor", events: [{ event: "signup", label: "Új regisztráció", on: true }, { event: "login", label: "Bejelentkezés", on: false }] } });
     expect(parseCatalog({ site: "*", events: [] }).ok).toBe(false);
     expect(parseCatalog({ site: "keto" }).ok).toBe(false);
+  });
+});
+
+describe("comparable", () => {
+  it("keeps only the words", () => {
+    expect(comparable("⬜️ Keto Mentor · Visszajelzés (hiba vagy ötlet)")).toBe("keto mentor · visszajelzés (hiba vagy ötlet)");
   });
 });
