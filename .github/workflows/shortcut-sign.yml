@@ -1,0 +1,30 @@
+name: Sign shortcut (temporary)
+on:
+  push:
+    branches: [shortcut-sign]
+    paths: ["shortcut/build_shortcut.py", ".github/workflows/shortcut-sign.yml"]
+permissions:
+  contents: write
+jobs:
+  sign:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and sign
+        run: |
+          set -x
+          sw_vers
+          python3 shortcut/build_shortcut.py shortcut/unsigned.shortcut
+          plutil -lint shortcut/unsigned.shortcut
+          ( timeout 300 shortcuts sign --mode anyone --input shortcut/unsigned.shortcut --output "shortcut/NorbApp ertesitesek.shortcut" ) > shortcut/sign.log 2>&1 || echo "exit=$?" >> shortcut/sign.log
+          cat shortcut/sign.log
+          ls -la shortcut
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -f shortcut
+          git commit -m "signed shortcut [skip ci]" || true
+          git push
