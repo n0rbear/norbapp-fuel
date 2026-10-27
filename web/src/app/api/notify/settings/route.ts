@@ -39,14 +39,19 @@ export async function POST(request: Request) {
   } catch {
     return Response.json({ error: "json" }, { status: 400 });
   }
+  // Field names in any case: the phone's keyboard capitalises "keys" to "Keys".
+  const field = (name: string) => Object.entries(body).find(([k]) => k.trim().toLowerCase() === name)?.[1];
+  const keysField = field("keys") ?? field("key");
   // Shortcuts may send a list as one text with a key per line.
-  const raw = Array.isArray(body.keys) ? body.keys : typeof body.keys === "string" ? body.keys.split(/\r?\n/) : typeof body.key === "string" ? [body.key] : [];
+  const raw = Array.isArray(keysField) ? keysField : typeof keysField === "string" ? keysField.split(/\r?\n/) : [];
   const keys = raw.filter((k): k is string => typeof k === "string").map((k) => k.trim()).filter(Boolean).slice(0, 100);
   if (keys.length === 0) {
     console.log(`notify settings: no keys in body (fields: ${Object.keys(body).join(",") || "none"})`);
-    return Response.json({ error: "keys", changed: ["❓ Nem érkezett kiválasztott sor (a kérés törzsében nincs „keys” mező)."] }, { status: 400 });
+    // 200 on purpose: the shortcut shows the answer only for a successful request.
+    return Response.json({ error: "keys", changed: ["❓ Nem érkezett kiválasztott sor (a kérés törzsében nincs „keys” mező)."] }, { headers: NO_STORE });
   }
-  const enabled = typeof body.enabled === "boolean" ? body.enabled : undefined;
+  const enabledField = field("enabled");
+  const enabled = typeof enabledField === "boolean" ? enabledField : undefined;
   const changed: string[] = [];
   const unknown: string[] = [];
   for (const key of keys) {
