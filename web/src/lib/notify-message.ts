@@ -101,9 +101,25 @@ export function allowed(switches: Map<string, boolean>, site: string, event: str
 /** The switch a shortcut picked: its shown text or its key. */
 export function resolveSwitch(list: Switch[], picked: string): string | null {
   const text = picked.trim();
-  const byDisplay = list.find((s) => switchDisplay(s) === text);
-  if (byDisplay) return switchKey(byDisplay);
-  return list.some((s) => switchKey(s) === text) ? text : null;
+  if (list.some((s) => switchKey(s) === text)) return text;
+  // The phone may send the line back with other emoji variants, Unicode
+  // normalisation or spacing, so compare the words only.
+  const wanted = comparable(text);
+  if (!wanted) return null;
+  const match = list.find((s) => comparable(switchDisplay(s)) === wanted);
+  if (match) return switchKey(match);
+  if (/^minden értesítés\b/.test(wanted)) return switchKey(MASTER);
+  return null;
+}
+
+/** Letters, digits and separators only, NFC, lower case, single spaces. */
+export function comparable(text: string): string {
+  return text
+    .normalize("NFC")
+    .replace(/[^\p{L}\p{N}·–\-/*_.:()]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 }
 
 const SITE_RE = /^[a-z0-9-]{1,30}$/;
