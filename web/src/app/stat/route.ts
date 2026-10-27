@@ -1,23 +1,10 @@
-import { timingSafeEqual } from "node:crypto";
 import { connection } from "next/server";
+import { isOwner, loginRequired, ownerLoginConfigured } from "@/lib/server/basic-auth";
 import { communityEnabled, db, ensureSchema } from "@/lib/server/community-db";
 
 // Usage statistics, reachable only by typing /stat and logging in
 // (STATS_USER / STATS_PASSWORD on Render). Not linked from the app.
 const TZ = "Europe/Budapest";
-
-function same(a: string, b: string): boolean {
-  const x = Buffer.from(a);
-  const y = Buffer.from(b);
-  return x.length === y.length && timingSafeEqual(x, y);
-}
-
-function authorized(request: Request, USER: string, PASSWORD: string): boolean {
-  const header = request.headers.get("authorization") ?? "";
-  if (!header.startsWith("Basic ")) return false;
-  const [user, ...rest] = Buffer.from(header.slice(6), "base64").toString("utf8").split(":");
-  return same(user, USER) && same(rest.join(":"), PASSWORD);
-}
 
 const esc = (v: unknown) =>
   String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -64,15 +51,8 @@ const country = (code: unknown) => {
 export async function GET(request: Request) {
   // Always on request: credentials and data are read at runtime, never prerendered.
   await connection();
-  const USER = process.env.STATS_USER || "";
-  const PASSWORD = process.env.STATS_PASSWORD || "";
-  if (!USER || !PASSWORD) return new Response("Not found", { status: 404 });
-  if (!authorized(request, USER, PASSWORD)) {
-    return new Response("Bejelentkezés szükséges", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Fuel stat", charset="UTF-8"', "X-Robots-Tag": "noindex" },
-    });
-  }
+  if (!ownerLoginConfigured) return new Response("Not found", { status: 404 });
+  if (!isOwner(request)) return loginRequired("Fuel stat");
   if (!communityEnabled) return new Response("Nincs adatbázis beállítva (FUEL_DATABASE_URL).", { status: 503 });
   await ensureSchema();
 
