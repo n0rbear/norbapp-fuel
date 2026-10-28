@@ -54,13 +54,7 @@ const EN: LegalTexts = {
     title: "Imprint",
     updated: "",
     sections: [
-      { title: "Provider", body: ["NorbApp", "E-mail: norbert@norbapp.com", "Telegram: @norbapp (t.me/norbapp)"] },
-      {
-        title: "Note",
-        body: [
-          "This page currently contains only the contact details approved by the operator. Further mandatory information will be added before commercial operation.",
-        ],
-      },
+      { title: "Provider (§ 5 DDG)", body: ["Norbert Horváth (NorbApp)", "An der Steige 27/1", "78713 Schramberg, Germany", "E-mail: norbert@norbapp.com", "Telegram: @norbapp (t.me/norbapp)"] },
       {
         title: "Liability for content",
         body: [
@@ -76,7 +70,7 @@ const EN: LegalTexts = {
       {
         title: "Controller",
         body: [
-          "Norbert Horváth (private individual, operating under the name NorbApp), Germany. E-mail: norbert@norbapp.com – write to this address with any privacy question or to exercise your rights. No data protection officer has been appointed, as none is required.",
+          "Norbert Horváth (private individual, operating under the name NorbApp), An der Steige 27/1, 78713 Schramberg, Germany. E-mail: norbert@norbapp.com – write to this address with any privacy question or to exercise your rights. No data protection officer has been appointed, as none is required.",
           "This notice covers Fuel by NorbApp (fuel.norbapp.com) and explains, as required by Articles 13 and 21 of the General Data Protection Regulation (GDPR), what personal data is processed, why, for how long, who receives it and what rights you have.",
         ],
       },
@@ -164,13 +158,7 @@ const DE: LegalTexts = {
     title: "Impressum",
     updated: "",
     sections: [
-      { title: "Anbieter", body: ["NorbApp", "E-Mail: norbert@norbapp.com", "Telegram: @norbapp (t.me/norbapp)"] },
-      {
-        title: "Hinweis",
-        body: [
-          "Diese Seite enthält aktuell nur die vom Betreiber freigegebenen Kontaktinformationen. Weitere Pflichtangaben werden vor einem kommerziellen Betrieb ergänzt.",
-        ],
-      },
+      { title: "Angaben gemäß § 5 DDG", body: ["Norbert Horváth (NorbApp)", "An der Steige 27/1", "78713 Schramberg, Deutschland", "E-Mail: norbert@norbapp.com", "Telegram: @norbapp (t.me/norbapp)"] },
       {
         title: "Haftung für Inhalte",
         body: [
@@ -186,7 +174,7 @@ const DE: LegalTexts = {
       {
         title: "Verantwortlicher",
         body: [
-          "Norbert Horváth (Privatperson, tätig unter dem Namen NorbApp), Deutschland. E-Mail: norbert@norbapp.com – an diese Adresse kannst du dich mit allen Datenschutzfragen wenden und deine Rechte geltend machen. Ein Datenschutzbeauftragter ist nicht bestellt, da keine Pflicht dazu besteht.",
+          "Norbert Horváth (Privatperson, tätig unter dem Namen NorbApp), An der Steige 27/1, 78713 Schramberg, Deutschland. E-Mail: norbert@norbapp.com – an diese Adresse kannst du dich mit allen Datenschutzfragen wenden und deine Rechte geltend machen. Ein Datenschutzbeauftragter ist nicht bestellt, da keine Pflicht dazu besteht.",
           "Diese Erklärung gilt für Fuel by NorbApp (fuel.norbapp.com) und informiert nach Art. 13 und 21 der Datenschutz-Grundverordnung (DSGVO) darüber, welche personenbezogenen Daten wozu und wie lange verarbeitet werden, wer sie erhält und welche Rechte du hast.",
         ],
       },
@@ -308,13 +296,7 @@ const HU: LegalTexts = {
     title: "Impresszum",
     updated: "",
     sections: [
-      { title: "Szolgáltató", body: ["NorbApp", "E-mail: norbert@norbapp.com", "Telegram: @norbapp (t.me/norbapp)"] },
-      {
-        title: "Megjegyzés",
-        body: [
-          "Ez az oldal jelenleg csak az üzemeltető által jóváhagyott elérhetőségeket tartalmazza. A további kötelező adatok a kereskedelmi működés előtt kerülnek fel.",
-        ],
-      },
+      { title: "Szolgáltató", body: ["Horváth Norbert (NorbApp)", "An der Steige 27/1", "78713 Schramberg, Németország", "E-mail: norbert@norbapp.com", "Telegram: @norbapp (t.me/norbapp)"] },
       {
         title: "Felelősség a tartalomért",
         body: [
@@ -330,7 +312,7 @@ const HU: LegalTexts = {
       {
         title: "Adatkezelő",
         body: [
-          "Horváth Norbert (magánszemély, NorbApp néven), Németország. E-mail: norbert@norbapp.com – adatvédelmi kérdéssel és a jogaid gyakorlásához erre a címre írj. Adatvédelmi tisztviselőt nem neveztünk ki, mert erre nincs kötelezettség.",
+          "Horváth Norbert (magánszemély, NorbApp néven), An der Steige 27/1, 78713 Schramberg, Németország. E-mail: norbert@norbapp.com – adatvédelmi kérdéssel és a jogaid gyakorlásához erre a címre írj. Adatvédelmi tisztviselőt nem neveztünk ki, mert erre nincs kötelezettség.",
           "Ez a tájékoztató a Fuel by NorbApp (fuel.norbapp.com) adatkezelésére vonatkozik, és az általános adatvédelmi rendelet (GDPR) 13. és 21. cikke szerint leírja, milyen személyes adatot, milyen célból, mennyi ideig kezelünk, kik kapják meg, és milyen jogaid vannak.",
         ],
       },
