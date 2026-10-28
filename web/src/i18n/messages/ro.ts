@@ -4,7 +4,7 @@ export const ro: Messages = {
   brand: "Fuel by NorbApp",
   title: "Calculator de costuri de călătorie",
   subtitle:
-    "Traseu, opriri de alimentare, prețuri la carburant și taxe de drum pentru cele 27 de țări UE, plus Elveția, Liechtenstein și Monaco – în moneda aleasă.",
+    "Traseu, opriri de alimentare, prețuri la carburant și taxe de drum pentru 36 de țări europene – UE, Elveția, Balcanii de Vest și Turcia – în moneda aleasă.",
   language: "Limbă",
   footerDisclaimer: "Prețurile sunt orientative.",
   footerMapData: "Date hartă © contributorii {osm}",

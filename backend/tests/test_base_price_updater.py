@@ -17,7 +17,7 @@ BUDAPEST = ZoneInfo("Europe/Budapest")
 ECB_XML = "<Cube time='2026-10-19'>" + "".join(
     f"<Cube currency='{c}' rate='{r}'/>" for c, r in
     [("USD", 1.1), ("HUF", 400.0), ("CZK", 24.0), ("DKK", 7.46), ("PLN", 4.3), ("RON", 5.3), ("SEK", 11.0),
-     ("CHF", 0.93)]
+     ("CHF", 0.93), ("TRY", 49.5)]
 ) + "</Cube>"
 
 
@@ -91,6 +91,8 @@ def test_refresh_applies_prices_and_keeps_overrides(monkeypatch):
         assert fx.rate("HUF") == 400.0 and fx.as_of == "2026-10-19"
         assert "USD" not in fx.rates  # EU currencies (+ CHF for conversion) only
         assert fx.rate("CHF") == 0.93
+        assert fx.rate("TRY") == 49.5
+        assert fx.rate("BAM") == 1.95583  # fixed, not from the ECB
         assert pm.base_price("HU", Fuel.PETROL) == 1.7
         assert pm.base_price("MT", Fuel.PETROL) == 1.111
         assert pm.BASE_PRICES_AS_OF == "2026-10-19"

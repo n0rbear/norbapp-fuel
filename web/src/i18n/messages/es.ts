@@ -4,7 +4,7 @@ export const es: Messages = {
   brand: "Fuel by NorbApp",
   title: "Calculadora de costes de viaje",
   subtitle:
-    "Ruta, paradas para repostar, precios de combustible y peajes para los 27 países de la UE además de Suiza, Liechtenstein y Mónaco, en la moneda que elijas.",
+    "Ruta, paradas para repostar, precios de combustible y peajes para 36 países europeos (la UE, Suiza, los Balcanes Occidentales y Turquía), en la moneda que elijas.",
   language: "Idioma",
   footerDisclaimer: "Los precios son orientativos.",
   footerMapData: "Datos del mapa © colaboradores de {osm}",

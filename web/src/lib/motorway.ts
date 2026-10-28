@@ -2,11 +2,14 @@ import type { LatLng } from "./geo";
 
 // Motorway refs per country (OSM `ref` tags as OSRM reports them, e.g. "A 6",
 // "AP-7", "A1;E 70"). Only distance-toll countries matter for the estimate;
-// Spain tolls the AP network only, Ireland's tolled roads are M roads.
+// Spain tolls the AP network only, Ireland's tolled roads are M roads,
+// Turkey's are the O roads; the Western Balkans use A like the default.
 const MOTORWAY_REF: Record<string, RegExp> = {
   ES: /^AP[- ]?\d/,
   IE: /^M ?\d/,
   GR: /^[AΑ] ?\d/,
+  // Turkish motorways (otoyol) are O-1, O-3, O-4…; D roads are free state roads.
+  TR: /^O[- ]?\d/,
 };
 const DEFAULT_MOTORWAY_REF = /^A[- ]?\d/;
 

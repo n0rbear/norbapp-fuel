@@ -4,7 +4,7 @@ export const hr: Messages = {
   brand: "Fuel by NorbApp",
   title: "Kalkulator troškova putovanja",
   subtitle:
-    "Ruta, stajališta za točenje goriva, cijene goriva i cestarine za 27 zemalja EU-a te Švicarsku, Lihtenštajn i Monako – u valuti po vašem izboru.",
+    "Ruta, stajališta za točenje goriva, cijene goriva i cestarine za 36 europskih zemalja – EU, Švicarsku, Zapadni Balkan i Tursku – u valuti po vašem izboru.",
   language: "Jezik",
   footerDisclaimer: "Cijene su okvirne.",
   footerMapData: "Podaci karte © suradnici {osm}",

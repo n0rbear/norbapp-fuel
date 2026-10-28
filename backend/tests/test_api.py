@@ -27,7 +27,7 @@ def test_health(client):
 def test_countries(client):
     data = client.get("/api/countries").json()["countries"]
     assert sum(c["eu"] for c in data) == 27
-    assert len(data) == 30  # + CH, LI, MC
+    assert len(data) == 36  # + CH, LI, MC, RS, BA, ME, MK, XK, TR
     assert sum(c["mode"] == "official" for c in data) == 7
 
 
@@ -134,7 +134,7 @@ def test_seven_clients_registered():
 def test_base_prices_endpoint(client):
     data = client.get("/api/base-prices").json()
     assert data["schedule"] == "daily 06:00 Europe/Budapest"
-    assert len(data["prices"]) == 30
+    assert len(data["prices"]) == 36
 
 
 # --- E10 ---------------------------------------------------------------------
@@ -215,7 +215,7 @@ def test_countries_report_e10_support(client):
 
 def test_non_eu_neighbours_listed(client):
     data = {c["code"]: c for c in client.get("/api/countries").json()["countries"]}
-    assert len(data) == 30
+    assert len(data) == 36
     for code in ("CH", "LI", "MC"):
         assert data[code]["eu"] is False and data[code]["mode"] == "estimate"
     assert data["CH"]["local_currency"] == "CHF"
@@ -280,3 +280,35 @@ def test_chf_rate_is_listed_for_local_prices(client):
     chf = next(c for c in conversion if c["code"] == "CHF")
     assert chf["rate"] > 0
     assert chf["countries"] == ["CH", "LI"]
+
+
+@pytest.mark.parametrize("code,currency", [("RS", "RSD"), ("BA", "BAM"), ("ME", "EUR"), ("MK", "MKD"), ("XK", "EUR"), ("TR", "TRY")])
+def test_balkans_and_turkey_are_estimated_from_the_region(client, code, currency):
+    import pricing_matrix as pm
+
+    country = {c["code"]: c for c in client.get("/api/countries").json()["countries"]}[code]
+    assert country["mode"] == "estimate" and country["eu"] is False
+    assert country["local_currency"] == currency
+    assert "Regional model" in country["base_price_source"]["source"]
+    reference = sum(pm.BASE_PRICES[c][pm.Fuel.DIESEL] for c in pm.REGIONAL_REFERENCE_COUNTRIES) / 6
+    assert pm.base_price(code, pm.Fuel.DIESEL) == pytest.approx(reference * pm.REGIONAL_RATIOS[code][pm.Fuel.DIESEL], abs=0.001)
+    data = client.get("/api/prices", params={"country": code, "fuel": "diesel", "location": "highway", "brand_tier": "mainstream"}).json()
+    assert data["mode"] == "estimate" and data["estimates"][0]["price"] > 0
+
+
+def test_local_only_currencies_have_rates(client):
+    conversion = {c["code"]: c["rate"] for c in client.get("/api/currencies").json()["conversion"]}
+    assert conversion["BAM"] == pytest.approx(1.95583)
+    for code in ("TRY", "RSD", "MKD"):
+        assert conversion[code] > 1
+
+
+def test_balkan_and_turkish_tolls(client):
+    from fx import fx
+
+    data = client.get("/api/tolls/estimate", params={"countries": "RS,ME,XK,TR", "days": 3, "highway_km": "RS:200,ME:41,TR:300"}).json()
+    by = {c["country"]: c for c in data["countries"]}
+    assert by["RS"]["system"] == "distance" and by["RS"]["subtotal"] == pytest.approx(200 * 6.0 / fx.rate("RSD"), abs=0.05)
+    assert by["ME"]["subtotal"] == pytest.approx(41 * 0.085, abs=0.05)
+    assert by["XK"]["subtotal"] == 0
+    assert by["TR"]["subtotal"] == pytest.approx(300 * 0.04, abs=0.05)

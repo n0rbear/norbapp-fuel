@@ -51,7 +51,7 @@ app = FastAPI(
     description=(
         "EU fuel prices: live station prices from official open APIs (DE, AT, ES, FR, IT, PT, SI), "
         "heuristic brand x location estimates for the other EU countries and for Switzerland, "
-        "Liechtenstein and Monaco, and motorway tolls. "
+        "Liechtenstein, Monaco, the Western Balkans and Turkey, and motorway tolls. "
         "Every price endpoint accepts `currency` (EU currencies, default EUR)."
     ),
     lifespan=lifespan,
@@ -228,7 +228,7 @@ async def list_currencies() -> dict[str, Any]:
 
 @app.get("/api/countries", tags=["prices"])
 async def list_countries() -> dict[str, Any]:
-    """The 27 EU countries plus CH, LI and MC with their pricing mode (official API or estimate)."""
+    """The 27 EU countries plus CH, LI, MC, the Western Balkans (RS, BA, ME, MK, XK) and TR with their pricing mode."""
     return {"countries": [_country_dict(c) for c in pm.COUNTRIES.values()]}
 
 
@@ -414,7 +414,7 @@ def _require_tolls(code: str) -> tl.CountryTolls:
 
 @app.get("/api/tolls", tags=["tolls"])
 async def list_tolls(currency: str = CurrencyQuery, euro_class: str | None = EuroClassQuery) -> dict[str, Any]:
-    """Passenger-car motorway tolls of the 27 EU countries plus CH, LI and MC."""
+    """Passenger-car motorway tolls of the 27 EU countries plus CH, LI, MC, RS, BA, ME, MK, XK and TR."""
     currency = _require_currency(currency)
     group = _emission_group(euro_class)
     return {

@@ -4,7 +4,7 @@ export const sl: Messages = {
   brand: "Fuel by NorbApp",
   title: "Izračun stroškov poti",
   subtitle:
-    "Pot, postanki za tankanje, cene goriva in cestnine za 27 držav EU ter Švico, Lihtenštajn in Monako – v valuti po vaši izbiri.",
+    "Pot, postanki za tankanje, cene goriva in cestnine za 36 evropskih držav – EU, Švico, Zahodni Balkan in Turčijo – v valuti po vaši izbiri.",
   language: "Jezik",
   footerDisclaimer: "Cene so okvirne.",
   footerMapData: "Podatki zemljevida © sodelavci {osm}",

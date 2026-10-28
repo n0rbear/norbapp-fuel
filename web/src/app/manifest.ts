@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Fuel by NorbApp – útiköltség-kalkulátor",
     short_name: "Fuel",
-    description: "Útvonal, tankolási pontok, üzemanyagárak és útdíjak a 27 EU-országra, Svájcra, Liechtensteinre és Monacóra.",
+    description: "Útvonal, tankolási pontok, üzemanyagárak és útdíjak 36 európai országra: EU, Svájc, Nyugat-Balkán, Törökország.",
     lang: "hu",
     start_url: "/",
     scope: "/",

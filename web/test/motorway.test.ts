@@ -30,3 +30,13 @@ describe("motorwayKmByCountry", () => {
     expect(motorwayKmByCountry(steps, countryAt)).toEqual({ FR: 350, IT: 150 });
   });
 });
+
+describe("Turkish and Western Balkan motorways", () => {
+  it("counts O roads in Turkey and A roads in the Western Balkans", () => {
+    expect(isMotorwayRef("TR", "O-3")).toBe(true);
+    expect(isMotorwayRef("TR", "O 4;E 80")).toBe(true);
+    expect(isMotorwayRef("TR", "D 100")).toBe(false);
+    expect(isMotorwayRef("RS", "A1")).toBe(true);
+    expect(isMotorwayRef("MK", "A 1")).toBe(true);
+  });
+});

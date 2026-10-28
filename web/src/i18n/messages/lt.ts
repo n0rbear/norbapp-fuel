@@ -4,7 +4,7 @@ export const lt: Messages = {
   brand: "Fuel by NorbApp",
   title: "Kelionės išlaidų skaičiuoklė",
   subtitle:
-    "Maršrutas, degalų pylimo sustojimai, degalų kainos ir kelių mokesčiai 27 ES šalyse, taip pat Šveicarijoje, Lichtenšteine ir Monake – jūsų pasirinkta valiuta.",
+    "Maršrutas, degalų pylimo sustojimai, degalų kainos ir kelių mokesčiai 36 Europos šalyse – ES, Šveicarijoje, Vakarų Balkanuose ir Turkijoje – jūsų pasirinkta valiuta.",
   language: "Kalba",
   footerDisclaimer: "Kainos yra orientacinės.",
   footerMapData: "Žemėlapio duomenys © {osm} bendraautoriai",

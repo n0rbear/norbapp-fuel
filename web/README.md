@@ -8,7 +8,7 @@ Next.js web version of the NorbApp Fuel trip-cost calculator. The UI is availabl
 - Start from an address or the browser's current position
 - Refuel planning from consumption, tank size, start level and reserve; the fuel already in the tank is priced at the local median, not treated as a fill-up; optional fill-up before departure
 - Fuel types: diesel, petrol E5 (95), petrol E10 (E10 prices where the source publishes them – DE, ES, FR – E5 elsewhere, flagged per point)
-- Fuel prices for all 27 EU countries plus Switzerland, Liechtenstein and Monaco from the NorbApp FUEL-API (`backend/`, branch `feature/fuel-price-backend`): live station prices in DE, AT, ES, FR, IT, PT, SI, estimates elsewhere; cheapest station is used unless one is selected
+- Fuel prices for all 27 EU countries plus Switzerland, Liechtenstein, Monaco, the Western Balkans (RS, BA, ME, MK, XK) and Turkey from the NorbApp FUEL-API (`backend/`, branch `feature/fuel-price-backend`): live station prices in DE, AT, ES, FR, IT, PT, SI, estimates elsewhere; cheapest station is used unless one is selected
 - Tolls from the FUEL-API (`/api/tolls/estimate`): cheapest vignette combination for the trip length, distance-based tolls from the motorway km on the route, Euro emission class where required (Romania)
 - Display currency (EUR, CZK, DKK, HUF, PLN, RON, SEK; ECB rates), remembered in the browser; Euro class remembered too
 - Manual price override and an explicit fallback price where no price data exists (non-EU countries)

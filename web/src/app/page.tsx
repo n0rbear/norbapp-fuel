@@ -9,19 +9,19 @@ const SHARE = {
   hu: {
     title: "Fuel by NorbApp – Mennyibe kerül az út?",
     description:
-      "Útvonal, tankolás a legolcsóbb kutaknál, matricák és útdíjak – egy kattintással. 27 EU-ország + Svájc, ingyenes, regisztráció nélkül.",
+      "Útvonal, tankolás a legolcsóbb kutaknál, matricák és útdíjak – egy kattintással. 36 európai ország a Balkánnal és Törökországgal, ingyenes, regisztráció nélkül.",
     locale: "hu_HU",
   },
   de: {
     title: "Fuel by NorbApp – Was kostet die Fahrt?",
     description:
-      "Route, Tankstopps an den günstigsten Tankstellen, Vignetten und Maut – mit einem Klick. 27 EU-Länder + Schweiz, kostenlos, ohne Anmeldung.",
+      "Route, Tankstopps an den günstigsten Tankstellen, Vignetten und Maut – mit einem Klick. 36 europäische Länder inkl. Balkan und Türkei, kostenlos, ohne Anmeldung.",
     locale: "de_DE",
   },
   en: {
     title: "Fuel by NorbApp – What will the trip cost?",
     description:
-      "Route, fuel stops at the cheapest stations, vignettes and tolls – in one click. 27 EU countries + Switzerland, free, no sign-up.",
+      "Route, fuel stops at the cheapest stations, vignettes and tolls – in one click. 36 European countries incl. the Balkans and Turkey, free, no sign-up.",
     locale: "en_GB",
   },
 } as const;

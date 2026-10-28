@@ -36,7 +36,7 @@ In Meta Ads Manager you can also put the parameters into "URL parameters" instea
 > 🛣️ mennyi a matrica és az útdíj országonként,
 > 💶 és mennyibe kerül az egész út – a pénznemedben.
 >
-> 27 EU-ország + Svájc, Liechtenstein és Monaco. Ingyenes, regisztráció nélkül, telefonra telepíthető.
+> 36 európai ország (EU, Svájc, Nyugat-Balkán, Törökország), Liechtenstein és Monaco. Ingyenes, regisztráció nélkül, telefonra telepíthető.
 > 👉 fuel.norbapp.com
 
 **Csoportba (hazajárók, kint dolgozók)**
@@ -58,7 +58,7 @@ In Meta Ads Manager you can also put the parameters into "URL parameters" instea
 
 - **Elsődleges szöveg:** Mennyibe kerül az út haza? Útvonal, tankolás a legolcsóbb kutaknál, matricák és útdíjak – egy kattintással. Ingyenes, regisztráció nélkül.
 - **Címsor:** Számold ki az útiköltséget
-- **Leírás:** 27 EU-ország + Svájc
+- **Leírás:** 36 európai ország (EU, Svájc, Nyugat-Balkán, Törökország)
 - **Gomb:** Bővebben / Megnyitás
 
 Változat B:
@@ -75,13 +75,13 @@ Változat B:
 > 🛣️ Vignetten und Maut je Land,
 > 💶 und die Gesamtkosten – in deiner Währung.
 >
-> 27 EU-Länder + Schweiz, Liechtenstein und Monaco. Kostenlos, ohne Anmeldung.
+> 36 europäische Länder (EU, Schweiz, Westbalkan, Türkei), Liechtenstein und Monaco. Kostenlos, ohne Anmeldung.
 > 👉 fuel.norbapp.com/?lang=de
 
 **Anzeige**
 - **Primärer Text:** Was kostet die Fahrt? Route, Tankstopps an den günstigsten Tankstellen, Vignetten und Maut – mit einem Klick. Kostenlos, ohne Anmeldung.
 - **Überschrift:** Reisekosten vorher wissen
-- **Beschreibung:** 27 EU-Länder + Schweiz
+- **Beschreibung:** 36 europäische Länder (EU, Schweiz, Westbalkan, Türkei)
 
 ## Posts – English
 
@@ -93,13 +93,13 @@ Változat B:
 > 🛣️ vignettes and tolls per country,
 > 💶 and the total – in your currency.
 >
-> 27 EU countries plus Switzerland, Liechtenstein and Monaco. Free, no sign-up.
+> 36 European countries incl. the Western Balkans and Turkey. Free, no sign-up.
 > 👉 fuel.norbapp.com/?lang=en
 
 **Ad**
 - **Primary text:** What will the trip cost? Route, fuel stops at the cheapest stations, vignettes and tolls – in one click. Free, no sign-up.
 - **Headline:** Know your trip cost before you go
-- **Description:** 27 EU countries + Switzerland
+- **Description:** 36 European countries (EU, Switzerland, Western Balkans, Turkey)
 
 ## Targeting ideas (Meta Ads)
 
@@ -123,9 +123,9 @@ Images in `docs/facebook/`: `profile-720.png` (profile picture, shown as a circl
 
 **Bio (max. 101 characters)** – pick one, the page has a single bio:
 
-- hu: `Mennyibe kerül az út? Tankolás, matrica, útdíj – 27 EU-ország + Svájc. Ingyenes.`
-- de: `Was kostet die Fahrt? Tanken, Vignette, Maut – 27 EU-Länder + Schweiz. Kostenlos.`
-- en: `What will the trip cost? Fuel, vignettes, tolls – 27 EU countries + CH. Free.`
+- hu: `Mennyibe kerül az út? Tankolás, matrica, útdíj – 36 európai ország. Ingyenes.`
+- de: `Was kostet die Fahrt? Tanken, Vignette, Maut – 36 Länder in Europa. Kostenlos.`
+- en: `What will the trip cost? Fuel, vignettes, tolls – 36 European countries. Free.`
 - trilingual (fits): `🇭🇺 Útiköltség · 🇩🇪 Reisekosten · 🇬🇧 Trip cost – fuel, vignettes, tolls. Free.`
 
 **Long description (Details / About):**

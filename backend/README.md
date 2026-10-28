@@ -1,6 +1,6 @@
 # NorbApp Fuel – üzemanyagár-backend (FastAPI)
 
-REST backend a NorbApp Fuel üzemanyagár-követő moduljához. Mind a 27 EU-tagállamra ad üzemanyagárat és autópályadíjat, a felhasználó által választott pénznemben:
+REST backend a NorbApp Fuel üzemanyagár-követő moduljához. Mind a 27 EU-tagállamra, valamint Svájcra, Liechtensteinre, Monacóra, a Nyugat-Balkánra és Törökországra ad üzemanyagárat és autópályadíjat, a felhasználó által választott pénznemben:
 
 | Mód | Országok | Adatforrás |
 |---|---|---|
@@ -77,6 +77,11 @@ CH(t) [CHF] = horgony + 0,897 × (ref(t) × CHF-árfolyam(t) − ref(horgony) ×
 A 0,897 (= 1,081 / 1,205) azt fejezi ki, hogy a szomszédos árakban ~20,5% ÁFA van, a svájciakban 8,1% (a svájci ásványolajadó literenként fix), így a beszerzési ár változása kb. 90%-ban jelenik meg. Új TCS-adatnál a horgonyt (`SWISS_ANCHOR`, `pricing_matrix.py`) érdemes frissíteni; a `BASE_PRICES_JSON` felülírás továbbra is működik (`{"CH": {"petrol": 2.2, "diesel": 2.5}}`, EUR/l).
 
 A CHF csak átváltásra szolgál (svájci alapár, matrica), megjelenítési pénznemként nem választható.
+
+
+## Nyugat-Balkán és Törökország
+
+Szerbia (RS, RSD), Bosznia-Hercegovina (BA, BAM), Montenegró (ME, EUR), Észak-Macedónia (MK, MKD), Koszovó (XK, EUR) és Törökország (TR, TRY), becslési módban. Nincs rájuk EU Oil Bulletin és nyílt kútár-adat, ezért az országos átlag = a 2025-ös országos árszint aránya (`REGIONAL_RATIOS`) × a HR/HU/SI/BG/RO/GR Bulletin-átlag aznapi értéke; így reggelente a régióval együtt mozog. Az arányok közelítőek – pontosabb adat esetén frissítsd őket vagy add meg `BASE_PRICES_JSON`-ban. Árfolyam: TRY az EKB-ból; BAM (1,95583, valutatanács), MKD (61,5) és RSD (117,2) rögzített. Útdíj: RS, BA, MK, TR km-alapú átlag, ME km-díj + Sozina-alagút, XK ingyenes.
 
 ## Pénznem választása (`fx.py`)
 

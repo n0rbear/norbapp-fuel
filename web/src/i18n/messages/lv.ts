@@ -4,7 +4,7 @@ export const lv: Messages = {
   brand: "Fuel by NorbApp",
   title: "Ceļojuma izmaksu kalkulators",
   subtitle:
-    "Maršruts, uzpildes pieturas, degvielas cenas un ceļa nodevas 27 ES valstīs, kā arī Šveicē, Lihtenšteinā un Monako – jūsu izvēlētajā valūtā.",
+    "Maršruts, uzpildes pieturas, degvielas cenas un ceļa nodevas 36 Eiropas valstīs – ES, Šveicē, Rietumbalkānos un Turcijā – jūsu izvēlētajā valūtā.",
   language: "Valoda",
   footerDisclaimer: "Cenas ir orientējošas.",
   footerMapData: "Kartes dati © {osm} līdzautori",

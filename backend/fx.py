@@ -30,13 +30,24 @@ EU_CURRENCIES: dict[str, str] = {
 
 # Not offered for display, but needed to convert prices of the non-EU
 # countries covered (Swiss/Liechtenstein base prices and the Swiss vignette).
-CONVERSION_CURRENCIES: dict[str, str] = {"CHF": "svájci frank"}
+CONVERSION_CURRENCIES: dict[str, str] = {
+    "CHF": "svájci frank",
+    "TRY": "török líra",
+    "RSD": "szerb dinár",
+    "BAM": "bosnyák konvertibilis márka",
+    "MKD": "macedón dénár",
+}
+
+# Not in the ECB feed; kept fixed. BAM is pegged by its currency board,
+# MKD de facto pegged by the central bank, RSD held in a narrow band.
+FIXED_RATES: dict[str, float] = {"BAM": 1.95583, "MKD": 61.5, "RSD": 117.2}
 
 # ECB reference rates of 2026-10-16, used until the first live refresh.
 FALLBACK_AS_OF = "2026-10-16"
 FALLBACK_RATES: dict[str, float] = {
     "EUR": 1.0, "CZK": 24.323, "DKK": 7.4748, "HUF": 363.08, "PLN": 4.37, "RON": 5.331, "SEK": 11.145,
-    "CHF": 0.9272,
+    "CHF": 0.9272, "TRY": 48.0,
+    **FIXED_RATES,
 }
 
 _ECB_RATE = re.compile(r"currency='([A-Z]{3})'\s+rate='([0-9.]+)'")
@@ -83,12 +94,12 @@ class FxRates:
         response = await http.get(ECB_URL, timeout=30)
         response.raise_for_status()
         ecb = {code: float(rate) for code, rate in _ECB_RATE.findall(response.text)}
-        wanted = [c for c in [*EU_CURRENCIES, *CONVERSION_CURRENCIES] if c != "EUR"]
+        wanted = [c for c in [*EU_CURRENCIES, *CONVERSION_CURRENCIES] if c != "EUR" and c not in FIXED_RATES]
         missing = [c for c in wanted if c not in ecb]
         if missing:
             raise ValueError(f"ECB feed is missing {', '.join(missing)}")
         time_match = _ECB_TIME.search(response.text)
-        self.rates = {"EUR": 1.0, **{c: ecb[c] for c in wanted}}
+        self.rates = {"EUR": 1.0, **{c: ecb[c] for c in wanted}, **FIXED_RATES}
         self.as_of = time_match.group(1) if time_match else self.as_of
         self.source = "ECB reference rates"
         logger.info("FX rates refreshed (ECB %s)", self.as_of)
