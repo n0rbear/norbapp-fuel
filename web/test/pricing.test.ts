@@ -33,6 +33,7 @@ const estimated = (price: number): FuelPoint => ({
     stations: [],
     estimate: { price, low: price * 0.965, high: price * 1.035, location: "highway" },
     e5InsteadOfE10: false,
+    regional: false,
   },
 });
 

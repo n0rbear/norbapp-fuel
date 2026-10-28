@@ -103,6 +103,8 @@ export const sl: Messages = {
   sourceEstimate: "ocena",
   sourceDefault: "nadomestna cena",
   estimateSource: "Ocena (EU Weekly Oil Bulletin)",
+  regionalSource: "Ocena (regionalni trend)",
+  noOfficialAverage: "{country}: uradna povprečna cena se ne objavlja, zato prikazujemo ceno, ocenjeno po trendu uradnih povprečij sosednjih držav.",
   e5InsteadOfE10: "Tu ni ločene cene za E10; uporabi se cena za E5 (95).",
   navigate: "Navigacija",
   otherMapApp: "Druga aplikacija za zemljevide",

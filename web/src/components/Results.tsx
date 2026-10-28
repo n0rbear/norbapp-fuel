@@ -25,9 +25,10 @@ const SOURCE_LABEL: Record<PriceSource, MessageKey> = {
 /** Default fallback price (EUR/l) where no price data exists, converted to the chosen currency. */
 const FALLBACK_EUR = 1.7;
 
-function attribution(source: string, estimateLabel: string): string {
+function attribution(source: string, estimateLabel: string, regionalLabel: string): string {
   // Tankerkönig data is CC BY 4.0 and must be credited this way.
   if (/tankerk/i.test(source)) return "Daten: MTS-K / Tankerkönig (CC BY 4.0)";
+  if (source === "Regional model") return regionalLabel;
   return source === "EU Weekly Oil Bulletin" ? estimateLabel : source;
 }
 
@@ -184,6 +185,9 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
                   })}
                 </p>
               )}
+              {prices.mode === "estimate" && prices.regional && point.country && (
+                <p className="muted small">{t("noOfficialAverage", { country: fmt.countryName(point.country) })}</p>
+              )}
               {prices.mode === "none" && <p className="muted small">{tm(prices.reason)}</p>}
               {prices.mode === "estimate" && point.country && (
                 <CommunityStations
@@ -235,7 +239,7 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
       </ol>
       {sources.length > 0 && (
         <p className="hint">
-          {t("priceSource", { sources: sources.map((s) => attribution(s, t("estimateSource"))).join(" · ") })}
+          {t("priceSource", { sources: sources.map((s) => attribution(s, t("estimateSource"), t("regionalSource"))).join(" · ") })}
         </p>
       )}
 

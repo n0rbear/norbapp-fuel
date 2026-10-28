@@ -103,6 +103,8 @@ export const sv: Messages = {
   sourceEstimate: "uppskattning",
   sourceDefault: "reservpris",
   estimateSource: "Uppskattning (EU Weekly Oil Bulletin)",
+  regionalSource: "Uppskattning (regional trend)",
+  noOfficialAverage: "{country}: inget officiellt genomsnittspris publiceras, så vi visar ett pris uppskattat utifrån trenden i grannländernas officiella genomsnitt.",
   e5InsteadOfE10: "Här finns inget separat E10-pris; E5-priset (95) används.",
   navigate: "Navigera",
   otherMapApp: "Annan kartapp",

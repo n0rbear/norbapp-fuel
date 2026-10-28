@@ -151,6 +151,7 @@ type PricesResponse = {
   price_fuel?: string;
   stations?: ApiStation[];
   estimates?: { price: number; price_low: number; price_high: number; brand_tier: string; location: string }[];
+  base_price_source?: { source?: string };
   exchange_rate: { rate: number };
 };
 
@@ -169,6 +170,9 @@ async function fetchPrices(params: Record<string, string>, fuel: FuelType): Prom
     return { data, e5InsteadOfE10: true };
   }
 }
+
+/** Source label of the regional price model; the UI shows it translated. */
+export const REGIONAL_SOURCE = "Regional model";
 
 /**
  * Prices around a fuel point. Official countries return nearby stations;
@@ -220,10 +224,13 @@ export async function pricesAt(
   );
   const e = estimate.estimates?.[0];
   if (!e) throw new UpstreamError("fuel-api", null, "missing estimate");
+  // Countries outside the bulletin without an official average (Western Balkans, Turkey).
+  const regional = /^Regional model/.test(estimate.base_price_source?.source ?? "");
   return {
     prices: {
       mode: "estimate",
-      source: "EU Weekly Oil Bulletin",
+      source: regional ? REGIONAL_SOURCE : "EU Weekly Oil Bulletin",
+      regional,
       stations: [],
       estimate: { price: e.price, low: e.price_low, high: e.price_high, location: onMotorway ? "highway" : "city" },
       e5InsteadOfE10: estimateE5,

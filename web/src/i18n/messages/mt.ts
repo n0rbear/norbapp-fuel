@@ -103,6 +103,8 @@ export const mt: Messages = {
   sourceEstimate: "stima",
   sourceDefault: "prezz alternattiv",
   estimateSource: "Stima (EU Weekly Oil Bulletin)",
+  regionalSource: "Stima (xejra reġjonali)",
+  noOfficialAverage: "{country}: ma jiġix ippubblikat prezz medju uffiċjali, għalhekk nuru prezz stmat skont ix-xejra tal-medji uffiċjali tal-pajjiżi ġirien.",
   e5InsteadOfE10: "Hawn m'hemmx prezz separat għall-E10; jintuża l-prezz tal-E5 (95).",
   navigate: "Navigazzjoni",
   otherMapApp: "App oħra tal-mapep",

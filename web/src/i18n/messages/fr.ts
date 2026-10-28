@@ -103,6 +103,8 @@ export const fr: Messages = {
   sourceEstimate: "estimation",
   sourceDefault: "prix par défaut",
   estimateSource: "Estimation (EU Weekly Oil Bulletin)",
+  regionalSource: "Estimation (tendance régionale)",
+  noOfficialAverage: "{country} : aucun prix moyen officiel n’est publié ; nous affichons donc un prix estimé d’après la tendance des moyennes officielles des pays voisins.",
   e5InsteadOfE10: "Pas de prix E10 distinct ici ; le prix E5 (95) est utilisé.",
   navigate: "Naviguer",
   otherMapApp: "Autre appli de cartes",
