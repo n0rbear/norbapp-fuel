@@ -110,6 +110,8 @@ export const hu = {
   sourceEstimate: "becslés",
   sourceDefault: "alapár",
   estimateSource: "Becslés (EU Weekly Oil Bulletin)",
+  regionalSource: "Becslés (regionális trend)",
+  noOfficialAverage: "{country}: nincs hivatalos, naponta közzétett átlagár, ezért a szomszédos országok hivatalos átlagárainak trendje alapján becsült árat mutatunk.",
   e5InsteadOfE10: "Itt nincs külön E10-ár, E5 (95) árral számolunk.",
   navigate: "Navigáció",
   otherMapApp: "Más térképalkalmazás",

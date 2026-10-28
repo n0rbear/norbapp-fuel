@@ -103,6 +103,8 @@ export const sk: Messages = {
   sourceEstimate: "odhad",
   sourceDefault: "náhradná cena",
   estimateSource: "Odhad (EU Weekly Oil Bulletin)",
+  regionalSource: "Odhad (regionálny trend)",
+  noOfficialAverage: "{country}: oficiálna priemerná cena sa nezverejňuje, preto ukazujeme cenu odhadnutú podľa trendu oficiálnych priemerov susedných krajín.",
   e5InsteadOfE10: "Samostatná cena E10 tu nie je; použije sa cena E5 (95).",
   navigate: "Navigovať",
   otherMapApp: "Iná mapová aplikácia",

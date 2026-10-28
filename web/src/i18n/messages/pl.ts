@@ -103,6 +103,8 @@ export const pl: Messages = {
   sourceEstimate: "szacunek",
   sourceDefault: "cena zastępcza",
   estimateSource: "Szacunek (EU Weekly Oil Bulletin)",
+  regionalSource: "Szacunek (trend regionalny)",
+  noOfficialAverage: "{country}: nie publikuje się oficjalnej średniej ceny, dlatego pokazujemy cenę oszacowaną na podstawie trendu oficjalnych średnich w krajach sąsiednich.",
   e5InsteadOfE10: "Brak osobnej ceny E10; używana jest cena E5 (95).",
   navigate: "Nawiguj",
   otherMapApp: "Inna aplikacja z mapami",

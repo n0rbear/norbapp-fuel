@@ -103,6 +103,8 @@ export const ga: Messages = {
   sourceEstimate: "meastachán",
   sourceDefault: "praghas cúltaca",
   estimateSource: "Meastachán (EU Weekly Oil Bulletin)",
+  regionalSource: "Meastachán (treocht réigiúnach)",
+  noOfficialAverage: "{country}: ní fhoilsítear meánphraghas oifigiúil, mar sin taispeánaimid praghas a mheastar ó threocht mheánphraghsanna oifigiúla na dtíortha comharsanachta.",
   e5InsteadOfE10: "Níl praghas E10 ar leith anseo; úsáidtear praghas E5 (95).",
   navigate: "Nascleanúint",
   otherMapApp: "Aip léarscáileanna eile",

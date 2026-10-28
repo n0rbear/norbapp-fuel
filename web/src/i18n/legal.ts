@@ -27,7 +27,7 @@ const SOURCES_EN: LegalPage = {
       title: "Fuel prices",
       body: [
         "Fuel station locations in average-price countries: OpenStreetMap (Overpass API). User-reported prices: Fuel by NorbApp users. Station prices: Germany – Tankerkönig / MTS-K (CC BY 4.0); Austria – E-Control Spritpreisrechner; Spain, France, Italy, Portugal and Slovenia – the official open price data of those countries.",
-        "Country averages and estimates: European Commission Weekly Oil Bulletin. Switzerland: TCS fuel price radar as anchor, moved daily with the neighbouring countries. Western Balkans and Turkey: estimated from the national price level relative to the neighbouring EU countries, moved daily with them. Exchange rates: European Central Bank.",
+        "Country averages and estimates: European Commission Weekly Oil Bulletin. Switzerland: TCS fuel price radar as anchor, moved daily with the neighbouring countries. Western Balkans and Turkey: these countries publish no official average price (Serbia, Montenegro, North Macedonia and Kosovo only announce regulated maximum prices; Turkey and Bosnia and Herzegovina have free pricing), so prices are estimated from the national price level relative to the neighbouring EU countries, moved daily with them. Exchange rates: European Central Bank.",
         "All prices are indicative; the price at the pump is what counts.",
       ],
     },
@@ -228,7 +228,7 @@ const DE: LegalTexts = {
         title: "Kraftstoffpreise",
         body: [
           "Tankstellenstandorte in Ländern mit Durchschnittspreisen: OpenStreetMap (Overpass API). Von Nutzern gemeldete Preise: Nutzer von Fuel by NorbApp. Tankstellenpreise: Deutschland – Tankerkönig / MTS-K (CC BY 4.0); Österreich – E-Control Spritpreisrechner; Spanien, Frankreich, Italien, Portugal und Slowenien – die offiziellen offenen Preisdaten dieser Länder.",
-          "Landesdurchschnitte und Schätzungen: Weekly Oil Bulletin der Europäischen Kommission. Schweiz: TCS-Benzinpreis-Radar als Anker, täglich mit den Nachbarländern fortgeschrieben. Westbalkan und Türkei: geschätzt aus dem nationalen Preisniveau im Verhältnis zu den benachbarten EU-Ländern, täglich mit ihnen fortgeschrieben. Wechselkurse: Europäische Zentralbank.",
+          "Landesdurchschnitte und Schätzungen: Weekly Oil Bulletin der Europäischen Kommission. Schweiz: TCS-Benzinpreis-Radar als Anker, täglich mit den Nachbarländern fortgeschrieben. Westbalkan und Türkei: Diese Länder veröffentlichen keinen offiziellen Durchschnittspreis (Serbien, Montenegro, Nordmazedonien und Kosovo geben nur regulierte Höchstpreise bekannt, in der Türkei und in Bosnien und Herzegowina sind die Preise frei), daher geschätzt aus dem nationalen Preisniveau im Verhältnis zu den benachbarten EU-Ländern, täglich mit ihnen fortgeschrieben. Wechselkurse: Europäische Zentralbank.",
           "Alle Preise sind Richtwerte; maßgeblich ist der Preis an der Zapfsäule.",
         ],
       },
@@ -344,7 +344,7 @@ const HU: LegalTexts = {
         title: "Üzemanyagárak",
         body: [
           "A kutak helye az átlagáras országokban: OpenStreetMap (Overpass API). Felhasználói árak: a Fuel by NorbApp felhasználói. Kútárak: Németország – Tankerkönig / MTS-K (CC BY 4.0); Ausztria – E-Control Spritpreisrechner; Spanyolország, Franciaország, Olaszország, Portugália és Szlovénia – az adott ország hivatalos, nyílt áradatai.",
-          "Országos átlagok és becslések: az Európai Bizottság Weekly Oil Bulletinje. Svájc: a TCS árradarja mint kiindulópont, naponta a szomszédos országokkal együtt mozgatva. Nyugat-Balkán és Törökország: az országos árszint a szomszédos EU-országokhoz viszonyítva, naponta velük együtt mozgatva. Árfolyamok: Európai Központi Bank.",
+          "Országos átlagok és becslések: az Európai Bizottság Weekly Oil Bulletinje. Svájc: a TCS árradarja mint kiindulópont, naponta a szomszédos országokkal együtt mozgatva. Nyugat-Balkán és Törökország: ezek az országok nem közölnek hivatalos átlagárat (Szerbia, Montenegró, Észak-Macedónia és Koszovó csak hatósági maximált árat hirdet, Törökországban és Bosznia-Hercegovinában szabad az árképzés), ezért becsüljük: az országos árszint a szomszédos EU-országokhoz viszonyítva, naponta velük együtt mozgatva. Árfolyamok: Európai Központi Bank.",
           "Minden ár tájékoztató jellegű; a kútnál kiírt ár az irányadó.",
         ],
       },

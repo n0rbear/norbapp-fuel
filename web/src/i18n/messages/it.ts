@@ -103,6 +103,8 @@ export const it: Messages = {
   sourceEstimate: "stima",
   sourceDefault: "prezzo predefinito",
   estimateSource: "Stima (EU Weekly Oil Bulletin)",
+  regionalSource: "Stima (tendenza regionale)",
+  noOfficialAverage: "{country}: non viene pubblicato un prezzo medio ufficiale, quindi mostriamo un prezzo stimato in base alla tendenza delle medie ufficiali dei paesi vicini.",
   e5InsteadOfE10: "Qui non c’è un prezzo E10 separato; si usa il prezzo E5 (95).",
   navigate: "Naviga",
   otherMapApp: "Altra app di mappe",

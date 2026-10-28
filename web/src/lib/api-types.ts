@@ -89,6 +89,8 @@ export type PointPrices =
       estimate: { price: number; low: number; high: number; location: "highway" | "city" };
       /** E10 was asked for but only an E5 (Super 95) price exists here. */
       e5InsteadOfE10: boolean;
+      /** The country publishes no official average; the price follows the regional trend. */
+      regional: boolean;
     }
   /** Outside the EU, or the price service failed. */
   | { mode: "none"; source: null; stations: []; estimate: null; e5InsteadOfE10: false; reason: AppMessage };

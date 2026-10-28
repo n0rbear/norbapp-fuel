@@ -103,6 +103,8 @@ export const da: Messages = {
   sourceEstimate: "skøn",
   sourceDefault: "reservepris",
   estimateSource: "Skøn (EU Weekly Oil Bulletin)",
+  regionalSource: "Skøn (regional tendens)",
+  noOfficialAverage: "{country}: Der offentliggøres ingen officiel gennemsnitspris, så vi viser en pris skønnet ud fra tendensen i nabolandenes officielle gennemsnit.",
   e5InsteadOfE10: "Ingen separat E10-pris her; E5 (95)-prisen bruges.",
   navigate: "Navigér",
   otherMapApp: "Anden kort-app",
