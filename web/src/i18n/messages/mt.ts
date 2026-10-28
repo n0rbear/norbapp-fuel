@@ -4,7 +4,7 @@ export const mt: Messages = {
   brand: "Fuel by NorbApp",
   title: "Kalkulatur tal-ispiża tal-vjaġġ",
   subtitle:
-    "Rotta, waqfiet għall-fjuwil, prezzijiet tal-fjuwil u pedaġġi għas-27 pajjiż tal-UE flimkien mal-Iżvizzera, il-Liechtenstein u Monaco – fil-munita li tagħżel.",
+    "Rotta, waqfiet għall-fjuwil, prezzijiet tal-fjuwil u pedaġġi għal 36 pajjiż Ewropew – l-UE, l-Iżvizzera, il-Balkani tal-Punent u t-Turkija – fil-munita li tagħżel.",
   language: "Lingwa",
   footerDisclaimer: "Il-prezzijiet huma indikattivi.",
   footerMapData: "Data tal-mappa © kontributuri ta' {osm}",

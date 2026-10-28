@@ -4,7 +4,7 @@ export const fr: Messages = {
   brand: "Fuel by NorbApp",
   title: "Calculateur de coût de trajet",
   subtitle:
-    "Itinéraire, arrêts carburant, prix des carburants et péages pour les 27 pays de l’UE ainsi que la Suisse, le Liechtenstein et Monaco – dans la devise de votre choix.",
+    "Itinéraire, arrêts carburant, prix des carburants et péages pour 36 pays européens – l’UE, la Suisse, les Balkans occidentaux et la Turquie – dans la devise de votre choix.",
   language: "Langue",
   footerDisclaimer: "Les prix sont indicatifs.",
   footerMapData: "Données cartographiques © contributeurs {osm}",

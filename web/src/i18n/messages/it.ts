@@ -4,7 +4,7 @@ export const it: Messages = {
   brand: "Fuel by NorbApp",
   title: "Calcolatore dei costi di viaggio",
   subtitle:
-    "Percorso, soste per il rifornimento, prezzi dei carburanti e pedaggi per i 27 paesi UE più Svizzera, Liechtenstein e Monaco – nella valuta che preferisci.",
+    "Percorso, soste per il rifornimento, prezzi dei carburanti e pedaggi per 36 paesi europei – l’UE, la Svizzera, i Balcani occidentali e la Turchia – nella valuta che preferisci.",
   language: "Lingua",
   footerDisclaimer: "I prezzi sono indicativi.",
   footerMapData: "Dati cartografici © contributori di {osm}",

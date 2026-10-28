@@ -4,7 +4,7 @@ export const nl: Messages = {
   brand: "Fuel by NorbApp",
   title: "Reiskostencalculator",
   subtitle:
-    "Route, tankstops, brandstofprijzen en tol voor de 27 EU-landen plus Zwitserland, Liechtenstein en Monaco – in de valuta van uw keuze.",
+    "Route, tankstops, brandstofprijzen en tol voor 36 Europese landen – de EU, Zwitserland, de Westelijke Balkan en Turkije – in de valuta van uw keuze.",
   language: "Taal",
   footerDisclaimer: "Prijzen zijn indicatief.",
   footerMapData: "Kaartgegevens © {osm}-bijdragers",

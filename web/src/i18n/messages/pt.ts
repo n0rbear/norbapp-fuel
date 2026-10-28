@@ -4,7 +4,7 @@ export const pt: Messages = {
   brand: "Fuel by NorbApp",
   title: "Calculadora de custos de viagem",
   subtitle:
-    "Percurso, paragens para abastecer, preços de combustível e portagens nos 27 países da UE, mais a Suíça, o Listenstaine e o Mónaco – na moeda à sua escolha.",
+    "Percurso, paragens para abastecer, preços de combustível e portagens em 36 países europeus – a UE, a Suíça, os Balcãs Ocidentais e a Turquia – na moeda à sua escolha.",
   language: "Idioma",
   footerDisclaimer: "Os preços são indicativos.",
   footerMapData: "Dados do mapa © contribuidores do {osm}",

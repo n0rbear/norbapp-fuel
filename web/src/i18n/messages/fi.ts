@@ -4,7 +4,7 @@ export const fi: Messages = {
   brand: "Fuel by NorbApp",
   title: "Matkakululaskuri",
   subtitle:
-    "Reitti, tankkauspysähdykset, polttoaineen hinnat ja tiemaksut 27 EU-maassa sekä Sveitsissä, Liechtensteinissa ja Monacossa – valitsemassasi valuutassa.",
+    "Reitti, tankkauspysähdykset, polttoaineen hinnat ja tiemaksut 36 Euroopan maassa – EU, Sveitsi, Länsi-Balkan ja Turkki – valitsemassasi valuutassa.",
   language: "Kieli",
   footerDisclaimer: "Hinnat ovat suuntaa antavia.",
   footerMapData: "Karttatiedot © {osm} -tekijät",

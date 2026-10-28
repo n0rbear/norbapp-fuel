@@ -4,7 +4,7 @@ export const et: Messages = {
   brand: "Fuel by NorbApp",
   title: "Reisikulude kalkulaator",
   subtitle:
-    "Marsruut, tankimispeatused, kütusehinnad ja teemaksud 27 ELi riigis ning Šveitsis, Liechtensteinis ja Monacos – teie valitud valuutas.",
+    "Marsruut, tankimispeatused, kütusehinnad ja teemaksud 36 Euroopa riigis – EL, Šveits, Lääne-Balkan ja Türgi – teie valitud valuutas.",
   language: "Keel",
   footerDisclaimer: "Hinnad on soovituslikud.",
   footerMapData: "Kaardiandmed © {osm} kaastöötajad",

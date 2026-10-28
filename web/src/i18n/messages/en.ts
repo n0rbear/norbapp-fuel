@@ -4,7 +4,7 @@ export const en: Messages = {
   brand: "Fuel by NorbApp",
   title: "Trip cost calculator",
   subtitle:
-    "Route, refuelling stops, fuel prices and tolls for the 27 EU countries plus Switzerland, Liechtenstein and Monaco – in the currency of your choice.",
+    "Route, refuelling stops, fuel prices and tolls for 36 European countries – the EU, Switzerland, the Western Balkans and Turkey – in the currency of your choice.",
   language: "Language",
   footerDisclaimer: "Prices are indicative.",
   footerMapData: "Map data © {osm} contributors",

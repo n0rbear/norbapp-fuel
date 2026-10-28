@@ -7,7 +7,7 @@ export const hu = {
   brand: "Fuel by NorbApp",
   title: "Útiköltség-kalkulátor",
   subtitle:
-    "Útvonal, tankolási pontok, üzemanyagárak és útdíjak a 27 EU-országra, valamint Svájcra, Liechtensteinre és Monacóra – a választott pénznemben.",
+    "Útvonal, tankolási pontok, üzemanyagárak és útdíjak 36 európai országra – az EU, Svájc, a Nyugat-Balkán és Törökország – a választott pénznemben.",
   language: "Nyelv",
   footerDisclaimer: "Az árak tájékoztató jellegűek.",
   footerMapData: "Térképadatok © {osm} közreműködők",

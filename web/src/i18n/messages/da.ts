@@ -4,7 +4,7 @@ export const da: Messages = {
   brand: "Fuel by NorbApp",
   title: "Beregner til rejseomkostninger",
   subtitle:
-    "Rute, tankstop, brændstofpriser og vejafgifter for de 27 EU-lande samt Schweiz, Liechtenstein og Monaco – i den valuta, du vælger.",
+    "Rute, tankstop, brændstofpriser og vejafgifter for 36 europæiske lande – EU, Schweiz, Vestbalkan og Tyrkiet – i den valuta, du vælger.",
   language: "Sprog",
   footerDisclaimer: "Priserne er vejledende.",
   footerMapData: "Kortdata © {osm}-bidragydere",

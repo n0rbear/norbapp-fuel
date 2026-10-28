@@ -4,7 +4,7 @@ export const cs: Messages = {
   brand: "Fuel by NorbApp",
   title: "Kalkulačka nákladů na cestu",
   subtitle:
-    "Trasa, zastávky na tankování, ceny paliva a mýtné pro 27 zemí EU a také Švýcarsko, Lichtenštejnsko a Monako – ve zvolené měně.",
+    "Trasa, zastávky na tankování, ceny paliva a mýtné pro 36 evropských zemí – EU, Švýcarsko, západní Balkán a Turecko – ve zvolené měně.",
   language: "Jazyk",
   footerDisclaimer: "Ceny jsou orientační.",
   footerMapData: "Mapová data © přispěvatelé {osm}",

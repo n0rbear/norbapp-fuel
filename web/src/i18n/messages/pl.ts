@@ -4,7 +4,7 @@ export const pl: Messages = {
   brand: "Fuel by NorbApp",
   title: "Kalkulator kosztów podróży",
   subtitle:
-    "Trasa, postoje na tankowanie, ceny paliwa i opłaty drogowe w 27 krajach UE oraz w Szwajcarii, Liechtensteinie i Monako – w wybranej walucie.",
+    "Trasa, postoje na tankowanie, ceny paliwa i opłaty drogowe w 36 krajach europejskich – w UE, Szwajcarii, na Bałkanach Zachodnich i w Turcji – w wybranej walucie.",
   language: "Język",
   footerDisclaimer: "Ceny są orientacyjne.",
   footerMapData: "Dane mapy © współtwórcy {osm}",

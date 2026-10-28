@@ -1,9 +1,10 @@
 """Motorway tolls for passenger cars (<= 3.5 t, class 1): the 27 EU countries
-plus Switzerland, Liechtenstein and Monaco.
+plus Switzerland, Liechtenstein, Monaco, the Western Balkans (RS, BA, ME, MK,
+XK) and Turkey.
 
 Three charging models:
   vignette  time-based e-vignette (AT, BG, CZ, HU, RO, SI, SK)
-  distance  pay per section / per km (FR, IT, ES, PT, HR, GR, PL, IE)
+  distance  pay per section / per km (FR, IT, ES, PT, HR, GR, PL, IE, RS, BA, ME, MK, TR)
   free      no general motorway charge for cars (the rest)
 Any country may additionally have special tolls (tunnels, bridges, passes).
 
@@ -324,6 +325,40 @@ TOLLS: dict[str, CountryTolls] = {
         ),
         CountryTolls("LI", "free", "CHF", "Nincs autópálya és útdíj (Svájcon át érkezve a svájci matrica kell)."),
         CountryTolls("MC", "free", "EUR", "Nincs útdíj (az A8-as francia autópálya fizetős)."),
+        # --- Western Balkans and Turkey (approximate class-1 averages) -------
+        CountryTolls(
+            "RS", "distance", "RSD",
+            "Szakaszonkénti útdíj a fizetős autópályákon (I. kategória), átlag ~0,05 €/km.",
+            per_km=6.0,
+            sources=("https://www.putevi-srbije.rs/",),
+        ),
+        CountryTolls(
+            "BA", "distance", "BAM",
+            "Szakaszonkénti útdíj az A1-es autópályán (I. kategória), átlag ~0,05 €/km.",
+            per_km=0.10,
+            sources=("https://www.autoceste.ba/",),
+        ),
+        CountryTolls(
+            "ME", "distance", "EUR",
+            "A Bar–Boljare autópálya Smokovac–Mateševo szakasza fizetős (~0,085 €/km); a Sozina-alagút külön díjas.",
+            per_km=0.085,
+            special=(S("sozina", "Sozina-alagút", 2.50, "Bar–Podgorica"),),
+            sources=("https://www.monteput.co.me/",),
+        ),
+        CountryTolls(
+            "MK", "distance", "MKD",
+            "Fizetőkapus rendszer az autópályákon (I. kategória), átlag ~0,05 €/km.",
+            per_km=3.0,
+            sources=("https://www.roads.org.mk/",),
+        ),
+        CountryTolls("XK", "free", "EUR", "Az autópályák személyautóval ingyenesek."),
+        CountryTolls(
+            "TR", "distance", "EUR",
+            "Kilométeralapú útdíj (HGS) az autópályákon, átlag ~0,04 €/km (líra-árak, euróra átszámolva). "
+            "A nagy hidak és alagutak (pl. Osmangazi, 1915 Çanakkale, Yavuz Sultan Selim, Avrasya) külön díjasak, nincsenek benne.",
+            per_km=0.04,
+            sources=("https://www.kgm.gov.tr/",),
+        ),
         CountryTolls("SE", "free", "SEK", "Nincs autópályadíj; néhány híd és Stockholm/Göteborg dugódíj fizetős.",
                      special=(S("oresund", "Øresund-híd (SE→DK)", 690, None, "Online/előfizetéssel olcsóbb."),
                               S("sundsvall", "Sundsvall-híd", 9), S("motala", "Motala-híd", 5),

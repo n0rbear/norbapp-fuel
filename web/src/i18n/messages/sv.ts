@@ -4,7 +4,7 @@ export const sv: Messages = {
   brand: "Fuel by NorbApp",
   title: "Reskostnadskalkylator",
   subtitle:
-    "Rutt, tankstopp, bränslepriser och vägavgifter för EU:s 27 länder samt Schweiz, Liechtenstein och Monaco – i valfri valuta.",
+    "Rutt, tankstopp, bränslepriser och vägavgifter för 36 europeiska länder – EU, Schweiz, västra Balkan och Turkiet – i valfri valuta.",
   language: "Språk",
   footerDisclaimer: "Priserna är vägledande.",
   footerMapData: "Kartdata © {osm}-bidragsgivare",

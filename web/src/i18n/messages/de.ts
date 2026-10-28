@@ -4,7 +4,7 @@ export const de: Messages = {
   brand: "Fuel by NorbApp",
   title: "Reisekostenrechner",
   subtitle:
-    "Route, Tankstopps, Kraftstoffpreise und Mautgebühren für die 27 EU-Länder sowie die Schweiz, Liechtenstein und Monaco – in der Währung Ihrer Wahl.",
+    "Route, Tankstopps, Kraftstoffpreise und Mautgebühren für 36 europäische Länder – die EU, die Schweiz, den Westbalkan und die Türkei – in der Währung Ihrer Wahl.",
   language: "Sprache",
   footerDisclaimer: "Die Preise sind unverbindlich.",
   footerMapData: "Kartendaten © {osm}-Mitwirkende",

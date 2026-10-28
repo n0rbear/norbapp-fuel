@@ -4,7 +4,7 @@ export const ga: Messages = {
   brand: "Fuel by NorbApp",
   title: "Áireamhán costais turais",
   subtitle:
-    "Bealach, stadanna breosla, praghsanna breosla agus dolaí do 27 tír an AE chomh maith leis an Eilvéis, Lichtinstéin agus Monacó – san airgeadra is rogha leat.",
+    "Bealach, stadanna breosla, praghsanna breosla agus dolaí do 36 tír Eorpach – an AE, an Eilvéis, na Balcáin Thiar agus an Tuirc – san airgeadra is rogha leat.",
   language: "Teanga",
   footerDisclaimer: "Is praghsanna táscacha iad seo.",
   footerMapData: "Sonraí léarscáile © rannpháirtithe {osm}",

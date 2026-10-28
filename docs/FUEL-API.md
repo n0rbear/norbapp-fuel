@@ -22,6 +22,7 @@ A „FUEL” chatben így lehet rá hivatkozni: *„folytassuk a FUEL-API beép�
 4. **Euro-besorolás** – ahol az útdíj függ tőle (jelenleg Románia), a `euro_class` kötelező; hiányában 422 `euro_class_required`.
 5. **E10** – `fuel=e10`: DE/ES/FR-ben valódi E10-ár, máshol E5 (95) ár `price_fuel`/`fuel_note` jelzéssel.
 7. **Svájc, Liechtenstein, Monaco** – becslés; CH: TCS-horgony + a DE/AT/FR/IT Bulletin-átlag napi változása (reggel 6-kor frissül), LI = CH, MC = FR; CH éves matrica 40 CHF.
+8. **Nyugat-Balkán (RS, BA, ME, MK, XK) és Törökország** – becslés: a 2025-ös országos árszint aránya × a HR/HU/SI/BG/RO/GR Bulletin-átlag (naponta frissül); útdíj km-alapú átlaggal, XK ingyenes.
 6. **Pénznem** – minden ár kérhető az EU-s pénznemek bármelyikében: EUR, CZK, DKK, HUF, PLN, RON, SEK (`currency=HUF`, lista: `GET /api/currencies`).
 
 ## Döntések (ne nyissuk újra)

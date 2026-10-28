@@ -101,6 +101,13 @@ COUNTRIES: dict[str, Country] = {
         Country("CH", "Switzerland", "Svájc", False, "CHF", eu=False),
         Country("LI", "Liechtenstein", "Liechtenstein", False, "CHF", eu=False),
         Country("MC", "Monaco", "Monaco", False, "EUR", eu=False),
+        # Former Yugoslavia (outside the EU) and Turkey: regional model, see below.
+        Country("RS", "Serbia", "Szerbia", False, "RSD", eu=False),
+        Country("BA", "Bosnia and Herzegovina", "Bosznia-Hercegovina", False, "BAM", eu=False),
+        Country("ME", "Montenegro", "Montenegró", False, "EUR", eu=False),
+        Country("MK", "North Macedonia", "Észak-Macedónia", False, "MKD", eu=False),
+        Country("XK", "Kosovo", "Koszovó", False, "EUR", eu=False),
+        Country("TR", "Turkey", "Törökország", False, "TRY", eu=False),
     ]
 }
 
@@ -129,6 +136,24 @@ SWISS_REFERENCE_COUNTRIES = ("DE", "AT", "FR", "IT")
 # neighbours' averages include ~20.5% VAT, Swiss prices 8.1% (fixed per-litre
 # mineral oil tax). So a 1.00 move next door is ~0.90 in Switzerland.
 SWISS_PASS_THROUGH = 1.081 / 1.205
+
+# Western Balkans and Turkey: no Oil Bulletin and no open price feed. Their
+# national average is modelled as a fixed ratio of the regional EU average
+# (HR, HU, SI, BG, RO, GR) of the same morning, so it follows the market day
+# by day. The ratios come from 2025 national averages (government-regulated
+# prices in RS, ME, MK; market prices in BA, XK, TR) and are approximate:
+# re-calibrate them, or set BASE_PRICES_JSON, when better figures are known.
+# Community price reports refine the stations on top of this.
+REGIONAL_REFERENCE_COUNTRIES = ("HR", "HU", "SI", "BG", "RO", "GR")
+REGIONAL_RATIOS_AS_OF = "2025"
+REGIONAL_RATIOS: dict[str, dict[Fuel, float]] = {
+    "RS": {Fuel.PETROL: 1.04, Fuel.DIESEL: 1.15},
+    "BA": {Fuel.PETROL: 0.83, Fuel.DIESEL: 0.87},
+    "ME": {Fuel.PETROL: 1.03, Fuel.DIESEL: 0.97},
+    "MK": {Fuel.PETROL: 0.87, Fuel.DIESEL: 0.82},
+    "XK": {Fuel.PETROL: 0.93, Fuel.DIESEL: 0.93},
+    "TR": {Fuel.PETROL: 0.74, Fuel.DIESEL: 0.77},
+}
 
 # National average pump prices incl. taxes, EUR/litre, from the European
 # Commission Weekly Oil Bulletin (prices with taxes, week of 2026-10-12).
@@ -368,7 +393,16 @@ def base_price(country_code: str, fuel: Fuel) -> float:
         return base_price(DERIVED_BASE_PRICES[code], fuel)
     if code == "CH":
         return swiss_base_price(basis)
+    if code in REGIONAL_RATIOS:
+        return regional_base_price(code, basis)
     raise KeyError(code)
+
+
+def regional_base_price(code: str, fuel: Fuel) -> float:
+    """Western Balkans / Turkey average in EUR/l: ratio x today's regional EU average."""
+    basis = fuel.price_basis
+    reference = sum(BASE_PRICES[c][basis] for c in REGIONAL_REFERENCE_COUNTRIES) / len(REGIONAL_REFERENCE_COUNTRIES)
+    return round(reference * REGIONAL_RATIOS[code][basis], 3)
 
 
 def swiss_base_price(fuel: Fuel) -> float:
@@ -396,6 +430,13 @@ def base_price_source(country_code: str) -> dict[str, str]:
         parent = DERIVED_BASE_PRICES[code]
         inherited = base_price_source(parent)
         return {**inherited, "source": f"{COUNTRIES[parent].name} average: {inherited['source']}", "derived_from": parent}
+    if code in REGIONAL_RATIOS and code not in BASE_PRICES:
+        return {
+            "source": "Regional model: national 2025 price level relative to the "
+            f"{'/'.join(REGIONAL_REFERENCE_COUNTRIES)} bulletin average, moved daily with it",
+            "ratios_as_of": REGIONAL_RATIOS_AS_OF,
+            "as_of": BASE_PRICES_AS_OF,
+        }
     if code == "CH":
         return {
             "source": f"{SWISS_ANCHOR['source']} anchor, adjusted daily by the "
