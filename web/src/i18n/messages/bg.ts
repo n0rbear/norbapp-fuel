@@ -104,6 +104,7 @@ export const bg: Messages = {
   sourceDefault: "резервна цена",
   estimateSource: "Прогноза (EU Weekly Oil Bulletin)",
   regionalSource: "Прогноза (регионална тенденция)",
+  regulatedSource: "Официална максимална цена ({authority}, обновява се ежедневно)",
   noOfficialAverage: "{country}: няма официална публикувана средна цена, затова показваме цена, изчислена по тенденцията на официалните средни цени в съседните държави.",
   e5InsteadOfE10: "Тук няма отделна цена за E10; използва се цената на E5 (95).",
   navigate: "Навигация",

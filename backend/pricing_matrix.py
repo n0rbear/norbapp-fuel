@@ -19,6 +19,7 @@ import os
 import re
 import unicodedata
 from dataclasses import dataclass
+from datetime import date, timedelta
 from enum import Enum
 from pathlib import Path
 
@@ -150,10 +151,17 @@ REGIONAL_RATIOS: dict[str, dict[Fuel, float]] = {
     "RS": {Fuel.PETROL: 1.04, Fuel.DIESEL: 1.15},
     "BA": {Fuel.PETROL: 0.83, Fuel.DIESEL: 0.87},
     "ME": {Fuel.PETROL: 1.03, Fuel.DIESEL: 0.97},
-    "MK": {Fuel.PETROL: 0.87, Fuel.DIESEL: 0.82},
+    "MK": {Fuel.PETROL: 0.80, Fuel.DIESEL: 0.82},  # calibrated to ERC max prices, 2026-10-28
     "XK": {Fuel.PETROL: 0.93, Fuel.DIESEL: 0.93},
     "TR": {Fuel.PETROL: 0.74, Fuel.DIESEL: 0.77},
 }
+
+# Official regulated (maximum) prices fetched daily where a machine-readable
+# source exists (regulated_prices.py). They replace the regional model while
+# recent and plausible; otherwise the model above takes over again.
+REGULATED_MAX_AGE = timedelta(days=14)
+REGULATED_MAX_DEVIATION = 0.35
+REGULATED_PRICES: dict[str, "RegulatedPrice"] = {}  # noqa: F821 - regulated_prices.RegulatedPrice
 
 # National average pump prices incl. taxes, EUR/litre, from the European
 # Commission Weekly Oil Bulletin (prices with taxes, week of 2026-10-12).
@@ -393,9 +401,39 @@ def base_price(country_code: str, fuel: Fuel) -> float:
         return base_price(DERIVED_BASE_PRICES[code], fuel)
     if code == "CH":
         return swiss_base_price(basis)
+    regulated = regulated_base_price(code, basis)
+    if regulated is not None:
+        return regulated
     if code in REGIONAL_RATIOS:
         return regional_base_price(code, basis)
     raise KeyError(code)
+
+
+def _current_regulated(code: str, today: date | None = None):
+    entry = REGULATED_PRICES.get(code)
+    if entry is None or (today or date.today()) - entry.fetched > REGULATED_MAX_AGE:
+        return None
+    return entry
+
+
+def regulated_base_price(code: str, fuel: Fuel) -> float | None:
+    """Official maximum price in EUR/l, or None without a recent one."""
+    entry = _current_regulated(code)
+    if entry is None or fuel.price_basis not in entry.prices:
+        return None
+    return round(entry.prices[fuel.price_basis] / fx.rate(entry.currency), 3)
+
+
+def apply_regulated_price(entry) -> bool:
+    """Store a fetched regulated price unless it is far off the regional model."""
+    for fuel, local in entry.prices.items():
+        eur = local / fx.rate(entry.currency)
+        model = regional_base_price(entry.country, fuel) if entry.country in REGIONAL_RATIOS else eur
+        if abs(eur / model - 1) > REGULATED_MAX_DEVIATION:
+            logger.warning("Ignoring implausible %s %s price %.3f EUR (model %.3f)", entry.country, fuel.value, eur, model)
+            return False
+    REGULATED_PRICES[entry.country] = entry
+    return True
 
 
 def regional_base_price(code: str, fuel: Fuel) -> float:
@@ -430,6 +468,14 @@ def base_price_source(country_code: str) -> dict[str, str]:
         parent = DERIVED_BASE_PRICES[code]
         inherited = base_price_source(parent)
         return {**inherited, "source": f"{COUNTRIES[parent].name} average: {inherited['source']}", "derived_from": parent}
+    regulated = _current_regulated(code)
+    if regulated is not None and code not in BASE_PRICES:
+        return {
+            "source": f"Official maximum retail price: {regulated.authority}",
+            "regulated_by": regulated.authority,
+            "url": regulated.url,
+            "as_of": regulated.fetched.isoformat(),
+        }
     if code in REGIONAL_RATIOS and code not in BASE_PRICES:
         return {
             "source": "Regional model: national 2025 price level relative to the "

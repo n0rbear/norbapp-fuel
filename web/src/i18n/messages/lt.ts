@@ -104,6 +104,7 @@ export const lt: Messages = {
   sourceDefault: "numatytoji kaina",
   estimateSource: "Įvertis (EU Weekly Oil Bulletin)",
   regionalSource: "Įvertis (regiono tendencija)",
+  regulatedSource: "Oficiali didžiausia kaina ({authority}, atnaujinama kasdien)",
   noOfficialAverage: "{country}: oficiali vidutinė kaina neskelbiama, todėl rodome kainą, įvertintą pagal kaimyninių šalių oficialių vidurkių tendenciją.",
   e5InsteadOfE10: "Čia nėra atskiros E10 kainos; naudojama E5 (95) kaina.",
   navigate: "Navigacija",

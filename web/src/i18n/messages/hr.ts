@@ -104,6 +104,7 @@ export const hr: Messages = {
   sourceDefault: "zamjenska cijena",
   estimateSource: "Procjena (EU Weekly Oil Bulletin)",
   regionalSource: "Procjena (regionalni trend)",
+  regulatedSource: "Službena najviša cijena ({authority}, ažurira se dnevno)",
   noOfficialAverage: "{country}: ne objavljuje se službena prosječna cijena, pa prikazujemo cijenu procijenjenu prema trendu službenih prosjeka susjednih zemalja.",
   e5InsteadOfE10: "Ovdje nema zasebne cijene za E10; koristi se cijena za E5 (95).",
   navigate: "Navigacija",

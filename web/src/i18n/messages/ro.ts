@@ -104,6 +104,7 @@ export const ro: Messages = {
   sourceDefault: "preț implicit",
   estimateSource: "Estimare (EU Weekly Oil Bulletin)",
   regionalSource: "Estimare (tendință regională)",
+  regulatedSource: "Preț maxim oficial ({authority}, actualizat zilnic)",
   noOfficialAverage: "{country}: nu se publică un preț mediu oficial, așa că afișăm un preț estimat după tendința mediilor oficiale din țările vecine.",
   e5InsteadOfE10: "Aici nu există un preț separat pentru E10; se folosește prețul E5 (95).",
   navigate: "Navigare",

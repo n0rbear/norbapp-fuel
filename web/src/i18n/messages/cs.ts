@@ -104,6 +104,7 @@ export const cs: Messages = {
   sourceDefault: "náhradní cena",
   estimateSource: "Odhad (EU Weekly Oil Bulletin)",
   regionalSource: "Odhad (regionální trend)",
+  regulatedSource: "Úřední maximální cena ({authority}, aktualizace denně)",
   noOfficialAverage: "{country}: oficiální průměrná cena se nezveřejňuje, proto ukazujeme cenu odhadnutou podle trendu oficiálních průměrů sousedních zemí.",
   e5InsteadOfE10: "Samostatná cena E10 zde není; použije se cena E5 (95).",
   navigate: "Navigovat",

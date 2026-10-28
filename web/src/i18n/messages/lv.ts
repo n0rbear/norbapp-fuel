@@ -104,6 +104,7 @@ export const lv: Messages = {
   sourceDefault: "rezerves cena",
   estimateSource: "Aplēse (EU Weekly Oil Bulletin)",
   regionalSource: "Aplēse (reģionālā tendence)",
+  regulatedSource: "Oficiālā maksimālā cena ({authority}, atjaunina katru dienu)",
   noOfficialAverage: "{country}: oficiālā vidējā cena netiek publicēta, tāpēc rādām cenu, kas aplēsta pēc kaimiņvalstu oficiālo vidējo cenu tendences.",
   e5InsteadOfE10: "Šeit nav atsevišķas E10 cenas; tiek izmantota E5 (95) cena.",
   navigate: "Navigācija",
