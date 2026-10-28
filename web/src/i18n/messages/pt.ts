@@ -104,6 +104,7 @@ export const pt: Messages = {
   sourceDefault: "preço de recurso",
   estimateSource: "Estimativa (EU Weekly Oil Bulletin)",
   regionalSource: "Estimativa (tendência regional)",
+  regulatedSource: "Preço máximo oficial ({authority}, atualizado diariamente)",
   noOfficialAverage: "{country}: não é publicado um preço médio oficial, por isso mostramos um preço estimado a partir da tendência das médias oficiais dos países vizinhos.",
   e5InsteadOfE10: "Aqui não há preço próprio para E10; é utilizado o preço da E5 (95).",
   navigate: "Navegar",

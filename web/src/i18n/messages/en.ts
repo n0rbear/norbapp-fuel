@@ -104,6 +104,7 @@ export const en: Messages = {
   sourceDefault: "fallback price",
   estimateSource: "Estimate (EU Weekly Oil Bulletin)",
   regionalSource: "Estimate (regional trend)",
+  regulatedSource: "Official maximum price ({authority}, refreshed daily)",
   noOfficialAverage: "{country}: no official average price is published, so we show a price estimated from the trend of neighbouring countries’ official averages.",
   e5InsteadOfE10: "No separate E10 price here; the E5 (95) price is used.",
   navigate: "Navigate",

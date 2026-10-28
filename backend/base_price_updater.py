@@ -24,6 +24,7 @@ import httpx
 from openpyxl import load_workbook
 
 import pricing_matrix as pm
+import regulated_prices
 from fx import fx
 from pricing_matrix import Fuel
 
@@ -105,6 +106,7 @@ class BasePriceUpdater:
         self.last_error: str | None = None
         self.fx_error: str | None = None
         self.source_url: str | None = None
+        self.regulated_errors: dict[str, str] = {}
         self._lock = asyncio.Lock()
         self._task: asyncio.Task | None = None
         self._catch_up: asyncio.Task | None = None
@@ -113,7 +115,25 @@ class BasePriceUpdater:
         async with self._lock:
             self.last_attempt = datetime.now(_tz())
             fx_ok = await self._refresh_fx(http)
-            return await self._refresh_prices(http) and fx_ok
+            prices_ok = await self._refresh_prices(http)
+            # After the bulletin: plausibility is checked against the regional model.
+            await self._refresh_regulated(http)
+            return prices_ok and fx_ok
+
+    async def _refresh_regulated(self, http: httpx.AsyncClient) -> None:
+        today = datetime.now(_tz()).date()
+        for code, fetch in regulated_prices.FETCHERS.items():
+            try:
+                entry = await fetch(http, today)
+            except (httpx.HTTPError, ValueError) as exc:
+                self.regulated_errors[code] = f"{exc.__class__.__name__}: {exc}"[:300]
+                logger.warning("Regulated price refresh failed for %s: %s", code, self.regulated_errors[code])
+                continue
+            if pm.apply_regulated_price(entry):
+                self.regulated_errors.pop(code, None)
+                logger.info("Regulated prices %s: %s", code, {f.value: p for f, p in entry.prices.items()})
+            else:
+                self.regulated_errors[code] = "implausible price, regional model kept"
 
     async def _refresh_fx(self, http: httpx.AsyncClient) -> bool:
         try:
@@ -188,6 +208,16 @@ class BasePriceUpdater:
             "fx_as_of": fx.as_of,
             "fx_source": fx.source,
             "fx_error": self.fx_error,
+            "regulated": {
+                code: {
+                    "as_of": entry.fetched.isoformat(),
+                    "prices": {f.value: p for f, p in entry.prices.items()},
+                    "currency": entry.currency,
+                    "source": entry.url,
+                }
+                for code, entry in pm.REGULATED_PRICES.items()
+            },
+            "regulated_errors": self.regulated_errors,
         }
 
 

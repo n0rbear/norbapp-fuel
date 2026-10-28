@@ -104,6 +104,7 @@ export const fi: Messages = {
   sourceDefault: "oletushinta",
   estimateSource: "Arvio (EU Weekly Oil Bulletin)",
   regionalSource: "Arvio (alueellinen trendi)",
+  regulatedSource: "Virallinen enimmäishinta ({authority}, päivitetään päivittäin)",
   noOfficialAverage: "{country}: virallista keskihintaa ei julkaista, joten näytämme naapurimaiden virallisten keskihintojen trendin perusteella arvioidun hinnan.",
   e5InsteadOfE10: "Täällä ei ole erillistä E10-hintaa; käytetään E5 (95) -hintaa.",
   navigate: "Navigoi",

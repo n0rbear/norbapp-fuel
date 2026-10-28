@@ -104,6 +104,7 @@ export const el: Messages = {
   sourceDefault: "εφεδρική τιμή",
   estimateSource: "Εκτίμηση (EU Weekly Oil Bulletin)",
   regionalSource: "Εκτίμηση (περιφερειακή τάση)",
+  regulatedSource: "Επίσημη ανώτατη τιμή ({authority}, ημερήσια ενημέρωση)",
   noOfficialAverage: "{country}: δεν δημοσιεύεται επίσημη μέση τιμή, γι’ αυτό δείχνουμε τιμή εκτιμώμενη από την τάση των επίσημων μέσων τιμών των γειτονικών χωρών.",
   e5InsteadOfE10: "Δεν υπάρχει ξεχωριστή τιμή E10 εδώ· χρησιμοποιείται η τιμή E5 (95).",
   navigate: "Πλοήγηση",

@@ -111,6 +111,7 @@ export const hu = {
   sourceDefault: "alapár",
   estimateSource: "Becslés (EU Weekly Oil Bulletin)",
   regionalSource: "Becslés (regionális trend)",
+  regulatedSource: "Hatósági maximált ár ({authority}, naponta frissítve)",
   noOfficialAverage: "{country}: nincs hivatalos, naponta közzétett átlagár, ezért a szomszédos országok hivatalos átlagárainak trendje alapján becsült árat mutatunk.",
   e5InsteadOfE10: "Itt nincs külön E10-ár, E5 (95) árral számolunk.",
   navigate: "Navigáció",

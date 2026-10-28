@@ -104,6 +104,7 @@ export const et: Messages = {
   sourceDefault: "vaikehind",
   estimateSource: "Hinnang (EU Weekly Oil Bulletin)",
   regionalSource: "Hinnang (piirkondlik trend)",
+  regulatedSource: "Ametlik piirhind ({authority}, uuendatakse iga päev)",
   noOfficialAverage: "{country}: ametlikku keskmist hinda ei avaldata, seega näitame hinda, mis on hinnatud naaberriikide ametlike keskmiste trendi järgi.",
   e5InsteadOfE10: "Siin puudub eraldi E10 hind; kasutatakse E5 (95) hinda.",
   navigate: "Navigeerimine",

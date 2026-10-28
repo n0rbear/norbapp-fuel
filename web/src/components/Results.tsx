@@ -25,11 +25,14 @@ const SOURCE_LABEL: Record<PriceSource, MessageKey> = {
 /** Default fallback price (EUR/l) where no price data exists, converted to the chosen currency. */
 const FALLBACK_EUR = 1.7;
 
-function attribution(source: string, estimateLabel: string, regionalLabel: string): string {
+const REGULATED_PREFIX = "Regulated maximum price: ";
+
+function attribution(source: string, t: ReturnType<typeof useI18n>["t"]): string {
   // Tankerkönig data is CC BY 4.0 and must be credited this way.
   if (/tankerk/i.test(source)) return "Daten: MTS-K / Tankerkönig (CC BY 4.0)";
-  if (source === "Regional model") return regionalLabel;
-  return source === "EU Weekly Oil Bulletin" ? estimateLabel : source;
+  if (source === "Regional model") return t("regionalSource");
+  if (source.startsWith(REGULATED_PREFIX)) return t("regulatedSource", { authority: source.slice(REGULATED_PREFIX.length) });
+  return source === "EU Weekly Oil Bulletin" ? t("estimateSource") : source;
 }
 
 type Props = {
@@ -239,7 +242,7 @@ export function Results({ request, data, stale, euroClass, onEuroClassChange, lo
       </ol>
       {sources.length > 0 && (
         <p className="hint">
-          {t("priceSource", { sources: sources.map((s) => attribution(s, t("estimateSource"), t("regionalSource"))).join(" · ") })}
+          {t("priceSource", { sources: sources.map((s) => attribution(s, t)).join(" · ") })}
         </p>
       )}
 

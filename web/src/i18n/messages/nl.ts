@@ -104,6 +104,7 @@ export const nl: Messages = {
   sourceDefault: "standaardprijs",
   estimateSource: "Schatting (EU Weekly Oil Bulletin)",
   regionalSource: "Schatting (regionale trend)",
+  regulatedSource: "Officiële maximumprijs ({authority}, dagelijks bijgewerkt)",
   noOfficialAverage: "{country}: er wordt geen officiële gemiddelde prijs gepubliceerd, dus tonen we een prijs geschat op basis van de trend van de officiële gemiddelden in de buurlanden.",
   e5InsteadOfE10: "Hier is geen aparte E10-prijs; de E5-prijs (95) wordt gebruikt.",
   navigate: "Navigeren",
