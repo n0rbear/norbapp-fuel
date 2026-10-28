@@ -5,7 +5,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { legalTexts, type LegalTexts } from "@/i18n/legal";
 import { ADS_ENABLED } from "@/lib/site";
 
-const LINK = /(?<![@\w.])((?:[a-z0-9-]+\.)+(?:org|io|de|com)(?:\/[\w./-]*[\w/])?)/gi;
+const LINK = /(?<![@\w.])((?:[a-z0-9-]+\.)+(?:org|io|de|com|hu|gov|eu)(?:\/[\w./-]*[\w/])?)/gi;
 
 /** Plain text with bare domains (e.g. openstreetmap.org/copyright) turned into links. */
 function Linkified({ text }: { text: string }) {

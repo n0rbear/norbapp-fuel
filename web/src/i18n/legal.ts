@@ -38,6 +38,10 @@ const SOURCES_EN: LegalPage = {
       ],
     },
     {
+      title: "IP location",
+      body: ["Country look-up: IP to Country Lite database by DB-IP (db-ip.com), licensed under CC BY 4.0. City look-up: this product includes GeoLite data created by MaxMind, available from maxmind.com."],
+    },
+    {
       title: "Software",
       body: ["Fuel by NorbApp is built with Next.js, React and FastAPI. Price and toll data are served by the NorbApp FUEL-API."],
     },
@@ -71,12 +75,15 @@ const EN: LegalTexts = {
     sections: [
       {
         title: "Controller",
-        body: ["NorbApp, e-mail: norbert@norbapp.com. For any privacy question, write to this address."],
+        body: [
+          "Norbert Horváth (private individual, operating under the name NorbApp), Germany. E-mail: norbert@norbapp.com – write to this address with any privacy question or to exercise your rights. No data protection officer has been appointed, as none is required.",
+          "This notice covers Fuel by NorbApp (fuel.norbapp.com) and explains, as required by Articles 13 and 21 of the General Data Protection Regulation (GDPR), what personal data is processed, why, for how long, who receives it and what rights you have.",
+        ],
       },
       {
         title: "Hosting and server logs",
         body: [
-          "The app and the FUEL-API run on Render (Render Services, Inc.) on servers in Frankfurt am Main, Germany. When you open the app, the hosting provider processes technically necessary access data (IP address, time, requested URL, browser information, status codes) to deliver the site and keep it secure (Art. 6(1)(f) GDPR).",
+          "The app and the FUEL-API run on Render (Render Services, Inc., San Francisco, USA) on servers in Frankfurt am Main, Germany; Render acts as our processor under a data processing agreement. When you open the app, the hosting provider processes technically necessary access data (IP address, time, requested URL, browser information, status codes) to deliver the site and keep it secure (Art. 6(1)(f) GDPR). The logs are deleted automatically after the hosting provider's retention period (a few weeks at most). Render is certified under the EU-US Data Privacy Framework, so any access from the USA is covered by the EU adequacy decision (Art. 45 GDPR).",
         ],
       },
       {
@@ -105,6 +112,14 @@ const EN: LegalTexts = {
         ],
       },
       {
+        title: "Notifications to the operator and approximate location",
+        body: [
+          "For some events (for example a page view, a calculation, a price report or an installation of the app) the operator receives a short push notification on his phone, so he can follow how the service is used and spot misuse or attacks quickly. The notification contains the type of event, the page or the countries of the route, the device type and operating system, and the approximate location of the visitor (city and country). It contains no name, no typed address and no IP address.",
+          "The approximate location is derived from your IP address. The country is looked up in a database on our own server (DB-IP, db-ip.com). For the city, the IP address is sent to the GeoLite web service of MaxMind, Inc. (Waltham, USA), which returns only the place; MaxMind is certified under the EU-US Data Privacy Framework (Art. 45 GDPR). We keep the answer in memory for at most 24 hours so the same address is not looked up twice; the IP address is not stored.",
+          "The notification is delivered through ntfy.sh, a push service operated by Philipp C. Heckel, which keeps messages for at most 12 hours and then deletes them; to reach the phone it may use the push services of Apple or Google. Legal basis: Art. 6(1)(f) GDPR – our legitimate interest in running the service securely and knowing how it is used. You can object at any time (see “Right to object”).",
+        ],
+      },
+      {
         title: "Price reports",
         body: [
           "Where only an average price exists, you can report the price at a station. We store the station, the fuel, the price, the time, a random device identifier created in your browser (no account, no name) and a keyed hash of your IP address, so that one person cannot confirm their own report. The IP address itself is not stored. Raw reports are deleted after 90 days; confirmed prices are kept without the identifiers. Legal basis: Art. 6(1)(f) GDPR (reliable prices for all users).",
@@ -122,7 +137,20 @@ const EN: LegalTexts = {
       {
         title: "Your rights",
         body: [
-          "You have the right of access, rectification, erasure, restriction of processing, data portability and objection, and you can withdraw consent at any time with effect for the future. You may also lodge a complaint with a data protection supervisory authority.",
+          "You have the right of access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18) and data portability (Art. 20), and you can withdraw any consent at any time with effect for the future (Art. 7(3)); processing before the withdrawal remains lawful. Write to norbert@norbapp.com; we answer within one month. As Fuel works without an account, we may need a detail from you (for example the time of a price report) to find your data.",
+          "You may lodge a complaint with a data protection supervisory authority (Art. 77 GDPR), in particular in the EU country where you live or work, or where you think the infringement took place – for example the data protection authority of your federal state in Germany, the Datenschutzbehörde in Austria or the NAIH in Hungary (naih.hu).",
+        ],
+      },
+      {
+        title: "Right to object (Art. 21 GDPR)",
+        body: [
+          "Where we process data on the basis of legitimate interests (Art. 6(1)(f) GDPR), you have the right to object at any time, on grounds relating to your particular situation. We then stop the processing unless we can demonstrate compelling legitimate grounds that override your interests, rights and freedoms, or the processing serves the establishment, exercise or defence of legal claims. An informal e-mail to norbert@norbapp.com is enough.",
+        ],
+      },
+      {
+        title: "Other information",
+        body: [
+          "You are not legally or contractually obliged to provide any data; without the start and destination, however, no trip can be calculated. There is no automated decision-making or profiling within the meaning of Art. 22 GDPR. We will update this notice when the app or the services it uses change; the date at the top shows the current version.",
         ],
       },
     ],
@@ -157,12 +185,15 @@ const DE: LegalTexts = {
     sections: [
       {
         title: "Verantwortlicher",
-        body: ["NorbApp, E-Mail: norbert@norbapp.com. Bei Fragen zum Datenschutz schreib an diese Adresse."],
+        body: [
+          "Norbert Horváth (Privatperson, tätig unter dem Namen NorbApp), Deutschland. E-Mail: norbert@norbapp.com – an diese Adresse kannst du dich mit allen Datenschutzfragen wenden und deine Rechte geltend machen. Ein Datenschutzbeauftragter ist nicht bestellt, da keine Pflicht dazu besteht.",
+          "Diese Erklärung gilt für Fuel by NorbApp (fuel.norbapp.com) und informiert nach Art. 13 und 21 der Datenschutz-Grundverordnung (DSGVO) darüber, welche personenbezogenen Daten wozu und wie lange verarbeitet werden, wer sie erhält und welche Rechte du hast.",
+        ],
       },
       {
         title: "Hosting und Serverlogs",
         body: [
-          "Die App und die FUEL-API laufen bei Render (Render Services, Inc.) auf Servern in Frankfurt am Main. Beim Aufruf verarbeitet der Hoster technisch notwendige Zugriffsdaten (IP-Adresse, Zeitpunkt, angefragte URL, Browserinformationen, Statuscodes), um die Seite auszuliefern und abzusichern (Art. 6 Abs. 1 lit. f DSGVO).",
+          "Die App und die FUEL-API laufen bei Render (Render Services, Inc., San Francisco, USA) auf Servern in Frankfurt am Main; Render ist unser Auftragsverarbeiter mit Vertrag nach Art. 28 DSGVO. Beim Aufruf verarbeitet der Hoster technisch notwendige Zugriffsdaten (IP-Adresse, Zeitpunkt, angefragte URL, Browserinformationen, Statuscodes), um die Seite auszuliefern und abzusichern (Art. 6 Abs. 1 lit. f DSGVO). Die Protokolle werden nach der Aufbewahrungsfrist des Hosters automatisch gelöscht (höchstens einige Wochen). Render ist unter dem EU-US Data Privacy Framework zertifiziert; ein etwaiger Zugriff aus den USA ist damit durch den Angemessenheitsbeschluss der EU abgedeckt (Art. 45 DSGVO).",
         ],
       },
       {
@@ -191,6 +222,14 @@ const DE: LegalTexts = {
         ],
       },
       {
+        title: "Benachrichtigungen an den Betreiber und ungefährer Standort",
+        body: [
+          "Bei manchen Ereignissen (etwa einem Seitenaufruf, einer Berechnung, einer Preismeldung oder der Installation der App) erhält der Betreiber eine kurze Push-Benachrichtigung auf sein Handy, um die Nutzung des Dienstes zu verfolgen und Missbrauch oder Angriffe schnell zu bemerken. Sie enthält die Art des Ereignisses, die Seite bzw. die Länder der Route, Gerätetyp und Betriebssystem sowie den ungefähren Standort des Besuchers (Stadt und Land) – keinen Namen, keine eingegebene Adresse und keine IP-Adresse.",
+          "Der ungefähre Standort wird aus deiner IP-Adresse ermittelt. Das Land wird in einer Datenbank auf unserem eigenen Server nachgeschlagen (DB-IP, db-ip.com). Für die Stadt wird die IP-Adresse an den GeoLite-Webdienst der MaxMind, Inc. (Waltham, USA) gesendet, der nur den Ort zurückgibt; MaxMind ist unter dem EU-US Data Privacy Framework zertifiziert (Art. 45 DSGVO). Die Antwort halten wir höchstens 24 Stunden im Arbeitsspeicher, damit dieselbe Adresse nicht zweimal abgefragt wird; die IP-Adresse wird nicht gespeichert.",
+          "Zugestellt wird die Benachrichtigung über ntfy.sh, einen Push-Dienst von Philipp C. Heckel, der Nachrichten höchstens 12 Stunden vorhält und dann löscht; für die Zustellung aufs Handy kann er die Push-Dienste von Apple oder Google nutzen. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO – unser berechtigtes Interesse an einem sicheren Betrieb und an der Kenntnis der Nutzung. Du kannst jederzeit widersprechen (siehe „Widerspruchsrecht“).",
+        ],
+      },
+      {
         title: "Preismeldungen",
         body: [
           "Wo es nur einen Durchschnittspreis gibt, kannst du den Preis an einer Tankstelle melden. Gespeichert werden Tankstelle, Kraftstoff, Preis, Zeitpunkt, eine zufällige Gerätekennung aus deinem Browser (kein Konto, kein Name) und ein verschlüsselter Hashwert deiner IP-Adresse, damit niemand seine eigene Meldung bestätigen kann. Die IP-Adresse selbst wird nicht gespeichert. Einzelmeldungen werden nach 90 Tagen gelöscht; bestätigte Preise bleiben ohne Kennungen erhalten. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (verlässliche Preise für alle Nutzer).",
@@ -208,7 +247,20 @@ const DE: LegalTexts = {
       {
         title: "Deine Rechte",
         body: [
-          "Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch und kannst Einwilligungen jederzeit mit Wirkung für die Zukunft widerrufen. Außerdem kannst du dich bei einer Datenschutzaufsichtsbehörde beschweren.",
+          "Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18) und Datenübertragbarkeit (Art. 20) und kannst Einwilligungen jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3); die bis dahin erfolgte Verarbeitung bleibt rechtmäßig. Schreib an norbert@norbapp.com; wir antworten innerhalb eines Monats. Da Fuel ohne Konto funktioniert, brauchen wir eventuell einen Anhaltspunkt von dir (etwa den Zeitpunkt einer Preismeldung), um deine Daten zu finden.",
+          "Du kannst dich bei einer Datenschutzaufsichtsbehörde beschweren (Art. 77 DSGVO), insbesondere in dem EU-Land, in dem du wohnst oder arbeitest oder in dem der mutmaßliche Verstoß stattfand – etwa bei der Landesdatenschutzbehörde deines Bundeslands, in Österreich bei der Datenschutzbehörde, in Ungarn bei der NAIH (naih.hu).",
+        ],
+      },
+      {
+        title: "Widerspruchsrecht (Art. 21 DSGVO)",
+        body: [
+          "Soweit wir Daten auf Grundlage berechtigter Interessen verarbeiten (Art. 6 Abs. 1 lit. f DSGVO), kannst du aus Gründen, die sich aus deiner besonderen Situation ergeben, jederzeit widersprechen. Wir verarbeiten die Daten dann nicht mehr, es sei denn, wir können zwingende schutzwürdige Gründe nachweisen, die deine Interessen, Rechte und Freiheiten überwiegen, oder die Verarbeitung dient der Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen. Eine formlose E-Mail an norbert@norbapp.com genügt.",
+        ],
+      },
+      {
+        title: "Weitere Hinweise",
+        body: [
+          "Du bist weder gesetzlich noch vertraglich verpflichtet, Daten anzugeben; ohne Start und Ziel kann allerdings keine Fahrt berechnet werden. Eine automatisierte Entscheidungsfindung oder ein Profiling im Sinne von Art. 22 DSGVO findet nicht statt. Wir passen diese Erklärung an, wenn sich die App oder die genutzten Dienste ändern; das Datum oben zeigt die aktuelle Fassung.",
         ],
       },
     ],
@@ -237,6 +289,10 @@ const DE: LegalTexts = {
         body: [
           "Vignetten- und Mauttarife stammen von den offiziellen nationalen Betreibern und werden regelmäßig geprüft. Streckenmaut (und alle Mautgebühren auf dem Westbalkan und in der Türkei) ist geschätzt.",
         ],
+      },
+      {
+        title: "IP-Standort",
+        body: ["Länderabfrage: IP to Country Lite von DB-IP (db-ip.com), lizenziert unter CC BY 4.0. Stadtabfrage: Dieses Produkt enthält GeoLite-Daten von MaxMind, erhältlich unter maxmind.com."],
       },
       {
         title: "Software",
@@ -273,12 +329,15 @@ const HU: LegalTexts = {
     sections: [
       {
         title: "Adatkezelő",
-        body: ["NorbApp, e-mail: norbert@norbapp.com. Adatvédelmi kérdéssel erre a címre írj."],
+        body: [
+          "Horváth Norbert (magánszemély, NorbApp néven), Németország. E-mail: norbert@norbapp.com – adatvédelmi kérdéssel és a jogaid gyakorlásához erre a címre írj. Adatvédelmi tisztviselőt nem neveztünk ki, mert erre nincs kötelezettség.",
+          "Ez a tájékoztató a Fuel by NorbApp (fuel.norbapp.com) adatkezelésére vonatkozik, és az általános adatvédelmi rendelet (GDPR) 13. és 21. cikke szerint leírja, milyen személyes adatot, milyen célból, mennyi ideig kezelünk, kik kapják meg, és milyen jogaid vannak.",
+        ],
       },
       {
         title: "Tárhely és szervernaplók",
         body: [
-          "Az alkalmazás és a FUEL-API a Rendernél (Render Services, Inc.) fut, frankfurti szervereken. Az oldal megnyitásakor a tárhelyszolgáltató technikailag szükséges hozzáférési adatokat kezel (IP-cím, időpont, kért URL, böngészőadatok, állapotkódok) az oldal kiszolgálásához és védelméhez (GDPR 6. cikk (1) f) pont).",
+          "Az alkalmazás és a FUEL-API a Rendernél (Render Services, Inc., San Francisco, USA) fut, frankfurti szervereken; a Render adatfeldolgozási szerződés alapján az adatfeldolgozónk. Az oldal megnyitásakor a tárhelyszolgáltató technikailag szükséges hozzáférési adatokat kezel (IP-cím, időpont, kért URL, böngészőadatok, állapotkódok) az oldal kiszolgálásához és védelméhez (GDPR 6. cikk (1) f) pont). A naplók a tárhelyszolgáltató megőrzési ideje után (legfeljebb néhány hét) automatikusan törlődnek. A Render az EU–USA adatvédelmi keretrendszer alapján tanúsított, így egy esetleges USA-beli hozzáférést az EU megfelelőségi határozata fedez (GDPR 45. cikk).",
         ],
       },
       {
@@ -307,6 +366,14 @@ const HU: LegalTexts = {
         ],
       },
       {
+        title: "Értesítések az üzemeltetőnek, hozzávetőleges hely",
+        body: [
+          "Egyes eseményekről (például oldalmegtekintés, kalkuláció, ár-visszajelzés vagy az app telepítése) az üzemeltető rövid push-értesítést kap a telefonjára, hogy kövesse a szolgáltatás használatát, és gyorsan észrevegye a visszaéléseket vagy támadásokat. Az értesítésben az esemény típusa, az oldal vagy az útvonal országai, az eszköz típusa és operációs rendszere, valamint a látogató hozzávetőleges helye (város és ország) szerepel – név, beírt cím és IP-cím nem.",
+          "A hozzávetőleges helyet az IP-címedből állapítjuk meg. Az országot a saját szerverünkön lévő adatbázisból (DB-IP, db-ip.com) keressük ki. A városhoz az IP-címet elküldjük a MaxMind, Inc. (Waltham, USA) GeoLite webszolgáltatásának, amely csak a helyet adja vissza; a MaxMind az EU–USA adatvédelmi keretrendszer alapján tanúsított (GDPR 45. cikk). A választ legfeljebb 24 óráig a memóriában tartjuk, hogy ugyanazt a címet ne kérdezzük le kétszer; az IP-címet nem tároljuk.",
+          "Az értesítést az ntfy.sh push-szolgáltatás (üzemeltető: Philipp C. Heckel) kézbesíti, amely az üzeneteket legfeljebb 12 óráig őrzi, majd törli; a telefonra juttatáshoz az Apple vagy a Google push-szolgáltatását is használhatja. Jogalap: GDPR 6. cikk (1) f) pont – jogos érdekünk a szolgáltatás biztonságos működtetése és használatának ismerete. Ez ellen bármikor tiltakozhatsz (lásd „Tiltakozási jog”).",
+        ],
+      },
+      {
         title: "Ár-visszajelzések",
         body: [
           "Ahol csak átlagár érhető el, jelezheted egy kút árát. Ilyenkor a kutat, az üzemanyagot, az árat, az időpontot, egy a böngésződben létrehozott véletlen eszközazonosítót (nincs fiók, nincs név) és az IP-címed kulcsolt hash-ét tároljuk, hogy senki ne erősíthesse meg a saját jelzését. Magát az IP-címet nem tároljuk. Az egyes jelzéseket 90 nap után töröljük, a megerősített árak azonosítók nélkül maradnak meg. Jogalap: GDPR 6. cikk (1) f) pont (megbízható árak minden felhasználónak).",
@@ -324,7 +391,20 @@ const HU: LegalTexts = {
       {
         title: "Jogaid",
         body: [
-          "Jogod van hozzáférést, helyesbítést, törlést, az adatkezelés korlátozását és adathordozhatóságot kérni, valamint tiltakozni; a hozzájárulásodat bármikor visszavonhatod a jövőre nézve. Panaszt tehetsz adatvédelmi felügyeleti hatóságnál is (Magyarországon: NAIH).",
+          "Jogod van hozzáférést (GDPR 15. cikk), helyesbítést (16. cikk), törlést (17. cikk), az adatkezelés korlátozását (18. cikk) és adathordozhatóságot (20. cikk) kérni; a hozzájárulásodat bármikor visszavonhatod a jövőre nézve (7. cikk (3) bekezdés), ez a korábbi adatkezelés jogszerűségét nem érinti. Írj a norbert@norbapp.com címre; egy hónapon belül válaszolunk. Mivel a Fuel fiók nélkül működik, az adataid megtalálásához egy támpontra lehet szükségünk (például egy ár-visszajelzés időpontjára).",
+          "Panaszt tehetsz adatvédelmi felügyeleti hatóságnál (GDPR 77. cikk), különösen abban az EU-országban, ahol élsz, dolgozol, vagy ahol a vélt jogsértés történt – Magyarországon a Nemzeti Adatvédelmi és Információszabadság Hatóságnál (NAIH, 1055 Budapest, Falk Miksa utca 9–11., naih.hu), Németországban a tartományi adatvédelmi hatóságnál. Bírósághoz is fordulhatsz (GDPR 79. cikk).",
+        ],
+      },
+      {
+        title: "Tiltakozási jog (GDPR 21. cikk)",
+        body: [
+          "Ha az adatkezelés jogos érdeken alapul (GDPR 6. cikk (1) f) pont), a saját helyzeteddel kapcsolatos okból bármikor tiltakozhatsz ellene. Ilyenkor az adatot nem kezeljük tovább, kivéve, ha olyan kényszerítő erejű jogos okot igazolunk, amely elsőbbséget élvez az érdekeiddel, jogaiddal és szabadságaiddal szemben, vagy ha az adatkezelés jogi igények előterjesztéséhez, érvényesítéséhez vagy védelméhez szükséges. Elég egy egyszerű e-mail a norbert@norbapp.com címre.",
+        ],
+      },
+      {
+        title: "Egyéb tudnivalók",
+        body: [
+          "Adatot megadni sem jogszabály, sem szerződés alapján nem kötelező; indulási és célpont nélkül azonban nem tudunk útvonalat számolni. Automatizált döntéshozatal és profilalkotás (GDPR 22. cikk) nincs. A tájékoztatót frissítjük, ha az alkalmazás vagy az általa használt szolgáltatások változnak; a fenti dátum a hatályos változatot mutatja.",
         ],
       },
     ],
@@ -353,6 +433,10 @@ const HU: LegalTexts = {
         body: [
           "A matrica- és útdíjtarifák a hivatalos nemzeti üzemeltetőktől származnak, rendszeresen ellenőrizzük őket. A szakaszalapú díjak (és a Nyugat-Balkán, valamint Törökország útdíjai) becslések.",
         ],
+      },
+      {
+        title: "IP-alapú helymeghatározás",
+        body: ["Ország: a DB-IP IP to Country Lite adatbázisa (db-ip.com), CC BY 4.0 licenc alatt. Város: a termék a MaxMind által készített GeoLite adatokat tartalmaz, elérhető: maxmind.com."],
       },
       {
         title: "Szoftver",
